@@ -34,6 +34,14 @@
       category: "circle"
     },
     {
+      id: "angle-equality-transitivity",
+      name: "等しい角の推移",
+      premises: ["angle(ABC)=angle(BCA)", "angle(BCA)=angle(DEF)"],
+      conclusion: "angle(ABC)=angle(DEF)",
+      explain: "∠ABCと∠BCAが等しく、∠BCAと∠DEFも等しいので、∠ABCと∠DEFは等しい。",
+      category: "angle"
+    },
+    {
       id: "triangle-similarity-aa",
       name: "三角形の相似条件（2組の角）",
       premises: ["angle(A)=angle(D)", "angle(B)=angle(E)", "triangle(ABC)", "triangle(DEF)"],
@@ -78,6 +86,7 @@
 
     const known = [...new Set(facts)];
     const steps = [];
+    const sourceByFact = new Map(known.map((fact) => [fact, { type: "given" }]));
     if (known.includes(goal)) {
       return { success: true, goal, facts: known, steps, reason: "goal-is-given" };
     }
@@ -94,11 +103,13 @@
           ruleId: rule.id,
           ruleName: rule.name,
           premises: [...rule.premises],
+          premiseSources: rule.premises.map((premise) => ({ fact: premise, ...(sourceByFact.get(premise) || { type: "unknown" }) })),
           conclusion: rule.conclusion,
           explanation: rule.explain,
           category: rule.category
         };
         known.push(rule.conclusion);
+        sourceByFact.set(rule.conclusion, { type: "step", index: step.index });
         steps.push(step);
         changed = true;
 
