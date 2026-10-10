@@ -48,6 +48,12 @@ for (const triangle of problem.goal.triangles) {
   assert.equal(triangle.length, 3);
   assert.ok(triangle.every((id) => pointIds.has(id)), "goal triangle vertices must be declared");
 }
+for (const condition of geometry.dynamicConditions) {
+  if (condition.point) assert.ok(pointIds.has(condition.point), "dynamic condition point must be declared");
+  if (condition.circle) assert.ok(objectIds.has(condition.circle), "dynamic condition circle must be declared");
+  if (condition.endpoints) assert.ok(condition.endpoints.every((id) => pointIds.has(id)), "arc endpoints must be declared");
+  if (condition.excludedPoints) assert.ok(condition.excludedPoints.every((id) => pointIds.has(id)), "excluded points must be declared");
+}
 
 assert.ok(problem.proofPlan.warning.includes("検証済みの証明手順ではない"));
 assert.ok(problem.validation.openQuestions.length > 0, "unverified geometry must retain open questions");
