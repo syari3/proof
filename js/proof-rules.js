@@ -105,18 +105,25 @@
   }
 
 
-  function circleGoal(known, goal) {
-    const ins = known.map(x => { const m = /^inscribed\(([A-Z]{3}),([A-Z]{2})\)$/.exec(x); return m && { fact:x, angle:m[1], arc:m[2] }; }).filter(Boolean);
-    const cen = known.map(x => { const m = /^central\(([A-Z]{3}),([A-Z]{2})\)$/.exec(x); return m && { fact:x, angle:m[1], arc:m[2] }; }).filter(Boolean);
-    const arcs = known.map(x => { const m = /^equalArc\(([A-Z]{2}),([A-Z]{2})\)$/.exec(x); return m && { fact:x, a:m[1], b:m[2] }; }).filter(Boolean);
-    for (let i=0;i<ins.length;i++) for(let j=i+1;j<ins.length;j++) {
-      const a=ins[i], b=ins[j], g1="angle("+a.angle+")=angle("+b.angle+")", g2="angle("+b.angle+")=angle("+a.angle+")";
-      if(a.arc===b.arc && (goal===g1||goal===g2)) return {id:"inscribed-angles-same-arc",name:"同じ弧に対する円周角",premises:[a.fact,b.fact],conclusion:goal,explain:"同じ弧に対する円周角は等しい。"};
-      const eq=arcs.find(x=>(x.a===a.arc&&x.b===b.arc)||(x.a===b.arc&&x.b===a.arc));
-      if(eq&&(goal===g1||goal===g2)) return {id:"inscribed-angles-equal-arcs",name:"等しい弧に対する円周角",premises:[eq.fact,a.fact,b.fact],conclusion:goal,explain:"等しい弧に対する円周角は等しい。"};
+  function circleCandidates(known) {
+    const ins = known.map((fact) => { const m = /^inscribed\\(([A-Z]{3}),([A-Z]{2})\\)$/.exec(fact); return m && { fact, angle: m[1], arc: m[2] }; }).filter(Boolean);
+    const cen = known.map((fact) => { const m = /^central\\(([A-Z]{3}),([A-Z]{2})\\)$/.exec(fact); return m && { fact, angle: m[1], arc: m[2] }; }).filter(Boolean);
+    const arcs = known.map((fact) => { const m = /^equalArc\\(([A-Z]{2}),([A-Z]{2})\\)$/.exec(fact); return m && { fact, a: m[1], b: m[2] }; }).filter(Boolean);
+    const results = [];
+    for (let i = 0; i < ins.length; i++) for (let j = i + 1; j < ins.length; j++) {
+      const a = ins[i], b = ins[j];
+      if (a.arc === b.arc) results.push({ id: "circle.inscribed-angles-same-arc", name: "同じ弧に対する円周角", premises: [a.fact, b.fact], conclusion: "angle(" + a.angle + ")=angle(" + b.angle + ")", explain: "同じ弧に対する円周角は等しい。", category: "circle" });
+      const eq = arcs.find((x) => (x.a === a.arc && x.b === b.arc) || (x.a === b.arc && x.b === a.arc));
+      if (eq) results.push({ id: "circle.equal-arcs-inscribed-angles", name: "等しい弧に対する円周角", premises: [eq.fact, a.fact, b.fact], conclusion: "angle(" + a.angle + ")=angle(" + b.angle + ")", explain: "等しい弧に対する円周角は等しい。", category: "circle" });
     }
-    for(const a of cen) for(const b of ins) { const g="angle("+a.angle+")=2*angle("+b.angle+")"; if(a.arc===b.arc&&goal===g) return {id:"central-inscribed-angle",name:"中心角と円周角の関係",premises:[a.fact,b.fact],conclusion:g,explain:"同じ弧に対する中心角は円周角の2倍である。"}; }
-    return null;
+    for (const a of cen) for (const b of ins) if (a.arc === b.arc) {
+      results.push({ id: "circle.central-inscribed-angle", name: "中心角と円周角の関係", premises: [a.fact, b.fact], conclusion: "angle(" + a.angle + ")=2*angle(" + b.angle + ")", explain: "同じ弧に対する中心角は円周角の2倍である。", category: "circle" });
+    }
+    return results;
+  }
+
+  function circleGoal(known, goal) {
+    return circleCandidates(known).find((rule) => rule.conclusion === goal) || null;
   }
 
   function derive(facts) {
@@ -139,6 +146,7 @@
       ...equalRadiusCandidates(facts),
       ...parallelAngleCandidates(facts),
       ...diameterInscribedAngleCandidates(facts),
+      ...circleCandidates(facts),
       ...verticalAngleCandidates(facts),
       ...exteriorAngleCandidates(facts),
       ...angleAdditionCandidates(facts),
