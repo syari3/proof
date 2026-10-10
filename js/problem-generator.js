@@ -2,7 +2,7 @@
 (function (root) {
   "use strict";
   function generate(templates, proofRules, random = Math.random) {
-    if (!templates || !proofRules || typeof proofRules.derive !== "function") {
+    if (!templates || !proofRules || typeof proofRules.prove !== "function") {
       throw new TypeError("問題型と証明ルールが必要です。");
     }
     const keys = Object.keys(templates).filter((key) => key !== "random");
@@ -12,8 +12,8 @@
     }
     for (const key of keys) {
       const template = templates[key];
-      const derivations = proofRules.derive(template.facts || []);
-      if (derivations.some((item) => item.conclusion === template.expectedConclusion)) {
+      const proof = proofRules.prove(template.facts || [], template.expectedConclusion);
+      if (proof.success) {
         return { key, problem: template, validation: "passed" };
       }
     }
