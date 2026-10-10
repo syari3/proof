@@ -1109,11 +1109,53 @@
     };
   }
 
+  // The canonical catalog is loaded before this file in the browser.
+  // Keep a graceful fallback for isolated/legacy consumers, but when present,
+  // the catalog is the source of truth for theorem names and explanations.
+  function getTheorem(id) {
+    return root.TheoremCatalog && typeof root.TheoremCatalog.get === "function"
+      ? root.TheoremCatalog.get(id)
+      : null;
+  }
+
+  function catalogStatus(ids) {
+    const catalog = root.TheoremCatalog;
+    const requested = Array.from(new Set(ids || []));
+    if (!catalog || typeof catalog.get !== "function") {
+      return { available: false, checked: 0, missing: requested };
+    }
+    return {
+      available: true,
+      checked: requested.length,
+      missing: requested.filter((id) => !catalog.get(id))
+    };
+  }
+
+  function applyCatalogMetadata(rule) {
+    const entry = getTheorem(rule.ruleId || rule.id);
+    if (!entry) return rule;
+    return {
+      ...rule,
+      ruleName: entry.name,
+      name: entry.name,
+      explanation: entry.reason,
+      explain: entry.reason
+    };
+  }
+
   const api = Object.freeze({
     list: () => rules.map((rule) => ({ ...rule, premises: [...rule.premises] })),
-    derive,
-    prove,
-    hasAllPremises
+    derive: (facts) => derive(facts).map(applyCatalogMetadata),
+    prove: (facts, goal, maxSteps = 100) => {
+      const result = prove(facts, goal, maxSteps);
+      return {
+        ...result,
+        steps: result.steps.map((step) => applyCatalogMetadata(step))
+      };
+    },
+    hasAllPremises,
+    getTheorem,
+    catalogStatus
   });
 
   if (typeof module !== "undefined" && module.exports) {
