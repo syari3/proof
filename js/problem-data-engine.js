@@ -51,6 +51,8 @@
         add("side(" + canonicalSegment(a[0], a[1]) + ")=side(" + canonicalSegment(b[0], b[1]) + ")");
       } else if (constraint.type === "same-ray" && constraint.vertex && constraint.points && constraint.points.length === 2) {
         add("sameRay(" + constraint.vertex + "," + constraint.points[0] + "," + constraint.points[1] + ")");
+      } else if (constraint.type === "point-on-circle" && constraint.point && constraint.circle) {
+        add("onCircle(" + constraint.point + ")");
       } else if (constraint.type === "opposite-rays" || constraint.type === "between") {
         // Handled by GeometryRelations below; keep these typed constraints supported.
       } else if (constraint.type !== "point-on-circle") {
@@ -65,8 +67,25 @@
           condition.segments && condition.segments.length === 2) {
         const [a, b] = condition.segments;
         add("side(" + canonicalSegment(a[0], a[1]) + ")=side(" + canonicalSegment(b[0], b[1]) + ")");
+      } else if (condition.role === "select-position-of-moving-point" &&
+          condition.type === "equal-segments" && condition.segments &&
+          condition.segments.length === 2 &&
+          condition.segments.every((segment) => Array.isArray(segment) && segment.length === 2)) {
+        // The problem asks us to consider the position where this equality holds.
+        // Record it as a conditional premise, while keeping the existence/location
+        // of such a point as a separate geometric validation task.
+        const [a, b] = condition.segments;
+        add("side(" + canonicalSegment(a[0], a[1]) + ")=side(" + canonicalSegment(b[0], b[1]) + ")");
       } else {
-        unsupported.push({ location: "geometry.dynamicConditions", type: condition.type, reason: "動点の選択条件は存在・位置を検証するまで仮定として扱いません。" });
+        unsupported.push({ location: "geometry.dynamicConditions", type: condition.type, reason: "動点の範囲・存在条件は別途検証が必要です。" });
+      }
+    }
+
+    // A parallel-through-point construction explicitly defines a line parallel to
+    // another line. Preserve that relation without guessing any angle correspondence.
+    for (const object of (problem.geometry.objects || [])) {
+      if (object.type === "parallel-through-point" && object.id && object.parallelTo) {
+        add("parallel(" + object.id + "," + object.parallelTo + ")");
       }
     }
 
