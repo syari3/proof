@@ -159,6 +159,15 @@ assert.equal(circle3.success,true);
 const circle4 = rules.prove(["inscribed(ACB,AB)","inscribed(ADB,CD)"],"angle(ACB)=angle(ADB)");
 assert.equal(circle4.success,false);
 
+const circleChain = rules.prove(
+  ["inscribed(ACB,AB)", "inscribed(ADB,AB)", "angle(ADB)=angle(EFG)"],
+  "angle(ACB)=angle(EFG)"
+);
+assert.equal(circleChain.success, true, "円周角の定理で得た角の等しさを推移律につなげる");
+assert.equal(circleChain.steps.length, 2);
+assert.equal(circleChain.steps[0].ruleId, "circle.inscribed-angles-same-arc");
+assert.equal(circleChain.steps[1].ruleId, "logic.equality-transitivity");
+
 
 const angleSum = rules.prove(
   ["triangle(ABC)"],
