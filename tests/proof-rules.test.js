@@ -229,24 +229,24 @@ console.log("✓ 対頂角は等しい");
 
 
 const correspondingAngles = rules.prove(
-  ["parallel(l,m)", "intersects(t,l)", "intersects(t,m)", "correspondingAngles(angleA,angleB,t,l,m)"],
-  "angleA=angleB"
+  ["parallel(l,m)", "intersects(t,l)", "intersects(t,m)", "correspondingAngles(angle1,angle2,t,l,m)"],
+  "angle1=angle2"
 );
 assert.equal(correspondingAngles.success, true, "平行条件・横切る直線・同位角の位置がそろえば等しいと導く");
 assert.equal(correspondingAngles.steps[0].ruleId, "parallel-corresponding-angles");
 assert.deepEqual(correspondingAngles.steps[0].premises, [
   "parallel(l,m)", "intersects(t,l)", "intersects(t,m)", "correspondingAngles(angle1,angle2,t,l,m)"
-].map((fact, index) => index === 3 ? "correspondingAngles(angleA,angleB,t,l,m)" : fact));
+].map((fact, index) => index === 3 ? "correspondingAngles(angle1,angle2,t,l,m)" : fact));
 
 const missingCorrespondingPosition = rules.prove(
   ["parallel(l,m)", "intersects(t,l)", "intersects(t,m)"],
-  "angleA=angleB"
+  "angle1=angle2"
 );
 assert.equal(missingCorrespondingPosition.success, false, "同位角の位置関係がなければ角の等しさを導かない");
 
 const missingParallelCondition = rules.prove(
-  ["intersects(t,l)", "intersects(t,m)", "correspondingAngles(angleA,angleB,t,l,m)"],
-  "angleA=angleB"
+  ["intersects(t,l)", "intersects(t,m)", "correspondingAngles(angle1,angle2,t,l,m)"],
+  "angle1=angle2"
 );
 assert.equal(missingParallelCondition.success, false, "平行条件がなければ同位角の定理を適用しない");
 console.log("✓ 平行線の同位角");
