@@ -180,3 +180,26 @@ const degenerateTriangleFact = rules.prove(
 assert.equal(degenerateTriangleFact.success, false, "同じ頂点を重複させた三角形を受け入れない");
 
 console.log("✓ 三角形の内角の和（汎用ルール）");
+
+
+const equalRadii = rules.prove(
+  ["onCircle(A,O)", "onCircle(B,O)"],
+  "side(OA)=side(OB)"
+);
+assert.equal(equalRadii.success, true, "同じ中心Oをもつ円周上の点から半径の等しさを導く");
+assert.equal(equalRadii.steps[0].ruleId, "circle-equal-radii");
+assert.deepEqual(equalRadii.steps[0].premises, ["onCircle(A,O)", "onCircle(B,O)"]);
+
+const differentCenters = rules.prove(
+  ["onCircle(A,O)", "onCircle(B,P)"],
+  "side(OA)=side(PB)"
+);
+assert.equal(differentCenters.success, false, "中心が異なる円の半径を等しいと決めつけない");
+
+const onePoint = rules.prove(
+  ["onCircle(A,O)"],
+  "side(OA)=side(OA)"
+);
+assert.equal(onePoint.success, false, "円周上の点が1つだけでは異なる半径同士の等しさを導かない");
+
+console.log("✓ 同じ円の半径は等しい");
