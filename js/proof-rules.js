@@ -242,19 +242,25 @@
         const leftBase = left.find((point) => point !== shared);
         const rightBase = right.find((point) => point !== shared);
         if (!leftBase || !rightBase || leftBase === rightBase) continue;
-        const angleFor = (vertex) => {
+        const angleForms = (vertex) => {
           const other = triangle.vertices.filter((point) => point !== vertex);
-          return "angle(" + other[0] + vertex + other[1] + ")";
+          return [
+            "angle(" + other[0] + vertex + other[1] + ")",
+            "angle(" + other[1] + vertex + other[0] + ")"
+          ];
         };
-        const leftAngle = angleFor(leftBase), rightAngle = angleFor(rightBase);
-        results.push({
-          id: "triangle-isosceles-base-angles",
-          name: "二等辺三角形の底角",
-          premises: [triangle.fact, item.fact],
-          conclusion: [leftAngle, rightAngle].sort().join("="),
-          explain: "二等辺三角形の等しい辺に対する角は等しい。",
-          category: "isosceles"
-        });
+        for (const leftAngle of angleForms(leftBase)) {
+          for (const rightAngle of angleForms(rightBase)) {
+            results.push({
+              id: "triangle-isosceles-base-angles",
+              name: "二等辺三角形の底角",
+              premises: [triangle.fact, item.fact],
+              conclusion: [leftAngle, rightAngle].sort().join("="),
+              explain: "二等辺三角形の等しい辺に対する角は等しい。",
+              category: "isosceles"
+            });
+          }
+        }
       }
     }
     return results;
@@ -537,7 +543,7 @@
           }
         }
 
-        const isosceles = isoscelesBaseAngleCandidates(known).find((rule) => !known.includes(rule.conclusion));
+        const isoscelesCandidates = isoscelesBaseAngleCandidates(known);\n        const isosceles = isoscelesCandidates.find((rule) => rule.conclusion === goal) || isoscelesCandidates.find((rule) => !known.includes(rule.conclusion));
         if (isosceles) {
           const step = {
             index: steps.length + 1, ruleId: isosceles.id, ruleName: isosceles.name,
