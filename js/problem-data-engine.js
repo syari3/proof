@@ -68,8 +68,15 @@
       }
     }
 
+    // Derive ray relations only from explicit point-order constraints.
+    // An intersection alone does not establish which points are on opposite sides.
+    const relationFacts = root.GeometryRelations && typeof root.GeometryRelations.derive === "function"
+      ? root.GeometryRelations.derive(problem.geometry.constraints)
+      : [];
+    for (const fact of relationFacts) add(fact);
+
     for (const construction of (problem.geometry.constructions || [])) {
-      unsupported.push({ location: "geometry.constructions", type: construction.type, point: construction.point, reason: "構成関係から角・半直線の関係を導く幾何推論は未実装です。" });
+      unsupported.push({ location: "geometry.constructions", type: construction.type, point: construction.point, reason: "交点だけから点の順序は推測しません。between / same-ray / opposite-rays の明示条件が必要です。" });
     }
 
     let goal = null;
@@ -101,7 +108,7 @@
       goal,
       unsupported,
       readyForInference: Boolean(goal),
-      note: "未対応の条件は捨てず unsupported に記録し、図の見た目から事実を推測しません。"
+      note: "未対応の条件は unsupported に記録します。同一直線上という情報だけでは半直線の向きを決めず、between / same-ray / opposite-rays の明示情報がある場合だけ角の関係を導きます。"
     };
   }
 
