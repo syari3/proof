@@ -211,7 +211,7 @@
   function triangleAngleSumCandidates(known) {
     const results = [];
     for (const fact of known) {
-      const match = /^triangle\\(([A-Z])([A-Z])([A-Z])\\)$/.exec(fact);
+      const match = /^triangle\(([A-Z])([A-Z])([A-Z])\)$/.exec(fact);
       if (!match) continue;
       const [, a, b, c] = match;
       if (new Set([a, b, c]).size !== 3) continue;
