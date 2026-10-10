@@ -142,3 +142,12 @@ assert.equal(collinearNotEnough.success, false, "一直線上という条件だ�
 console.log("✓ 一直線上だけでは角の同一性を断定しない");
 
 console.log("\\n" + (cases.length + 11) + " tests passed.");
+
+const circle1 = rules.prove(["inscribed(ACB,AB)","inscribed(ADB,AB)"],"angle(ACB)=angle(ADB)");
+assert.equal(circle1.success,true);
+const circle2 = rules.prove(["central(AOB,AB)","inscribed(ACB,AB)"],"angle(AOB)=2*angle(ACB)");
+assert.equal(circle2.success,true);
+const circle3 = rules.prove(["equalArc(AB,CD)","inscribed(AEB,AB)","inscribed(CFD,CD)"],"angle(AEB)=angle(CFD)");
+assert.equal(circle3.success,true);
+const circle4 = rules.prove(["inscribed(ACB,AB)","inscribed(ADB,CD)"],"angle(ACB)=angle(ADB)");
+assert.equal(circle4.success,false);
