@@ -171,7 +171,13 @@
   // Parse equalities between angle/side expressions, e.g. angle(ABC)=angle(BCA).
   function parseEquality(fact) {
     const match = /^(angle\([^()]+\)|side\([^()]+\))=(angle\([^()]+\)|side\([^()]+\))$/.exec(fact);
-    return match ? { left: match[1], right: match[2] } : null;
+    if (!match) return null;
+    // Angles can only be chained with angles, and segment lengths with segment lengths.
+    // Reject mixed-type equalities so transitivity cannot equate an angle with a length.
+    const leftKind = match[1].startsWith("angle(") ? "angle" : "side";
+    const rightKind = match[2].startsWith("angle(") ? "angle" : "side";
+    if (leftKind !== rightKind) return null;
+    return { left: match[1], right: match[2] };
   }
 
   // Equality is transitive for angles and segment lengths. Generate the
