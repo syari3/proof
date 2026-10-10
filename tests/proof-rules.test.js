@@ -272,3 +272,44 @@ const wrongSideExtension = rules.prove(
 );
 assert.equal(wrongSideExtension.success, false, "別の辺を延長した事実では指定した外角を導かない");
 console.log("✓ 三角形の外角定理");
+
+
+const angleAddition = rules.prove(
+  ["rayInsideAngle(O,A,B,C)"],
+  "angle(AOC)=angle(AOB)+angle(BOC)"
+);
+assert.equal(angleAddition.success, true, "角の内部にある半直線で分けた角を足せる");
+assert.equal(angleAddition.steps[0].ruleId, "angle-addition");
+
+const missingInnerRay = rules.prove(
+  [],
+  "angle(AOC)=angle(AOB)+angle(BOC)"
+);
+assert.equal(missingInnerRay.success, false, "内部の半直線の事実がなければ角を分割しない");
+
+const repeatedAnglePoints = rules.prove(
+  ["rayInsideAngle(O,A,A,C)"],
+  "angle(AOC)=angle(AOA)+angle(AOC)"
+);
+assert.equal(repeatedAnglePoints.success, false, "同じ点を重複させた不正な角分割を拒否する");
+console.log("✓ 角の加法");
+
+const segmentAddition = rules.prove(
+  ["between(A,B,C)"],
+  "side(AC)=side(AB)+side(BC)"
+);
+assert.equal(segmentAddition.success, true, "BがAとCの間にあるとき線分を加算できる");
+assert.equal(segmentAddition.steps[0].ruleId, "segment-addition");
+
+const missingBetweenFact = rules.prove(
+  [],
+  "side(AC)=side(AB)+side(BC)"
+);
+assert.equal(missingBetweenFact.success, false, "点の順序が与えられなければ線分を加算しない");
+
+const repeatedSegmentPoints = rules.prove(
+  ["between(A,A,C)"],
+  "side(AC)=side(AA)+side(AC)"
+);
+assert.equal(repeatedSegmentPoints.success, false, "点の順序に同じ点が重複する不正な事実を拒否する");
+console.log("✓ 線分の加法");
