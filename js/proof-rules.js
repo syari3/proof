@@ -152,8 +152,13 @@
   function sameRayAngleCandidates(known) {
     const rays = known.map((fact) => /^sameRay\(([A-Z]),([A-Z]),([A-Z])\)$/.exec(fact)).filter(Boolean)
       .map((m) => ({ fact: m[0], vertex: m[1], first: m[2], second: m[3] }));
-    const angles = known.map((fact) => /^angle\(([A-Z])([A-Z])([A-Z])\)$/.exec(fact)).filter(Boolean)
-      .map((m) => ({ fact: m[0], first: m[1], vertex: m[2], last: m[3] }));
+    const angleLabels = new Set();
+    for (const fact of known) {
+      for (const match of fact.matchAll(/angle\(([A-Z]{3})\)/g)) angleLabels.add(match[1]);
+      const standalone = /^angle\(([A-Z]{3})\)$/.exec(fact);
+      if (standalone) angleLabels.add(standalone[1]);
+    }
+    const angles = [...angleLabels].map((label) => ({ fact: "angle(" + label + ")", first: label[0], vertex: label[1], last: label[2] }));
     const results = [];
     for (const angle of angles) for (const ray of rays) {
       if (angle.vertex !== ray.vertex) continue;
@@ -165,7 +170,7 @@
         const replacement = 'angle(' + a + angle.vertex + c + ')';
         results.push({
           id: 'geometry.same-ray-angle', name: '同じ半直線を使った角の置き換え',
-          premises: [angle.fact, ray.fact],
+          premises: [ray.fact],
           conclusion: [angle.fact, replacement].sort().join('='),
           explain: '同じ半直線上にある点で角を表し直しても、角の大きさは変わらない。',
           category: 'angle'
