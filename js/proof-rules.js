@@ -65,7 +65,7 @@
 
   // Parse equalities between angle/side expressions, e.g. angle(ABC)=angle(BCA).
   function parseEquality(fact) {
-    const match = /^(angle\\([^()]+\\)|side\\([^()]+\\))=(angle\\([^()]+\\)|side\\([^()]+\\))$/.exec(fact);
+    const match = /^(angle\([^()]+\)|side\([^()]+\))=(angle\([^()]+\)|side\([^()]+\))$/.exec(fact);
     return match ? { left: match[1], right: match[2] } : null;
   }
 
