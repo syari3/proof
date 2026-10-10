@@ -26,6 +26,14 @@
       category: "parallel"
     },
     {
+      id: "diameter-inscribed-angle",
+      name: "直径に対する円周角",
+      premises: ["onCircle(A)", "onCircle(B)", "onCircle(C)", "diameter(BC)"],
+      conclusion: "angle(BAC)=90",
+      explain: "B、Cが直径の両端でAが円周上にあるので、∠BACは90°。",
+      category: "circle"
+    },
+    {
       id: "triangle-similarity-aa",
       name: "三角形の相似条件（2組の角）",
       premises: ["angle(A)=angle(D)", "angle(B)=angle(E)", "triangle(ABC)", "triangle(DEF)"],
