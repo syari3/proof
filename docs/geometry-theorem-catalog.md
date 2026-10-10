@@ -29,7 +29,7 @@
 |---|---|---|
 | 円周角の定理・円周角の関係 | 10年分のうち複数年で使用 | `circle.inscribed-angle` |
 | 等しい弧に対する円周角 | 記録あり（2020年） | `circle.equal-arcs-inscribed-angles` |
-| 直径に対する円周角は90° | 記録あり（2019年） | `circle.diameter-inscribed-angle` |
+| 直径に対する円周角は90° | 記録あり（2019年） | `circle.circle.diameter-inscribed-angle` |
 | 円周角と中心角の関係 | 記録あり（2021年） | `circle.central-inscribed-angle` |
 | 二等辺三角形の底角 | 複数年で使用 | `triangle.isosceles-base-angles` |
 | 二等辺三角形の逆（等しい角に対する辺） | 目標・補助図形の分析に関連 | `triangle.equal-angles-imply-equal-sides` |
@@ -45,7 +45,7 @@
 | 三角形の合同条件（1辺とその両端の角） | 目標条件として記録あり | `triangle.congruence-asa` |
 | 三角形の合同条件（既存コードのSSS・SAS） | 現行実装に登録 | `triangle.congruence-sss`, `triangle.congruence-sas` |
 | 合同な図形の対応する辺・角 | 現行実装に登録 | `triangle.congruent-corresponding-parts` |
-| 等式の推移（等しいものをつなぐ） | 分析表の「三段論法」に対応する一部 | `logic.equality-transitivity` |
+| 等式の推移（等しいものをつなぐ） | 分析表の「三段論法」に対応する一部 | `logic.logic.equality-transitivity` |
 
 ### 読み取り上の注意
 
@@ -131,7 +131,7 @@
 - 負例: 対応する弧が違う場合や、中心が当該円の中心と確認できない場合は適用しない。
 
 #### C4. 直径に対する円周角は90°
-- ID: `circle.diameter-inscribed-angle`
+- ID: `circle.circle.diameter-inscribed-angle`
 - 前提: 角の頂点が円周上にあり、角の両端点が直径の両端である。
 - 結論: その円周角は90°。
 - 負例: 直径の端点・円周上の頂点のいずれかが確認できない場合は適用しない。
@@ -182,7 +182,7 @@
 - 負例: 点の順序が分からない場合や、点が線分上にない場合は適用しない。
 
 #### E2. 等式の推移
-- ID: `logic.equality-transitivity`
+- ID: `logic.logic.equality-transitivity`
 - 前提: 同じ種類・同じ意味の量について、A=B と B=C が証明済み。
 - 結論: A=C。
 - 負例: 長さと角度など、異なる種類の量をつながない。
@@ -250,7 +250,7 @@
 
 ## 追加実装：同じ円の半径は等しい
 
-`js/proof-rules.js` に、同じ中心をもつ円の半径の等しさを導く規則 `circle-equal-radii` を追加した。
+`js/proof-rules.js` に、同じ中心をもつ円の半径の等しさを導く規則 `circle.equal-radii` を追加した。
 
 - 入力事実の形式：`onCircle(A,O)` と `onCircle(B,O)`（A、Bが中心Oの同じ円周上にある）
 - 導く事実の形式：`side(OA)=side(OB)`
@@ -262,7 +262,7 @@
 
 ## 追加実装：対頂角は等しい
 
-`js/proof-rules.js` に、対頂角として明示された2つの角が等しいことを導く規則 `angle-vertical-angles` を追加した。
+`js/proof-rules.js` に、対頂角として明示された2つの角が等しいことを導く規則 `angle.vertical-angles` を追加した。
 
 - 入力事実の形式：`verticalAngles(ABC,DBE)`（∠ABC と ∠DBE が対頂角であることを明示）
 - 導く事実の形式：`angle(ABC)=angle(DBE)`
