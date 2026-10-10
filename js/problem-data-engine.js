@@ -70,6 +70,25 @@
       }
     }
 
+    // Convert only explicitly stated parallel-angle and circle-angle conditions.
+    for (const item of problem.geometry.constraints) {
+      if (item.type === "parallel-lines" && item.lines && item.lines.length === 2) {
+        add("parallel(" + item.lines[0] + "," + item.lines[1] + ")");
+      }
+      if ((item.type === "corresponding-angles" || item.type === "alternate-interior-angles") && item.angles && item.angles.length === 2 && item.transversal && item.lines && item.lines.length === 2) {
+        const relation = item.type === "corresponding-angles" ? "correspondingAngles" : "alternateAngles";
+        add(relation + "(" + item.angles[0].join("") + "," + item.angles[1].join("") + "," + item.transversal + "," + item.lines[0] + "," + item.lines[1] + ")");
+        add("parallel(" + item.lines[0] + "," + item.lines[1] + ")");
+        add("intersects(" + item.transversal + "," + item.lines[0] + ")");
+        add("intersects(" + item.transversal + "," + item.lines[1] + ")");
+      }
+      if (item.type === "inscribed-angle" && item.angle && item.arc && item.angle.length === 3 && item.arc.length === 2) {
+        add("inscribed(" + item.angle.join("") + "," + item.arc.slice().sort().join("") + ")");
+      }
+      if (item.type === "equal-arcs" && item.arcs && item.arcs.length === 2) {
+        add("equalArc(" + item.arcs[0].slice().sort().join("") + "," + item.arcs[1].slice().sort().join("") + ")");
+      }
+    }
     // Derive ray relations only from explicit point-order constraints.
     // An intersection alone does not establish which points are on opposite sides.
     const relationFacts = root.GeometryRelations && typeof root.GeometryRelations.derive === "function"
