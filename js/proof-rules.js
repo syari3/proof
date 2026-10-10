@@ -147,7 +147,7 @@
     if (!Array.isArray(facts) || !facts.every((fact) => typeof fact === "string")) {
       throw new TypeError("facts は文字列の配列で指定してください。");
     }
-    return rules
+    const staticResults = rules
       .filter((rule) => hasAllPremises(rule, facts))
       .map((rule) => ({
         ruleId: rule.id,
@@ -157,6 +157,15 @@
         explanation: rule.explain,
         category: rule.category
       }));
+    const dynamicResults = triangleAngleSumCandidates(facts).map((rule) => ({
+      ruleId: rule.id,
+      ruleName: rule.name,
+      premises: [...rule.premises],
+      conclusion: rule.conclusion,
+      explanation: rule.explain,
+      category: rule.category
+    }));
+    return [...staticResults, ...dynamicResults];
   }
 
   // Parse equalities between angle/side expressions, e.g. angle(ABC)=angle(BCA).
@@ -194,6 +203,29 @@
       }
     }
     return null;
+  }
+
+  // A triangle fact licenses its three interior angles to sum to 180 degrees.
+  // The vertex order is taken from the explicit triangle(XYZ) fact; no points
+  // are guessed from a drawing.
+  function triangleAngleSumCandidates(known) {
+    const results = [];
+    for (const fact of known) {
+      const match = /^triangle\\(([A-Z])([A-Z])([A-Z])\\)$/.exec(fact);
+      if (!match) continue;
+      const [, a, b, c] = match;
+      if (new Set([a, b, c]).size !== 3) continue;
+      const conclusion = "angle(" + b + a + c + ")+angle(" + a + b + c + ")+angle(" + a + c + b + ")=180";
+      results.push({
+        id: "triangle-angle-sum",
+        name: "三角形の内角の和",
+        premises: [fact],
+        conclusion,
+        explain: "三角形の内角の和は180°である。",
+        category: "angle"
+      });
+    }
+    return results;
   }
 
   // Forward-chain from the supplied facts, recording every inference.
@@ -244,6 +276,30 @@
       }
 
       if (steps.length < maxSteps) {
+        const angleSum = triangleAngleSumCandidates(known).find((rule) => !known.includes(rule.conclusion));
+        if (angleSum) {
+          const step = {
+            index: steps.length + 1,
+            ruleId: angleSum.id,
+            ruleName: angleSum.name,
+            premises: [...angleSum.premises],
+            premiseSources: angleSum.premises.map((premise) => ({
+              fact: premise,
+              ...(sourceByFact.get(premise) || { type: "unknown" })
+            })),
+            conclusion: angleSum.conclusion,
+            explanation: angleSum.explain,
+            category: angleSum.category
+          };
+          known.push(step.conclusion);
+          sourceByFact.set(step.conclusion, { type: "step", index: step.index });
+          steps.push(step);
+          changed = true;
+          if (step.conclusion === goal) {
+            return { success: true, goal, facts: known, steps, reason: "proved" };
+          }
+        }
+
         const congruence = known.find((fact) => /^congruent\([A-Z]{3},[A-Z]{3}\)$/.test(fact));
         if (congruence) {
           const generated = congruenceCorrespondences(congruence);
