@@ -40,12 +40,63 @@
       conclusion: "similar(ABC,DEF)",
       explain: "2組の角がそれぞれ等しい2つの三角形は相似である。",
       category: "similarity"
+    },
+    {
+      id: "triangle-congruence-sss",
+      name: "三角形の合同条件（3組の辺）",
+      premises: ["side(AB)=side(DE)", "side(BC)=side(EF)", "side(CA)=side(FD)", "triangle(ABC)", "triangle(DEF)"],
+      conclusion: "congruent(ABC,DEF)",
+      explain: "3組の辺がそれぞれ等しい2つの三角形は合同である。",
+      category: "congruence"
+    },
+    {
+      id: "triangle-congruence-sas",
+      name: "三角形の合同条件（2組の辺とその間の角）",
+      premises: ["side(AB)=side(DE)", "angle(BAC)=angle(EDF)", "side(AC)=side(DF)", "triangle(ABC)", "triangle(DEF)"],
+      conclusion: "congruent(ABC,DEF)",
+      explain: "2組の辺とその間の角がそれぞれ等しい2つの三角形は合同である。",
+      category: "congruence"
+    },
+    {
+      id: "triangle-congruence-asa",
+      name: "三角形の合同条件（1組の辺とその両端の角）",
+      premises: ["angle(BAC)=angle(EDF)", "side(AB)=side(DE)", "angle(ABC)=angle(DEF)", "triangle(ABC)", "triangle(DEF)"],
+      conclusion: "congruent(ABC,DEF)",
+      explain: "1組の辺とその両端の角がそれぞれ等しい2つの三角形は合同である。",
+      category: "congruence"
     }
   ];
 
   function hasAllPremises(rule, facts) {
     return rule.premises.every((premise) => facts.includes(premise));
   }
+
+  function congruenceCorrespondences(fact) {
+    const match = /^congruent\\(([A-Z]{3}),([A-Z]{3})\\)$/.exec(fact);
+    if (!match) return [];
+    const first = match[1];
+    const second = match[2];
+    const correspondences = [];
+    for (let i = 0; i < 3; i++) {
+      correspondences.push({
+        kind: "side",
+        fact: "side(" + first[i] + first[(i + 1) % 3] + ")=side(" + second[i] + second[(i + 1) % 3] + ")"
+      });
+      correspondences.push({
+        kind: "angle",
+        fact: "angle(" + first[(i + 2) % 3] + first[i] + first[(i + 1) % 3] + ")=angle(" + second[(i + 2) % 3] + second[i] + second[(i + 1) % 3] + ")"
+      });
+    }
+    // Normalize side endpoints so AB and BA are treated as the same segment.
+    return correspondences.map((item) => {
+      if (item.kind !== "side") return item;
+      const m = /^side\\(([A-Z])([A-Z])\\)=side\\(([A-Z])([A-Z])\\)$/.exec(item.fact);
+      const a = m[1] < m[2] ? m[1] + m[2] : m[2] + m[1];
+      const b = m[3] < m[4] ? m[3] + m[4] : m[4] + m[3];
+      return { kind: item.kind, fact: "side(" + a + ")=side(" + b + ")" };
+    });
+  }
+
 
   function derive(facts) {
     if (!Array.isArray(facts) || !facts.every((fact) => typeof fact === "string")) {
@@ -144,6 +195,33 @@
 
         if (rule.conclusion === goal) {
           return { success: true, goal, facts: known, steps, reason: "proved" };
+        }
+      }
+
+      if (steps.length < maxSteps) {
+        const congruence = known.find((fact) => /^congruent\\([A-Z]{3},[A-Z]{3}\\)$/.test(fact));
+        if (congruence) {
+          const generated = congruenceCorrespondences(congruence);
+          const correspondence = generated.find((item) => !known.includes(item.fact));
+          if (correspondence) {
+            const step = {
+              index: steps.length + 1,
+              ruleId: "corresponding-parts-of-congruent-triangles",
+              ruleName: "合同な図形の対応する辺・角",
+              premises: [congruence],
+              premiseSources: [{ fact: congruence, ...(sourceByFact.get(congruence) || { type: "unknown" }) }],
+              conclusion: correspondence.fact,
+              explanation: "合同な2つの三角形では、対応する辺の長さと対応する角の大きさがそれぞれ等しい。",
+              category: correspondence.kind
+            };
+            known.push(step.conclusion);
+            sourceByFact.set(step.conclusion, { type: "step", index: step.index });
+            steps.push(step);
+            changed = true;
+            if (step.conclusion === goal) {
+              return { success: true, goal, facts: known, steps, reason: "proved" };
+            }
+          }
         }
       }
 
