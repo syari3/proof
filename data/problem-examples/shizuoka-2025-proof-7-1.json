@@ -21,7 +21,7 @@
       { "id": "line-BC", "type": "line", "through": ["B", "C"] },
       { "id": "line-AB", "type": "line", "through": ["A", "B"] },
       { "id": "line-AP", "type": "line", "through": ["A", "P"] },
-      { "id": "line-EF", "type": "line", "through": ["E", "F"] }
+      { "id": "line-EF", "type": "parallel-through-point", "through": ["E"], "parallelTo": "line-BC" }
     ],
     "points": [
       { "id": "O", "role": "circle-center" },
@@ -45,7 +45,6 @@
       { "type": "point-on-circle", "point": "C", "circle": "circle-O" },
       { "type": "point-on-circle", "point": "D", "circle": "circle-O" },
       { "type": "equal-segments", "segments": [["C", "A"], ["C", "D"]] },
-      { "type": "parallel-lines", "lines": ["line-EF", "line-BC"] }
     ],
     "dynamicConditions": [
       {
