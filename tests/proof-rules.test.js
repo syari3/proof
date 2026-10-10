@@ -670,10 +670,10 @@ console.log("✓ 同じ弦に対する円周角（同じ側の条件付き）");
 
 
 // Angle endpoint substitution is allowed only with an explicit same-ray fact.
-const sameRayAngle = rules.prove(
+const sameRayAngleSubstitution = rules.prove(
   ["angle(APB)", "sameRay(P,A,G)"],
   "angle(GPB)=angle(APB)"
 );
-assert.equal(sameRayAngle.success, true, "同じ半直線上の点による角の置き換え");
+assert.equal(sameRayAngleSubstitution.success, true, "同じ半直線上の点による角の置き換え");
 const missingRay = rules.prove(["angle(APB)"], "angle(GPB)=angle(APB)");
 assert.equal(missingRay.success, false, "位置関係なしに角の辺を置き換えない");
