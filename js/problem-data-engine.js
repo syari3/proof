@@ -63,7 +63,12 @@
     for (const condition of (problem.geometry.dynamicConditions || [])) {
       // Only promote a dynamic condition to a theorem premise if the format explicitly
       // marks it as a given fact, rather than as a search condition for a moving point.
-      if (condition.role === "given-fact" && condition.type === "equal-segments" &&
+      if (condition.type === "moves-on-arc" && condition.point && condition.circle) {
+        // Membership on an arc entails membership on its supporting circle.
+        // The chosen arc and excluded-point conditions remain separate constraints.
+        add("onCircle(" + condition.point + ")");
+        unsupported.push({ location: "geometry.dynamicConditions", type: condition.type, reason: "円周上にあることは変換しましたが、弧の選択範囲・除外点は別途検証が必要です。" });
+      } else if (condition.role === "given-fact" && condition.type === "equal-segments" &&
           condition.segments && condition.segments.length === 2) {
         const [a, b] = condition.segments;
         add("side(" + canonicalSegment(a[0], a[1]) + ")=side(" + canonicalSegment(b[0], b[1]) + ")");
