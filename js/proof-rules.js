@@ -275,7 +275,7 @@
   function verticalAngleCandidates(known) {
     const results = [];
     for (const fact of known) {
-      const match = /^verticalAngles\\(([A-Z]{3}),([A-Z]{3})\\)$/.exec(fact);
+      const match = /^verticalAngles\(([A-Z]{3}),([A-Z]{3})\)$/.exec(fact);
       if (!match) continue;
       const first = match[1], second = match[2];
       if (first[1] !== second[1] || first === second) continue;
