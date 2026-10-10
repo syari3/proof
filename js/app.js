@@ -93,7 +93,37 @@ function renderSample(key) {
   text.textContent = sample.text;
   goal.textContent = sample.goal;
   steps.replaceChildren();
-  sample.steps.forEach((step, index) => {
+  const proof = window.ProofRules
+    ? window.ProofRules.prove(sample.facts, sample.expectedConclusion)
+    : { success: false, steps: [], reason: "engine-unavailable" };
+
+  // 仮定の表示は問題型の条件文から取り出し、推論行は証明エンジンの実行結果だけから作る。
+  const givenSteps = sample.steps.filter((step) => step.reason === "仮定");
+  const displayConclusion = (fact) => ({
+    "angle(ABC)=angle(BCA)": "∠ABC = ∠BCA",
+    "angle1=angle2": "∠1 = ∠2",
+    "angle(BAC)=90": "∠BAC = 90°",
+    "similar(ABC,DEF)": "△ABC ∽ △DEF"
+  }[fact] || fact);
+
+  const rows = [
+    ...givenSteps.map((step) => ({
+      statement: step.statement,
+      explanation: step.explanation,
+      reason: "仮定"
+    })),
+    ...proof.steps.map((step) => ({
+      statement: displayConclusion(step.conclusion),
+      explanation: step.explanation,
+      reason: step.ruleName
+    }))
+  ];
+
+  if (proof.success && proof.reason === "goal-is-given" && rows.length === 0) {
+    rows.push({ statement: displayConclusion(proof.goal), explanation: "証明したい内容が、与えられた条件に含まれています。", reason: "仮定" });
+  }
+
+  rows.forEach((step, index) => {
     const li = document.createElement("li");
     const number = document.createElement("span");
     number.className = "step-number";
@@ -110,12 +140,9 @@ function renderSample(key) {
     li.append(number, content);
     steps.append(li);
   });
-  stepCount.textContent = `${sample.steps.length}ステップ`;
+  stepCount.textContent = `${rows.length}ステップ`;
   diagram.innerHTML = svgFor(sample.diagram);
   diagram.setAttribute("aria-label", sample.topic + "の模式図");
-  const proof = window.ProofRules
-    ? window.ProofRules.prove(sample.facts, sample.expectedConclusion)
-    : { success: false, steps: [] };
   const finalStep = proof.steps[proof.steps.length - 1];
   note.textContent = proof.success
     ? "✓ 証明ルール検証OK：" + (finalStep ? "「" + finalStep.ruleName + "」を含む" + proof.steps.length + "段階の推論で結論を導けます。" : "結論は与えられた条件に含まれています。") + (select.value === "random" ? " 登録済みの検証済み問題型から選びました。条件や図形そのものを自由に作る機能は今後追加します。" : " 任意の図形を証明する一般的な検証器は、まだ未実装です。")
