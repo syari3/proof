@@ -651,6 +651,22 @@ const descriptiveLineIds = rules.prove(
 assert.equal(descriptiveLineIds.success, true, "parallel-angle rules accept descriptive line IDs");
 assert.equal(descriptiveLineIds.steps[0].ruleId, "parallel.corresponding-angles");
 
+// A parallel-angle theorem can be an intermediate step, not only the final goal.
+const parallelAngleFeedsSimilarity = rules.prove(
+  [
+    "triangle(AFE)", "triangle(BGP)",
+    "parallel(line-EF,line-BC)",
+    "intersects(line-AB,line-EF)", "intersects(line-AB,line-BC)",
+    "correspondingAngles(angle(AFE),angle(BGP),line-AB,line-EF,line-BC)",
+    "angle(AEF)=angle(BPG)"
+  ],
+  "similar(AFE,BGP)"
+);
+assert.equal(parallelAngleFeedsSimilarity.success, true, "同位角の等しさを導いてからAA相似へつなぐ");
+assert.ok(parallelAngleFeedsSimilarity.steps.some((step) => step.ruleId === "parallel.corresponding-angles"));
+assert.equal(parallelAngleFeedsSimilarity.steps.at(-1).ruleId, "triangle.similarity-aa");
+
+
 console.log("✓ 角・線分の加法の逆と等しい和の推論");
 
 
