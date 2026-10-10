@@ -126,4 +126,19 @@ assert.equal(corresponding.success, true, "合同から対応する角を導く"
 assert.ok(corresponding.steps.some((step) => step.ruleId === "corresponding-parts-of-congruent-triangles"));
 console.log("✓ 合同から対応する角を導く");
 
-console.log("\\n" + (cases.length + 9) + " tests passed.");
+const sameRayAngle = rules.prove(
+  ["sameRay(B,A,D)"],
+  "angle(ABC)=angle(DBC)"
+);
+assert.equal(sameRayAngle.success, true, "同じ半直線上の点による角の表記を同一視する");
+assert.equal(sameRayAngle.steps[0].ruleId, "same-angle-ray-notation");
+console.log("✓ 同じ半直線上の点による角の表記");
+
+const collinearNotEnough = rules.prove(
+  ["collinear(A,B,D)"],
+  "angle(ABC)=angle(DBC)"
+);
+assert.equal(collinearNotEnough.success, false, "一直線上という条件だけでは同じ半直線と決めつけない");
+console.log("✓ 一直線上だけでは角の同一性を断定しない");
+
+console.log("\\n" + (cases.length + 11) + " tests passed.");
