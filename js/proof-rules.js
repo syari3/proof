@@ -1256,12 +1256,15 @@
       }
 
       if (steps.length < maxSteps) {
-        const parallelAngle = parallelAngleCandidates(known).find((rule) => rule.conclusion === goal && !known.includes(rule.conclusion));
+        const parallelCandidates = parallelAngleCandidates(known);
+        const parallelAngle = parallelCandidates.find((rule) => sameAngleEquality(rule.conclusion, goal) && !known.includes(rule.conclusion)) ||
+          parallelCandidates.find((rule) => !known.includes(rule.conclusion));
         if (parallelAngle) {
+          const conclusion = sameAngleEquality(parallelAngle.conclusion, goal) ? goal : parallelAngle.conclusion;
           const step = { index: steps.length + 1, ruleId: parallelAngle.id, ruleName: parallelAngle.name,
             premises: [...parallelAngle.premises],
             premiseSources: parallelAngle.premises.map((p) => ({ fact: p, ...(sourceByFact.get(p) || { type: "unknown" }) })),
-            conclusion: parallelAngle.conclusion, explanation: parallelAngle.explain, category: parallelAngle.category };
+            conclusion, explanation: parallelAngle.explain, category: parallelAngle.category };
           known.push(step.conclusion); sourceByFact.set(step.conclusion, { type: "step", index: step.index });
           steps.push(step); changed = true;
           if (step.conclusion === goal) return { success: true, goal, facts: known, steps, reason: "proved" };
