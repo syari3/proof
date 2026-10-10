@@ -44,7 +44,7 @@
       { "type": "point-on-circle", "point": "B", "circle": "circle-O" },
       { "type": "point-on-circle", "point": "C", "circle": "circle-O" },
       { "type": "point-on-circle", "point": "D", "circle": "circle-O" },
-      { "type": "equal-segments", "segments": [["C", "A"], ["C", "D"]] },
+      { "type": "equal-segments", "segments": [["C", "A"], ["C", "D"]] }
     ],
     "dynamicConditions": [
       {
