@@ -95,6 +95,10 @@ assert.equal(sampleResult.success, false);
  assert.ok(convertedExam.facts.includes("onCircle(B)"));
  assert.ok(convertedExam.facts.includes("onCircle(P)"));
  assert.ok(convertedExam.facts.includes("parallel(line-EF,line-BC)"));
+ assert.ok(convertedExam.facts.includes("onLine(E,line-AC)"));
+ assert.ok(convertedExam.facts.includes("onLine(E,line-BD)"));
+ assert.ok(convertedExam.facts.includes("onLine(F,line-AB)"));
+ assert.ok(convertedExam.facts.includes("onLine(F,line-EF)"));
  assert.ok(convertedExam.facts.includes("side(AB)=side(BG)"));
  assert.equal(convertedExam.unsupported.some((x) => x.location === "geometry.dynamicConditions" && x.type === "equal-segments"), false);
 
