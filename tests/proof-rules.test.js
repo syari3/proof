@@ -203,3 +203,26 @@ const onePoint = rules.prove(
 assert.equal(onePoint.success, false, "円周上の点が1つだけでは異なる半径同士の等しさを導かない");
 
 console.log("✓ 同じ円の半径は等しい");
+
+
+const verticalAngles = rules.prove(
+  ["verticalAngles(ABC,DBE)"],
+  "angle(ABC)=angle(DBE)"
+);
+assert.equal(verticalAngles.success, true, "明示された対頂角の関係から角の等しさを導く");
+assert.equal(verticalAngles.steps[0].ruleId, "angle-vertical-angles");
+assert.deepEqual(verticalAngles.steps[0].premises, ["verticalAngles(ABC,DBE)"]);
+
+const adjacentAngles = rules.prove(
+  ["verticalAngles(ABC,DBE)"],
+  "angle(ABC)=angle(ABE)"
+);
+assert.equal(adjacentAngles.success, false, "対頂角として指定されていない隣の角の等しさを導かない");
+
+const malformedVerticalAngles = rules.prove(
+  ["verticalAngles(ABC,DEF)"],
+  "angle(ABC)=angle(DEF)"
+);
+assert.equal(malformedVerticalAngles.success, false, "頂点が一致しない対頂角指定を拒否する");
+
+console.log("✓ 対頂角は等しい");
