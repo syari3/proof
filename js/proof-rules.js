@@ -125,10 +125,10 @@
   // Same-chord inscribed angles are equal only when their vertices are
   // explicitly stated to lie in the same segment of the circle.
   function sameSegmentAngleCandidates(known) {
-    const circlePoints = new Set(known.map((fact) => /^onCircle\\(([A-Z])\\)$/.exec(fact)).filter(Boolean).map((m) => m[1]));
+    const circlePoints = new Set(known.map((fact) => /^onCircle\(([A-Z])\)$/.exec(fact)).filter(Boolean).map((m) => m[1]));
     const results = [];
     for (const fact of known) {
-      const match = /^sameSegment\\(([A-Z]),([A-Z]),([A-Z]),([A-Z])\\)$/.exec(fact);
+      const match = /^sameSegment\(([A-Z]),([A-Z]),([A-Z]),([A-Z])\)$/.exec(fact);
       if (!match) continue;
       const [, x, y, firstVertex, secondVertex] = match;
       if (new Set([x, y, firstVertex, secondVertex]).size !== 4) continue;
