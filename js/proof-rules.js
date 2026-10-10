@@ -222,8 +222,8 @@
   }
 
   function sameSideExpression(first, second) {
-    const a = /^side\\(([A-Z])([A-Z])\\)$/.exec(first);
-    const b = /^side\\(([A-Z])([A-Z])\\)$/.exec(second);
+    const a = /^side\(([A-Z])([A-Z])\)$/.exec(first);
+    const b = /^side\(([A-Z])([A-Z])\)$/.exec(second);
     return !!a && !!b && a[1] !== a[2] && b[1] !== b[2] &&
       a.slice(1).sort().join("") === b.slice(1).sort().join("");
   }
