@@ -55,8 +55,11 @@
         add("onCircle(" + constraint.point + ")");
       } else if (constraint.type === "same-segment" && Array.isArray(constraint.chord) && constraint.chord.length === 2 && Array.isArray(constraint.vertices) && constraint.vertices.length === 2) {
         add("sameSegment(" + constraint.chord.slice().sort().join("") + "," + constraint.vertices[0] + "," + constraint.vertices[1] + ")");
-      } else if (constraint.type === "opposite-rays" || constraint.type === "between") {
-        // Handled by GeometryRelations below; keep these typed constraints supported.
+      } else if (constraint.type === "opposite-rays" || constraint.type === "between" ||
+          constraint.type === "parallel-lines" || constraint.type === "corresponding-angles" ||
+          constraint.type === "alternate-interior-angles" || constraint.type === "inscribed-angle" ||
+          constraint.type === "equal-arcs") {
+        // Converted in the relevant relation pass below; keep these typed constraints supported.
       } else if (constraint.type !== "point-on-circle") {
         unsupported.push({ location: "geometry.constraints", type: constraint.type, reason: "この条件型はまだ安全に事実へ変換できません。" });
       }
@@ -116,7 +119,10 @@
       }
       if ((item.type === "corresponding-angles" || item.type === "alternate-interior-angles") && item.angles && item.angles.length === 2 && item.transversal && item.lines && item.lines.length === 2) {
         const relation = item.type === "corresponding-angles" ? "correspondingAngles" : "alternateAngles";
-        add(relation + "(" + item.angles[0].join("") + "," + item.angles[1].join("") + "," + item.transversal + "," + item.lines[0] + "," + item.lines[1] + ")");
+        const angleLabel = (angle) => Array.isArray(angle) && angle.length === 3
+          ? "angle(" + angle.join("") + ")"
+          : Array.isArray(angle) ? angle.join("") : String(angle);
+        add(relation + "(" + angleLabel(item.angles[0]) + "," + angleLabel(item.angles[1]) + "," + item.transversal + "," + item.lines[0] + "," + item.lines[1] + ")");
         add("parallel(" + item.lines[0] + "," + item.lines[1] + ")");
         add("intersects(" + item.transversal + "," + item.lines[0] + ")");
         add("intersects(" + item.transversal + "," + item.lines[1] + ")");
