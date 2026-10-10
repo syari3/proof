@@ -569,3 +569,40 @@ const geometricAnglesNeedTwoPairs = rules.prove(
 );
 assert.equal(geometricAnglesNeedTwoPairs.success, false, "角の等しさ1組だけでは相似と断定しない");
 console.log("✓ 相似条件不足のガード");
+
+
+const angleAdditionSubstitution = rules.prove(
+  ["rayInsideAngle(O,A,B,C)", "angle(AOB)=angle(XOY)"],
+  "angle(AOC)=angle(XOY)+angle(BOC)"
+);
+assert.equal(angleAdditionSubstitution.success, true, "既知の角の等しさを角の加法に代入できる");
+assert.ok(angleAdditionSubstitution.steps.some((step) => step.ruleId === "angle.addition-substitution"));
+console.log("✓ 角の加法への等式の代入");
+
+const chainedAngleAdditionSubstitution = rules.prove(
+  ["rayInsideAngle(O,A,B,C)", "angle(AOB)=angle(XOY)", "angle(XOY)=angle(MON)"],
+  "angle(AOC)=angle(MON)+angle(BOC)"
+);
+assert.equal(chainedAngleAdditionSubstitution.success, true, "角の等式の推移で得た結果も角の加法に代入できる");
+console.log("✓ 角の推移律から角の加法への連鎖");
+
+const segmentAdditionSubstitution = rules.prove(
+  ["between(A,B,C)", "side(AB)=side(DE)"],
+  "side(AC)=side(DE)+side(BC)"
+);
+assert.equal(segmentAdditionSubstitution.success, true, "既知の線分の等しさを線分の加法に代入できる");
+assert.ok(segmentAdditionSubstitution.steps.some((step) => step.ruleId === "segment.addition-substitution"));
+console.log("✓ 線分の加法への等式の代入");
+
+const reversedSegmentAdditionSubstitution = rules.prove(
+  ["between(A,B,C)", "side(DE)=side(AB)"],
+  "side(AC)=side(DE)+side(BC)"
+);
+assert.equal(reversedSegmentAdditionSubstitution.success, true, "線分の等式の左右が逆でも加法に代入できる");
+
+const noCrossTypeAdditionSubstitution = rules.prove(
+  ["between(A,B,C)", "angle(ABO)=side(AB)"],
+  "side(AC)=angle(ABO)+side(BC)"
+);
+assert.equal(noCrossTypeAdditionSubstitution.success, false, "角と線分を混同した代入は認めない");
+console.log("✓ 角・線分の型の混同を防止");
