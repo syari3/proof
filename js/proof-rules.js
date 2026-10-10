@@ -94,7 +94,7 @@
   // sameRay(V,A,D) means A and D lie on the same ray starting at V.
   // Collinearity alone is insufficient: the points could lie on opposite rays.
   function parseAngle(fact) {
-    const match = /^angle\\(([A-Z])([A-Z])([A-Z])\\)$/.exec(fact);
+    const match = /^angle\(([A-Z])([A-Z])([A-Z])\)$/.exec(fact);
     return match ? { text: fact, first: match[1], vertex: match[2], last: match[3] } : null;
   }
 
@@ -106,7 +106,7 @@
     if (!a || !b || a.vertex !== b.vertex) return null;
 
     const sameRayFacts = known
-      .map((fact) => /^sameRay\\(([A-Z]),([A-Z]),([A-Z])\\)$/.exec(fact))
+      .map((fact) => /^sameRay\(([A-Z]),([A-Z]),([A-Z])\)$/.exec(fact))
       .filter(Boolean);
 
     function raysMatch(first, second, vertex) {
