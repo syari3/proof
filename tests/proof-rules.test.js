@@ -501,9 +501,9 @@ console.log("✓ 平行線の錯角・同位角（汎用ルール）");
 
 
 const circleDeriveSameArc = rules.derive(["inscribed(ACB,AB)", "inscribed(ADB,AB)"]);
-assert.ok(circleDeriveSameArc.some((rule) => rule.id === "circle.inscribed-angles-same-arc" && rule.conclusion === "angle(ACB)=angle(ADB)"), "同じ弧の円周角をderiveでも列挙する");
+assert.ok(circleDeriveSameArc.some((rule) => rule.ruleId === "circle.inscribed-angles-same-arc" && rule.conclusion === "angle(ACB)=angle(ADB)"), "同じ弧の円周角をderiveでも列挙する");
 const circleDeriveEqualArc = rules.derive(["equalArc(AB,CD)", "inscribed(AEB,AB)", "inscribed(CFD,CD)"]);
-assert.ok(circleDeriveEqualArc.some((rule) => rule.id === "circle.equal-arcs-inscribed-angles" && rule.conclusion === "angle(AEB)=angle(CFD)"), "等しい弧の円周角をderiveでも列挙する");
+assert.ok(circleDeriveEqualArc.some((rule) => rule.ruleId === "circle.equal-arcs-inscribed-angles" && rule.conclusion === "angle(AEB)=angle(CFD)"), "等しい弧の円周角をderiveでも列挙する");
 const circleDeriveCentral = rules.derive(["central(AOB,AB)", "inscribed(ACB,AB)"]);
-assert.ok(circleDeriveCentral.some((rule) => rule.id === "circle.central-inscribed-angle" && rule.conclusion === "angle(AOB)=2*angle(ACB)"), "中心角と円周角の関係をderiveでも列挙する");
+assert.ok(circleDeriveCentral.some((rule) => rule.ruleId === "circle.central-inscribed-angle" && rule.conclusion === "angle(AOB)=2*angle(ACB)"), "中心角と円周角の関係をderiveでも列挙する");
 console.log("✓ 円周角・等しい弧・中心角（derive対応）");
