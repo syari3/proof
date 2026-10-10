@@ -87,14 +87,7 @@
         fact: "angle(" + first[(i + 2) % 3] + first[i] + first[(i + 1) % 3] + ")=angle(" + second[(i + 2) % 3] + second[i] + second[(i + 1) % 3] + ")"
       });
     }
-    // Normalize side endpoints so AB and BA are treated as the same segment.
-    return correspondences.map((item) => {
-      if (item.kind !== "side") return item;
-      const m = /^side\\(([A-Z])([A-Z])\\)=side\\(([A-Z])([A-Z])\\)$/.exec(item.fact);
-      const a = m[1] < m[2] ? m[1] + m[2] : m[2] + m[1];
-      const b = m[3] < m[4] ? m[3] + m[4] : m[4] + m[3];
-      return { kind: item.kind, fact: "side(" + a + ")=side(" + b + ")" };
-    });
+    return correspondences;
   }
 
 
