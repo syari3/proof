@@ -117,7 +117,9 @@ function renderSample(key) {
     "angle1=angle2": "∠1 = ∠2",
     "angle(BAC)=90": "∠BAC = 90°",
     "similar(ABC,DEF)": "△ABC ∽ △DEF",
-    "angle(ABC)=angle(DEF)": "∠ABC = ∠DEF"
+    "angle(ABC)=angle(DEF)": "∠ABC = ∠DEF",
+    "side(AB)=side(AC)": "AB = AC",
+    "angle(BCA)=angle(DEF)": "∠BCA = ∠DEF"
   }[fact] || fact);
 
   const rows = [
