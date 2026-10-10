@@ -122,6 +122,31 @@
     return results;
   }
 
+  // Same-chord inscribed angles are equal only when their vertices are
+  // explicitly stated to lie in the same segment of the circle.
+  function sameSegmentAngleCandidates(known) {
+    const circlePoints = new Set(known.map((fact) => /^onCircle\\(([A-Z])\\)$/.exec(fact)).filter(Boolean).map((m) => m[1]));
+    const results = [];
+    for (const fact of known) {
+      const match = /^sameSegment\\(([A-Z]),([A-Z]),([A-Z]),([A-Z])\\)$/.exec(fact);
+      if (!match) continue;
+      const [, x, y, firstVertex, secondVertex] = match;
+      if (new Set([x, y, firstVertex, secondVertex]).size !== 4) continue;
+      if (![x, y, firstVertex, secondVertex].every((point) => circlePoints.has(point))) continue;
+      const a = 'angle(' + x + firstVertex + y + ')';
+      const b = 'angle(' + x + secondVertex + y + ')';
+      results.push({
+        id: 'circle.angles-same-segment',
+        name: '同じ弦に対する同じ側の円周角',
+        premises: [fact, 'onCircle(' + x + ')', 'onCircle(' + y + ')', 'onCircle(' + firstVertex + ')', 'onCircle(' + secondVertex + ')'],
+        conclusion: [a, b].sort().join('='),
+        explain: '同じ弦に対する、弦の同じ側にある円周角は等しい。',
+        category: 'circle'
+      });
+    }
+    return results;
+  }
+
   function circleGoal(known, goal) {
     return circleCandidates(known).find((rule) => rule.conclusion === goal) || null;
   }
@@ -147,6 +172,7 @@
       ...parallelAngleCandidates(facts),
       ...diameterInscribedAngleCandidates(facts),
       ...circleCandidates(facts),
+      ...sameSegmentAngleCandidates(facts),
       ...verticalAngleCandidates(facts),
       ...exteriorAngleCandidates(facts),
       ...angleAdditionCandidates(facts),
@@ -1215,6 +1241,19 @@
           known.push(step.conclusion); sourceByFact.set(step.conclusion, { type: "step", index: step.index });
           steps.push(step); changed = true;
           if (step.conclusion === goal) return { success: true, goal, facts: known, steps, reason: "proved" };
+        }
+        const sameSegmentCandidatesNow = sameSegmentAngleCandidates(known);
+        const sameSegmentAngle = sameSegmentCandidatesNow.find((rule) => sameAngleEquality(rule.conclusion, goal) && !known.includes(goal)) ||
+          sameSegmentCandidatesNow.find((rule) => !known.includes(rule.conclusion));
+        if (sameSegmentAngle) {
+          const step = { index: steps.length + 1, ruleId: sameSegmentAngle.id, ruleName: sameSegmentAngle.name,
+            premises: [...sameSegmentAngle.premises],
+            premiseSources: sameSegmentAngle.premises.map((p) => ({ fact: p, ...(sourceByFact.get(p) || { type: 'unknown' }) })),
+            conclusion: sameAngleEquality(sameSegmentAngle.conclusion, goal) ? goal : sameSegmentAngle.conclusion,
+            explanation: sameSegmentAngle.explain, category: 'circle' };
+          known.push(step.conclusion); sourceByFact.set(step.conclusion, { type: 'step', index: step.index });
+          steps.push(step); changed = true;
+          if (step.conclusion === goal) return { success: true, goal, facts: known, steps, reason: 'proved' };
         }
         const circleCandidatesNow = circleCandidates(known);
         // Prefer the requested conclusion, but also retain intermediate circle facts
