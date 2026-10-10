@@ -256,8 +256,10 @@
         const rightBase = right.find((point) => point !== shared);
         if (!leftBase || !rightBase || leftBase === rightBase) continue;
         const angleFor = (vertex) => {
-          const other = triangle.vertices.filter((point) => point !== vertex);
-          return "angle(" + other[0] + vertex + other[1] + ")";
+          const index = triangle.vertices.indexOf(vertex);
+          const first = index === 1 ? triangle.vertices[0] : triangle.vertices[1];
+          const last = index === 0 ? triangle.vertices[2] : index === 1 ? triangle.vertices[2] : triangle.vertices[0];
+          return "angle(" + first + vertex + last + ")";
         };
         const leftAngle = angleFor(leftBase), rightAngle = angleFor(rightBase);
         results.push({
