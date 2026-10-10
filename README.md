@@ -39,6 +39,7 @@
 ## 問題データ形式（初版）
 
 - `docs/problem-data-format.md`: 専用形式 v1 の仕様
+- `docs/point-order-and-angle-normalization.md`: 同一直線上の点の順序、半直線、角の言い換えの扱い
 - `data/problem-examples/shizuoka-2025-proof-7-1.json`: 2025年度の入試問題を構造化した例（証明そのものは未検証）
 - `tests/problem-data-format.test.js`: JSON構造と参照IDの基本検査
 - `tests/problem-data-engine.test.js`: 変換、表記ゆれの正規化、証明エンジン接続のテスト
