@@ -240,6 +240,26 @@
           "line-EF",
           "line-BC"
         ]
+      },
+      {
+        "type": "corresponding-angles",
+        "angles": [
+          [
+            "A",
+            "E",
+            "F"
+          ],
+          [
+            "A",
+            "C",
+            "B"
+          ]
+        ],
+        "transversal": "line-AC",
+        "lines": [
+          "line-EF",
+          "line-BC"
+        ]
       }
     ],
     "dynamicConditions": [
