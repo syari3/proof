@@ -130,7 +130,7 @@ function renderSample(key) {
     })),
     ...proof.steps.map((step) => ({
       statement: displayConclusion(step.conclusion),
-      explanation: step.explanation + (step.premiseSources && step.premiseSources.length ? " 根拠：" + step.premiseSources.map((source) => source.type === "step" ? "ステップ" + source.index : displayConclusion(source.fact)).join("、") + "。" : ""),
+      explanation: step.explanation + (step.premiseSources && step.premiseSources.length ? " 根拠：" + step.premiseSources.map((source) => source.type === "step" ? "ステップ" + (givenSteps.length + source.index) : displayConclusion(source.fact)).join("、") + "。" : ""),
       reason: step.ruleName
     }))
   ];
