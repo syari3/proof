@@ -89,7 +89,11 @@ function renderSample(key) {
   stepCount.textContent = `${sample.steps.length}ステップ`;
   diagram.innerHTML = svgFor(sample.diagram);
   diagram.setAttribute("aria-label", sample.topic + "の模式図");
-  note.innerHTML = "<span aria-hidden=\"true\">✓</span> このサンプルは、表示した仮定と性質の対応を確認できる学習用例題です。任意の図形を自動で証明する機能は、まだ実装していません。";
+  const derivations = window.ProofRules ? window.ProofRules.derive(sample.facts) : [];
+  const matchedRule = derivations.find((item) => item.conclusion === sample.expectedConclusion);
+  note.textContent = matchedRule
+    ? "✓ 初期ルール検証OK：「" + matchedRule.ruleName + "」の前提条件がそろい、結論を導けます。任意の図形を証明する一般的な検証器は、まだ未実装です。"
+    : "このサンプルに対応するルールが見つからず、結論を確認できませんでした。";
 }
 
 button.addEventListener("click", () => renderSample(select.value));
