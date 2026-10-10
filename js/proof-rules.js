@@ -10,22 +10,6 @@
 
   const rules = [
     {
-      id: "parallel-alternate-interior",
-      name: "平行線の錯角",
-      premises: ["parallel(l,m)", "intersects(t,l)", "intersects(t,m)", "alternateAngles(angle1,angle2,t,l,m)"],
-      conclusion: "angle1=angle2",
-      explain: "平行な2直線に1本の直線が交わると、錯角は等しい。",
-      category: "parallel"
-    },
-    {
-      id: "parallel-corresponding-angles",
-      name: "平行線の同位角",
-      premises: ["parallel(l,m)", "intersects(t,l)", "intersects(t,m)", "correspondingAngles(angle1,angle2,t,l,m)"],
-      conclusion: "angle1=angle2",
-      explain: "平行な2直線に1本の直線が交わると、同位角は等しい。",
-      category: "parallel"
-    },
-    {
       id: "triangle-similarity-aa",
       name: "三角形の相似条件（2組の角）",
       premises: ["angle(A)=angle(D)", "angle(B)=angle(E)", "triangle(ABC)", "triangle(DEF)"],
@@ -153,6 +137,7 @@
       ...isoscelesBaseAngleCandidates(facts),
       ...triangleAngleSumCandidates(facts),
       ...equalRadiusCandidates(facts),
+      ...parallelAngleCandidates(facts),
       ...diameterInscribedAngleCandidates(facts),
       ...verticalAngleCandidates(facts),
       ...exteriorAngleCandidates(facts),
@@ -502,6 +487,28 @@
         explain: "三角形の内角の和は180°である。",
         category: "angle"
       });
+    }
+    return results;
+  }
+
+  // Parallel-angle rules accept arbitrary angle labels but require explicit
+  // parallelism, both intersections, and the positional relation fact.
+  function parallelAngleCandidates(known) {
+    const knownSet = new Set(known);
+    const results = [];
+    const patterns = [
+      { fact: /^alternateAngles\\(([^,()]+),([^,()]+),([A-Z]),([A-Z]),([A-Z])\\)$/, id: "parallel-alternate-interior", name: "平行線の錯角", relation: "alternateAngles", explain: "平行線の錯角は等しい。" },
+      { fact: /^correspondingAngles\\(([^,()]+),([^,()]+),([A-Z]),([A-Z]),([A-Z])\\)$/, id: "parallel-corresponding-angles", name: "平行線の同位角", relation: "correspondingAngles", explain: "平行線の同位角は等しい。" }
+    ];
+    for (const fact of known) for (const pattern of patterns) {
+      const match = pattern.fact.exec(fact);
+      if (!match) continue;
+      const [, angle1, angle2, transversal, line1, line2] = match;
+      if (angle1 === angle2 || line1 === line2 || transversal === line1 || transversal === line2) continue;
+      const premises = ["parallel(" + line1 + "," + line2 + ")", "intersects(" + transversal + "," + line1 + ")", "intersects(" + transversal + "," + line2 + ")", fact];
+      if (!premises.every((premise) => knownSet.has(premise))) continue;
+      results.push({ id: pattern.id, name: pattern.name, premises,
+        conclusion: angle1 + "=" + angle2, explain: pattern.explain, category: "parallel" });
     }
     return results;
   }
@@ -1034,6 +1041,16 @@
       }
 
       if (steps.length < maxSteps) {
+        const parallelAngle = parallelAngleCandidates(known).find((rule) => rule.conclusion === goal && !known.includes(rule.conclusion));
+        if (parallelAngle) {
+          const step = { index: steps.length + 1, ruleId: parallelAngle.id, ruleName: parallelAngle.name,
+            premises: [...parallelAngle.premises],
+            premiseSources: parallelAngle.premises.map((p) => ({ fact: p, ...(sourceByFact.get(p) || { type: "unknown" }) })),
+            conclusion: parallelAngle.conclusion, explanation: parallelAngle.explain, category: parallelAngle.category };
+          known.push(step.conclusion); sourceByFact.set(step.conclusion, { type: "step", index: step.index });
+          steps.push(step); changed = true;
+          if (step.conclusion === goal) return { success: true, goal, facts: known, steps, reason: "proved" };
+        }
         const diameterAngle = diameterInscribedAngleCandidates(known).find((rule) => rule.conclusion === goal && !known.includes(rule.conclusion));
         if (diameterAngle) {
           const step = { index: steps.length + 1, ruleId: diameterAngle.id, ruleName: diameterAngle.name,
