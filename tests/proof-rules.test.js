@@ -151,3 +151,32 @@ const circle3 = rules.prove(["equalArc(AB,CD)","inscribed(AEB,AB)","inscribed(CF
 assert.equal(circle3.success,true);
 const circle4 = rules.prove(["inscribed(ACB,AB)","inscribed(ADB,CD)"],"angle(ACB)=angle(ADB)");
 assert.equal(circle4.success,false);
+
+
+const angleSum = rules.prove(
+  ["triangle(ABC)"],
+  "angle(BAC)+angle(ABC)+angle(ACB)=180"
+);
+assert.equal(angleSum.success, true, "三角形ABCの内角の和を導く");
+assert.equal(angleSum.steps[0].ruleId, "triangle-angle-sum");
+assert.deepEqual(angleSum.steps[0].premises, ["triangle(ABC)"]);
+
+const otherTriangle = rules.prove(
+  ["triangle(PQR)"],
+  "angle(QPR)+angle(PQR)+angle(PRQ)=180"
+);
+assert.equal(otherTriangle.success, true, "別の頂点名でも内角の和を導く");
+
+const missingTriangle = rules.prove(
+  [],
+  "angle(BAC)+angle(ABC)+angle(ACB)=180"
+);
+assert.equal(missingTriangle.success, false, "三角形の条件がなければ内角の和を導かない");
+
+const degenerateTriangleFact = rules.prove(
+  ["triangle(AAA)"],
+  "angle(AAA)+angle(AAA)+angle(AAA)=180"
+);
+assert.equal(degenerateTriangleFact.success, false, "同じ頂点を重複させた三角形を受け入れない");
+
+console.log("✓ 三角形の内角の和（汎用ルール）");
