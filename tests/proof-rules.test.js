@@ -23,6 +23,16 @@ const cases = [
     expected: null
   },
   {
+    name: "円周上の3点と直径があれば直角を導く",
+    facts: ["onCircle(A)", "onCircle(B)", "onCircle(C)", "diameter(BC)"],
+    expected: "angle(BAC)=90"
+  },
+  {
+    name: "直径の条件がなければ円周角を直角と断定しない",
+    facts: ["onCircle(A)", "onCircle(B)", "onCircle(C)"],
+    expected: null
+  },
+  {
     name: "2組の角と三角形の指定がそろえば相似を導く",
     facts: ["angle(A)=angle(D)", "angle(B)=angle(E)", "triangle(ABC)", "triangle(DEF)"],
     expected: "similar(ABC,DEF)"
