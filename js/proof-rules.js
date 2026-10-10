@@ -776,6 +776,80 @@
     return results;
   }
 
+  function parseAdditionEquality(fact) {
+    const match = /^(angle\\([A-Z]{3}\\)|side\\([A-Z]{2}\\))=(angle\\([A-Z]{3}\\)|side\\([A-Z]{2}\\))\\+(angle\\([A-Z]{3}\\)|side\\([A-Z]{2}\\))$/.exec(fact);
+    if (!match) return null;
+    const [, whole, first, second] = match;
+    const kind = whole.startsWith("angle(") ? "angle" : "side";
+    if ([first, second].some((term) => (term.startsWith("angle(") ? "angle" : "side") !== kind)) return null;
+    return { fact, whole, parts: [first, second], kind };
+  }
+
+  function termsEquivalent(first, second, known) {
+    if (first === second) return true;
+    const graph = new Map();
+    for (const fact of known) {
+      const equality = parseEquality(fact);
+      if (!equality) continue;
+      if (!graph.has(equality.left)) graph.set(equality.left, new Set());
+      if (!graph.has(equality.right)) graph.set(equality.right, new Set());
+      graph.get(equality.left).add(equality.right);
+      graph.get(equality.right).add(equality.left);
+    }
+    const visited = new Set([first]);
+    const queue = [first];
+    while (queue.length) {
+      const current = queue.shift();
+      for (const next of graph.get(current) || []) {
+        if (next === second) return true;
+        if (!visited.has(next)) { visited.add(next); queue.push(next); }
+      }
+    }
+    return false;
+  }
+
+  // Additive equality rules: substitution/congruence and cancellation.
+  // Only infer when the equation types agree and at least the required equalities are known.
+  function additionAlgebraCandidates(known) {
+    const sums = known.map(parseAdditionEquality).filter(Boolean);
+    const results = [];
+    const seen = new Set();
+    function add(id, name, premises, conclusion, kind, explain) {
+      if (known.includes(conclusion) || seen.has(conclusion)) return;
+      seen.add(conclusion);
+      results.push({ id, name, premises: [...new Set(premises)], conclusion, category: kind, explain });
+    }
+    for (let i = 0; i < sums.length; i++) {
+      for (let j = i + 1; j < sums.length; j++) {
+        const a = sums[i], b = sums[j];
+        if (a.kind !== b.kind) continue;
+        const wholeEqual = termsEquivalent(a.whole, b.whole, known);
+        if (wholeEqual) {
+          for (let ai = 0; ai < 2; ai++) for (let bi = 0; bi < 2; bi++) {
+            if (!termsEquivalent(a.parts[ai], b.parts[bi], known)) continue;
+            const left = a.parts[1-ai], right = b.parts[1-bi];
+            if (left === right) continue;
+            add(a.kind === "angle" ? "angle.addition-cancellation" : "segment.addition-cancellation",
+              a.kind === "angle" ? "角の加法の逆（消去）" : "線分の加法の逆（消去）",
+              [a.fact,b.fact,...known.filter(f => { const e=parseEquality(f); return e && ((e.left===a.whole&&e.right===b.whole)||(e.left===b.whole&&e.right===a.whole)||(e.left===a.parts[ai]&&e.right===b.parts[bi])||(e.left===b.parts[bi]&&e.right===a.parts[ai])); })],
+              left+"="+right,a.kind,"等しい和から、対応して等しい項を取り除くと残りの項も等しい。");
+          }
+        }
+        // Equal corresponding parts imply equal sums.
+        for (const swapped of [false,true]) {
+          const bParts = swapped ? [b.parts[1],b.parts[0]] : b.parts;
+          if (termsEquivalent(a.parts[0],bParts[0],known) && termsEquivalent(a.parts[1],bParts[1],known) && !termsEquivalent(a.whole,b.whole,known)) {
+            const premises=[a.fact,b.fact,...known.filter(f=>{const e=parseEquality(f);return e && [a.parts[0],a.parts[1],bParts[0],bParts[1]].some(x=>e.left===x||e.right===x);})];
+            add(a.kind==="angle"?"angle.addition-congruence":"segment.addition-congruence",
+              a.kind==="angle"?"角の加法（等しい項の和）":"線分の加法（等しい項の和）",
+              premises,a.whole+"="+b.whole,a.kind,"それぞれ等しい項どうしの和は等しい。");
+          }
+        }
+      }
+    }
+    return results;
+  }
+
   // Forward-chain from the supplied facts, recording every inference.
   // This is a bounded rule engine, not a complete geometry prover.
   function prove(facts, goal, maxSteps = 100) {
@@ -1176,6 +1250,21 @@
           if (step.conclusion === goal) {
             return { success: true, goal, facts: known, steps, reason: "proved" };
           }
+        }
+
+        const algebraCandidates = additionAlgebraCandidates(known);
+        const algebra = algebraCandidates.find((rule) => rule.conclusion === goal) ||
+          algebraCandidates.find((rule) => !known.includes(rule.conclusion));
+        if (algebra && steps.length < maxSteps) {
+          const step = {
+            index: steps.length + 1, ruleId: algebra.id, ruleName: algebra.name,
+            premises: [...algebra.premises],
+            premiseSources: algebra.premises.map((premise) => ({ fact: premise, ...(sourceByFact.get(premise) || { type: "unknown" }) })),
+            conclusion: algebra.conclusion, explanation: algebra.explain, category: algebra.category
+          };
+          known.push(step.conclusion); sourceByFact.set(step.conclusion, { type: "step", index: step.index });
+          steps.push(step); changed = true;
+          if (step.conclusion === goal) return { success: true, goal, facts: known, steps, reason: "proved" };
         }
 
         const substitution = additionSubstitutionCandidates(known).find((rule) => rule.conclusion === goal) ||
