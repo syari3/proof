@@ -10,7 +10,7 @@
 
   const rules = [
     {
-      id: "triangle-similarity-aa",
+      id: "triangle.similarity-aa",
       name: "三角形の相似条件（2組の角）",
       premises: ["angle(A)=angle(D)", "angle(B)=angle(E)", "triangle(ABC)", "triangle(DEF)"],
       conclusion: "similar(ABC,DEF)",
@@ -18,7 +18,7 @@
       category: "similarity"
     },
     {
-      id: "triangle-congruence-sss",
+      id: "triangle.congruence-sss",
       name: "三角形の合同条件（3組の辺）",
       premises: ["side(AB)=side(DE)", "side(BC)=side(EF)", "side(CA)=side(FD)", "triangle(ABC)", "triangle(DEF)"],
       conclusion: "congruent(ABC,DEF)",
@@ -26,7 +26,7 @@
       category: "congruence"
     },
     {
-      id: "triangle-congruence-sas",
+      id: "triangle.congruence-sas",
       name: "三角形の合同条件（2組の辺とその間の角）",
       premises: ["side(AB)=side(DE)", "angle(BAC)=angle(EDF)", "side(AC)=side(DF)", "triangle(ABC)", "triangle(DEF)"],
       conclusion: "congruent(ABC,DEF)",
@@ -34,7 +34,7 @@
       category: "congruence"
     },
     {
-      id: "triangle-congruence-asa",
+      id: "triangle.congruence-asa",
       name: "三角形の合同条件（1組の辺とその両端の角）",
       premises: ["angle(BAC)=angle(EDF)", "side(AB)=side(DE)", "angle(ABC)=angle(DEF)", "triangle(ABC)", "triangle(DEF)"],
       conclusion: "congruent(ABC,DEF)",
@@ -250,7 +250,7 @@
         };
         const leftAngle = angleFor(leftBase), rightAngle = angleFor(rightBase);
         results.push({
-          id: "triangle-isosceles-base-angles",
+          id: "triangle.isosceles-base-angles",
           name: "二等辺三角形の底角",
           premises: [triangle.fact, item.fact],
           conclusion: [leftAngle, rightAngle].sort().join("="),
@@ -293,7 +293,7 @@
             const conclusion = "similar(" + first.vertices.join("") + "," + mapped.join("") + ")";
             if (results.some((rule) => rule.conclusion === conclusion)) continue;
             results.push({
-              id: "triangle-similarity-aa",
+              id: "triangle.similarity-aa",
               name: "三角形の相似条件（2組の角）",
               premises: [a.fact, b.fact, first.fact, second.fact],
               conclusion,
@@ -348,7 +348,7 @@
           const conclusion = "congruent(" + first.vertices.join("") + "," + mapped.join("") + ")";
           if (results.some((rule) => rule.conclusion === conclusion)) continue;
           results.push({
-            id: "triangle-congruence-sss",
+            id: "triangle.congruence-sss",
             name: "三角形の合同条件（3組の辺）",
             premises: [...supporting.map((item) => item.fact), first.fact, second.fact],
             conclusion,
@@ -409,7 +409,7 @@
           if (!angle || [s1.fact,s2.fact,angle.fact].some((fact, idx, all) => all.indexOf(fact) !== idx)) continue;
           const conclusion = "congruent(" + first.vertices.join("") + "," + mapped.join("") + ")";
           if (results.some((r) => r.conclusion === conclusion)) continue;
-          results.push({ id:"triangle-congruence-sas", name:"三角形の合同条件（2組の辺とその間の角）",
+          results.push({ id:"triangle.congruence-sas", name:"三角形の合同条件（2組の辺とその間の角）",
             premises:[s1.fact, angle.fact, s2.fact, first.fact, second.fact], conclusion,
             explain:"2組の辺とその間の角がそれぞれ等しい2つの三角形は合同である。", category:"congruence" });
         }
@@ -464,7 +464,7 @@
               angleU.fact === side.fact || angleV.fact === side.fact) continue;
           const conclusion = "congruent(" + first.vertices.join("") + "," + mapped.join("") + ")";
           if (results.some((r) => r.conclusion === conclusion)) continue;
-          results.push({ id:"triangle-congruence-asa", name:"三角形の合同条件（1組の辺とその両端の角）",
+          results.push({ id:"triangle.congruence-asa", name:"三角形の合同条件（1組の辺とその両端の角）",
             premises:[angleU.fact,side.fact,angleV.fact,first.fact,second.fact], conclusion,
             explain:"1組の辺とその両端の角がそれぞれ等しい2つの三角形は合同である。", category:"congruence" });
         }
@@ -485,7 +485,7 @@
       if (new Set([a, b, c]).size !== 3) continue;
       const conclusion = "angle(" + b + a + c + ")+angle(" + a + b + c + ")+angle(" + a + c + b + ")=180";
       results.push({
-        id: "triangle-angle-sum",
+        id: "triangle.angle-sum",
         name: "三角形の内角の和",
         premises: [fact],
         conclusion,
@@ -502,8 +502,8 @@
     const knownSet = new Set(known);
     const results = [];
     const patterns = [
-      { fact: /^alternateAngles\(([^,()]+),([^,()]+),([A-Za-z]),([A-Za-z]),([A-Za-z])\)$/, id: "parallel-alternate-interior", name: "平行線の錯角", relation: "alternateAngles", explain: "平行線の錯角は等しい。" },
-      { fact: /^correspondingAngles\(([^,()]+),([^,()]+),([A-Za-z]),([A-Za-z]),([A-Za-z])\)$/, id: "parallel-corresponding-angles", name: "平行線の同位角", relation: "correspondingAngles", explain: "平行線の同位角は等しい。" }
+      { fact: /^alternateAngles\(([^,()]+),([^,()]+),([A-Za-z]),([A-Za-z]),([A-Za-z])\)$/, id: "parallel.alternate-interior-angles", name: "平行線の錯角", relation: "alternateAngles", explain: "平行線の錯角は等しい。" },
+      { fact: /^correspondingAngles\(([^,()]+),([^,()]+),([A-Za-z]),([A-Za-z]),([A-Za-z])\)$/, id: "parallel.corresponding-angles", name: "平行線の同位角", relation: "correspondingAngles", explain: "平行線の同位角は等しい。" }
     ];
     for (const fact of known) for (const pattern of patterns) {
       const match = pattern.fact.exec(fact);
@@ -532,7 +532,7 @@
       for (const vertex of onCircle) {
         if (vertex === diameter.first || vertex === diameter.last) continue;
         results.push({
-          id: "diameter-inscribed-angle",
+          id: "circle.diameter-inscribed-angle",
           name: "直径に対する円周角",
           premises: ["onCircle(" + vertex + ")", "onCircle(" + diameter.first + ")", "onCircle(" + diameter.last + ")", diameter.fact],
           conclusion: "angle(" + diameter.first + vertex + diameter.last + ")=90",
@@ -559,7 +559,7 @@
         const right = "side(" + b.center + b.point + ")";
         const conclusion = [left, right].sort().join("=");
         results.push({
-          id: "circle-equal-radii",
+          id: "circle.equal-radii",
           name: "同じ円の半径は等しい",
           premises: [a.fact, b.fact],
           conclusion,
@@ -584,7 +584,7 @@
       const left = "angle(" + first + ")";
       const right = "angle(" + second + ")";
       results.push({
-        id: "angle-vertical-angles",
+        id: "angle.vertical-angles",
         name: "対頂角は等しい",
         premises: [fact],
         conclusion: [left, right].sort().join("="),
@@ -614,7 +614,7 @@
         if (extension.first !== b || extension.through !== c ||
             [a, b, c].includes(extension.point)) continue;
         results.push({
-          id: "triangle-exterior-angle",
+          id: "triangle.exterior-angle",
           name: "三角形の外角定理",
           premises: [triangle.fact, extension.fact],
           conclusion: "angle(" + a + c + extension.point + ")=angle(" + b + a + c + ")+angle(" + a + b + c + ")",
@@ -650,7 +650,7 @@
         const rightSide = "side(" + rightVertices.filter((point) => point !== right.vertex).sort().join("") + ")";
         if (leftSide === rightSide) continue;
         results.push({
-          id: "triangle-equal-angles-imply-equal-sides",
+          id: "triangle.equal-angles-imply-equal-sides",
           name: "等しい角に対する辺は等しい",
           premises: [triangle.fact, item.fact],
           conclusion: [leftSide, rightSide].sort().join("="),
@@ -671,7 +671,7 @@
       const [, o, a, b, c] = match;
       if (new Set([o, a, b, c]).size !== 4) continue;
       results.push({
-        id: "angle-addition",
+        id: "angle.addition",
         name: "角の加法",
         premises: [fact],
         conclusion: "angle(" + a + o + c + ")=angle(" + a + o + b + ")+angle(" + b + o + c + ")",
@@ -691,7 +691,7 @@
       const [, a, b, c] = match;
       if (new Set([a, b, c]).size !== 3) continue;
       results.push({
-        id: "segment-addition",
+        id: "segment.addition",
         name: "線分の加法",
         premises: [fact],
         conclusion: "side(" + a + c + ")=side(" + a + b + ")+side(" + b + c + ")",
@@ -1078,7 +1078,7 @@
         if (transitive) {
           const step = {
             index: steps.length + 1,
-            ruleId: "equality-transitivity",
+            ruleId: "logic.equality-transitivity",
             ruleName: "等式の推移",
             premises: transitive.premises,
             premiseSources: transitive.premises.map((premise) => ({
