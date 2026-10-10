@@ -606,3 +606,37 @@ const noCrossTypeAdditionSubstitution = rules.prove(
 );
 assert.equal(noCrossTypeAdditionSubstitution.success, false, "角と線分を混同した代入は認めない");
 console.log("✓ 角・線分の型の混同を防止");
+
+
+const segmentCancellationCommonPart = rules.prove(
+  ["side(AC)=side(AB)+side(BC)", "side(DF)=side(DE)+side(BC)", "side(AC)=side(DF)"],
+  "side(AB)=side(DE)"
+);
+assert.equal(segmentCancellationCommonPart.success, true, "等しい2つの和から共通の線分を除いて残りの線分が等しいと導く");
+assert.equal(segmentCancellationCommonPart.steps[0].ruleId, "segment.addition-cancellation");
+
+const segmentReverseAddition = rules.prove(
+  ["side(AC)=side(AB)+side(BC)", "side(DF)=side(DE)+side(BC)", "side(AB)=side(DE)"],
+  "side(AC)=side(DF)"
+);
+assert.equal(segmentReverseAddition.success, true, "共通の線分と残りの線分がそれぞれ等しければ和も等しいと導く");
+assert.equal(segmentReverseAddition.steps[0].ruleId, "segment.addition-congruence");
+
+const segmentSolveMissingPart = rules.prove(
+  ["side(AC)=side(AB)+side(BC)", "side(DF)=side(DE)+side(EF)", "side(AC)=side(DF)", "side(AB)=side(DE)"],
+  "side(BC)=side(EF)"
+);
+assert.equal(segmentSolveMissingPart.success, true, "和と一方の項がそれぞれ等しければ他方の項も等しいと導く");
+
+const angleCancellationCommonPart = rules.prove(
+  ["angle(AOC)=angle(AOB)+angle(BOC)", "angle(DOF)=angle(DOE)+angle(BOC)", "angle(AOC)=angle(DOF)"],
+  "angle(AOB)=angle(DOE)"
+);
+assert.equal(angleCancellationCommonPart.success, true, "角の加法でも共通する角を除いて残りの角の等しさを導く");
+
+const noMixedAngleSegmentAlgebra = rules.prove(
+  ["side(AC)=side(AB)+side(BC)", "angle(DOF)=angle(DOE)+angle(EOF)", "side(AC)=angle(DOF)"],
+  "side(AB)=angle(DOE)"
+);
+assert.equal(noMixedAngleSegmentAlgebra.success, false, "角と線分を混同した加法計算は導かない");
+console.log("✓ 角・線分の加法の逆と等しい和の推論");
