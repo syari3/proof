@@ -297,6 +297,14 @@
       }
 
       if (steps.length < maxSteps) {
+        const circle = circleGoal(known, goal);
+        if (circle && !known.includes(circle.conclusion)) {
+          const step = { index: steps.length+1, ruleId: circle.id, ruleName: circle.name, premises: circle.premises,
+            premiseSources: circle.premises.map(p => ({fact:p, ...(sourceByFact.get(p)||{type:"unknown"})})),
+            conclusion: circle.conclusion, explanation: circle.explain, category:"circle" };
+          known.push(step.conclusion); sourceByFact.set(step.conclusion,{type:"step",index:step.index}); steps.push(step); changed=true;
+          if(step.conclusion===goal) return {success:true,goal,facts:known,steps,reason:"proved"};
+        }
         const transitive = findTransitiveEquality(known);
         if (transitive) {
           const step = {
