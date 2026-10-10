@@ -91,6 +91,43 @@
   }
 
 
+  // sameRay(V,A,D) means A and D lie on the same ray starting at V.
+  // This is stronger than merely saying that V, A, D are collinear.
+  function parseAngle(fact) {
+    const match = /^angle\\(([A-Z])([A-Z])([A-Z])\\)$/.exec(fact);
+    return match ? { text: fact, first: match[1], vertex: match[2], last: match[3] } : null;
+  }
+
+  function findSameAngleNotation(known) {
+    const angles = known.map(parseAngle).filter(Boolean);
+    const sameRayFacts = known
+      .map((fact) => /^sameRay\\(([A-Z]),([A-Z]),([A-Z])\\)$/.exec(fact))
+      .filter(Boolean)
+      .map((match) => ({ vertex: match[1], points: [match[2], match[3]] }));
+
+    for (let i = 0; i < angles.length; i++) {
+      for (let j = i + 1; j < angles.length; j++) {
+        const a = angles[i];
+        const b = angles[j];
+        if (a.text === b.text || a.vertex !== b.vertex) continue;
+        const firstMatches = a.first === b.first || sameRayFacts.some((ray) =>
+          ray.vertex === a.vertex &&
+          ((ray.points.includes(a.first) && ray.points.includes(b.first)))
+        );
+        const lastMatches = a.last === b.last || sameRayFacts.some((ray) =>
+          ray.vertex === a.vertex &&
+          ((ray.points.includes(a.last) && ray.points.includes(b.last)))
+        );
+        if (!firstMatches || !lastMatches) continue;
+        const conclusion = a.text + "=" + b.text;
+        if (!known.includes(conclusion)) {
+          return { premises: [ "sameRay(" + a.vertex + "," + a.first + "," + b.first + ")", "sameRay(" + a.vertex + "," + a.last + "," + b.last + ")" ].filter((fact) => known.includes(fact)), conclusion };
+        }
+      }
+    }
+    return null;
+  }
+
   function derive(facts) {
     if (!Array.isArray(facts) || !facts.every((fact) => typeof fact === "string")) {
       throw new TypeError("facts は文字列の配列で指定してください。");
@@ -214,6 +251,32 @@
             if (step.conclusion === goal) {
               return { success: true, goal, facts: known, steps, reason: "proved" };
             }
+          }
+        }
+      }
+
+      if (steps.length < maxSteps) {
+        const sameAngle = findSameAngleNotation(known);
+        if (sameAngle) {
+          const step = {
+            index: steps.length + 1,
+            ruleId: "same-angle-ray-notation",
+            ruleName: "同じ半直線による角の表記",
+            premises: sameAngle.premises,
+            premiseSources: sameAngle.premises.map((premise) => ({
+              fact: premise,
+              ...(sourceByFact.get(premise) || { type: "given" })
+            })),
+            conclusion: sameAngle.conclusion,
+            explanation: "頂点が同じで、角をつくる2本の半直線がそれぞれ同じなので、同じ角を表している。",
+            category: "angle"
+          };
+          known.push(step.conclusion);
+          sourceByFact.set(step.conclusion, { type: "step", index: step.index });
+          steps.push(step);
+          changed = true;
+          if (step.conclusion === goal) {
+            return { success: true, goal, facts: known, steps, reason: "proved" };
           }
         }
       }
