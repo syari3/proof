@@ -27,7 +27,7 @@
 
 | 性質 | 分析表での記録 | カタログID案 |
 |---|---|---|
-| 円周角の定理・円周角の関係 | 10年分のうち複数年で使用 | `circle.inscribed-angle` |
+| 円周角の定理・円周角の関係 | 10年分のうち複数年で使用 | `circle.inscribed-angles-same-arc` |
 | 等しい弧に対する円周角 | 記録あり（2020年） | `circle.equal-arcs-inscribed-angles` |
 | 直径に対する円周角は90° | 記録あり（2019年） | `circle.circle.diameter-inscribed-angle` |
 | 円周角と中心角の関係 | 記録あり（2021年） | `circle.central-inscribed-angle` |
@@ -112,7 +112,7 @@
 ### C. 円
 
 #### C1. 同じ弧に対する円周角は等しい
-- ID: `circle.inscribed-angle`
+- ID: `circle.inscribed-angles-same-arc`
 - 前提: 2つの角が同じ円周上の同じ弧（または同じ弦を見込む、条件が整合する弧）に対する円周角である。
 - 結論: 2つの円周角が等しい。
 - 負例: 弧・円・角の対応が異なる場合は適用しない。
