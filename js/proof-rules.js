@@ -72,7 +72,7 @@
   }
 
   function congruenceCorrespondences(fact) {
-    const match = /^congruent\\(([A-Z]{3}),([A-Z]{3})\\)$/.exec(fact);
+    const match = /^congruent\(([A-Z]{3}),([A-Z]{3})\)$/.exec(fact);
     if (!match) return [];
     const first = match[1];
     const second = match[2];
