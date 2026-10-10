@@ -113,6 +113,21 @@
         add("equalArc(" + item.arcs[0].slice().sort().join("") + "," + item.arcs[1].slice().sort().join("") + ")");
       }
     }
+    // Preserve line incidence from line definitions and intersection constructions.
+    // Incidence is safe to infer; ray direction / point order is still not inferred.
+    for (const object of (problem.geometry.objects || [])) {
+      if (object.type === "line" && object.id && Array.isArray(object.through)) {
+        for (const point of object.through) add("onLine(" + point + "," + object.id + ")");
+      } else if (object.type === "parallel-through-point" && object.id && Array.isArray(object.through)) {
+        for (const point of object.through) add("onLine(" + point + "," + object.id + ")");
+      }
+    }
+    for (const construction of (problem.geometry.constructions || [])) {
+      if (construction.type === "intersection" && construction.point && Array.isArray(construction.of)) {
+        for (const lineId of construction.of) add("onLine(" + construction.point + "," + lineId + ")");
+      }
+    }
+
     // Derive ray relations only from explicit point-order constraints.
     // An intersection alone does not establish which points are on opposite sides.
     const relationFacts = root.GeometryRelations && typeof root.GeometryRelations.derive === "function"
