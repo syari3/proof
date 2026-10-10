@@ -106,9 +106,9 @@
 
 
   function circleCandidates(known) {
-    const ins = known.map((fact) => { const m = /^inscribed\\(([A-Z]{3}),([A-Z]{2})\\)$/.exec(fact); return m && { fact, angle: m[1], arc: m[2] }; }).filter(Boolean);
-    const cen = known.map((fact) => { const m = /^central\\(([A-Z]{3}),([A-Z]{2})\\)$/.exec(fact); return m && { fact, angle: m[1], arc: m[2] }; }).filter(Boolean);
-    const arcs = known.map((fact) => { const m = /^equalArc\\(([A-Z]{2}),([A-Z]{2})\\)$/.exec(fact); return m && { fact, a: m[1], b: m[2] }; }).filter(Boolean);
+    const ins = known.map((fact) => { const m = /^inscribed\(([A-Z]{3}),([A-Z]{2})\)$/.exec(fact); return m && { fact, angle: m[1], arc: m[2] }; }).filter(Boolean);
+    const cen = known.map((fact) => { const m = /^central\(([A-Z]{3}),([A-Z]{2})\)$/.exec(fact); return m && { fact, angle: m[1], arc: m[2] }; }).filter(Boolean);
+    const arcs = known.map((fact) => { const m = /^equalArc\(([A-Z]{2}),([A-Z]{2})\)$/.exec(fact); return m && { fact, a: m[1], b: m[2] }; }).filter(Boolean);
     const results = [];
     for (let i = 0; i < ins.length; i++) for (let j = i + 1; j < ins.length; j++) {
       const a = ins[i], b = ins[j];
