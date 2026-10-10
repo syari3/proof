@@ -298,6 +298,64 @@
       testCases: { positive: "和の一部の線分と等しい線分が分かっていれば置き換えられる", negative: "等しいと示されていない線分を置き換えない" }
     },
     {
+      id: "angle.addition-cancellation",
+      name: "角の加法の逆（消去）",
+      subject: "angle",
+      premises: [
+        { type: "angle-sum-equals", leftAngle: ["A", "O", "C"], rightAngles: [["A", "O", "B"], ["B", "O", "C"]] },
+        { type: "angle-sum-equals", leftAngle: ["D", "O", "F"], rightAngles: [["D", "O", "E"], ["B", "O", "C"]] },
+        { type: "equal-angles", angles: [["A", "O", "C"], ["D", "O", "F"]] }
+      ],
+      conclusions: [{ type: "equal-angles", angles: [["A", "O", "B"], ["D", "O", "E"]] }],
+      reason: "等しい角の和から共通する角を取り除くと、残りの角も等しい。",
+      level: "initial",
+      testCases: { positive: "等しい全体の角と共通する一部分の角があれば残りも等しい", negative: "全体の角が等しいと分からない場合は残りの角を等しいとしない" }
+    },
+    {
+      id: "segment.addition-cancellation",
+      name: "線分の加法の逆（消去）",
+      subject: "segment",
+      premises: [
+        { type: "segment-sum-equals", whole: ["A", "C"], parts: [["A", "B"], ["B", "C"]] },
+        { type: "segment-sum-equals", whole: ["D", "F"], parts: [["D", "E"], ["B", "C"]] },
+        { type: "equal-segments", segments: [["A", "C"], ["D", "F"]] }
+      ],
+      conclusions: [{ type: "equal-segments", segments: [["A", "B"], ["D", "E"]] }],
+      reason: "等しい線分の和から共通する線分を取り除くと、残りの線分も等しい。",
+      level: "initial",
+      testCases: { positive: "等しい全体の線分と共通する一部分の線分があれば残りも等しい", negative: "全体の線分が等しいと分からない場合は残りの線分を等しいとしない" }
+    },
+    {
+      id: "angle.addition-congruence",
+      name: "角の加法（等しい項の和）",
+      subject: "angle",
+      premises: [
+        { type: "angle-sum-equals", leftAngle: ["A", "O", "C"], rightAngles: [["A", "O", "B"], ["B", "O", "C"]] },
+        { type: "angle-sum-equals", leftAngle: ["D", "O", "F"], rightAngles: [["D", "O", "E"], ["E", "O", "F"]] },
+        { type: "equal-angles", angles: [["A", "O", "B"], ["D", "O", "E"]] },
+        { type: "equal-angles", angles: [["B", "O", "C"], ["E", "O", "F"]] }
+      ],
+      conclusions: [{ type: "equal-angles", angles: [["A", "O", "C"], ["D", "O", "F"]] }],
+      reason: "それぞれ等しい角どうしの和は等しい。",
+      level: "initial",
+      testCases: { positive: "対応する2組の角がそれぞれ等しければ全体の角も等しい", negative: "対応する角の等しさが不足している場合は全体を等しいとしない" }
+    },
+    {
+      id: "segment.addition-congruence",
+      name: "線分の加法（等しい項の和）",
+      subject: "segment",
+      premises: [
+        { type: "segment-sum-equals", whole: ["A", "C"], parts: [["A", "B"], ["B", "C"]] },
+        { type: "segment-sum-equals", whole: ["D", "F"], parts: [["D", "E"], ["E", "F"]] },
+        { type: "equal-segments", segments: [["A", "B"], ["D", "E"]] },
+        { type: "equal-segments", segments: [["B", "C"], ["E", "F"]] }
+      ],
+      conclusions: [{ type: "equal-segments", segments: [["A", "C"], ["D", "F"]] }],
+      reason: "それぞれ等しい線分どうしの和は等しい。",
+      level: "initial",
+      testCases: { positive: "対応する2組の線分がそれぞれ等しければ全体の線分も等しい", negative: "対応する線分の等しさが不足している場合は全体を等しいとしない" }
+    },
+    {
       id: "logic.equality-transitivity",
       name: "等式の推移",
       subject: "logic",
