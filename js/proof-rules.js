@@ -215,6 +215,19 @@
     return null;
   }
 
+  function sameAngleExpression(first, second) {
+    const a = parseAngle(first), b = parseAngle(second);
+    return !!a && !!b && a.vertex === b.vertex &&
+      ((a.first === b.first && a.last === b.last) || (a.first === b.last && a.last === b.first));
+  }
+
+  function sameAngleEquality(first, second) {
+    const a = parseEquality(first), b = parseEquality(second);
+    if (!a || !b) return false;
+    return (sameAngleExpression(a.left, b.left) && sameAngleExpression(a.right, b.right)) ||
+      (sameAngleExpression(a.left, b.right) && sameAngleExpression(a.right, b.left));
+  }
+
   // In a triangle, equal sides imply equal opposite base angles.
   // Explicit triangle/equality facts are required; segment notation is unordered.
   function isoscelesBaseAngleCandidates(known) {
@@ -242,25 +255,19 @@
         const leftBase = left.find((point) => point !== shared);
         const rightBase = right.find((point) => point !== shared);
         if (!leftBase || !rightBase || leftBase === rightBase) continue;
-        const angleForms = (vertex) => {
+        const angleFor = (vertex) => {
           const other = triangle.vertices.filter((point) => point !== vertex);
-          return [
-            "angle(" + other[0] + vertex + other[1] + ")",
-            "angle(" + other[1] + vertex + other[0] + ")"
-          ];
+          return "angle(" + other[0] + vertex + other[1] + ")";
         };
-        for (const leftAngle of angleForms(leftBase)) {
-          for (const rightAngle of angleForms(rightBase)) {
-            results.push({
-              id: "triangle-isosceles-base-angles",
-              name: "二等辺三角形の底角",
-              premises: [triangle.fact, item.fact],
-              conclusion: [leftAngle, rightAngle].sort().join("="),
-              explain: "二等辺三角形の等しい辺に対する角は等しい。",
-              category: "isosceles"
-            });
-          }
-        }
+        const leftAngle = angleFor(leftBase), rightAngle = angleFor(rightBase);
+        results.push({
+          id: "triangle-isosceles-base-angles",
+          name: "二等辺三角形の底角",
+          premises: [triangle.fact, item.fact],
+          conclusion: [leftAngle, rightAngle].sort().join("="),
+          explain: "二等辺三角形の等しい辺に対する角は等しい。",
+          category: "isosceles"
+        });
       }
     }
     return results;
@@ -544,13 +551,13 @@
         }
 
         const isoscelesCandidates = isoscelesBaseAngleCandidates(known);
-        const isosceles = isoscelesCandidates.find((rule) => rule.conclusion === goal) || isoscelesCandidates.find((rule) => !known.includes(rule.conclusion));
+        const isosceles = isoscelesCandidates.find((rule) => sameAngleEquality(rule.conclusion, goal)) || isoscelesCandidates.find((rule) => !known.includes(rule.conclusion));
         if (isosceles) {
           const step = {
             index: steps.length + 1, ruleId: isosceles.id, ruleName: isosceles.name,
             premises: [...isosceles.premises],
             premiseSources: isosceles.premises.map((premise) => ({ fact: premise, ...(sourceByFact.get(premise) || { type: "unknown" }) })),
-            conclusion: isosceles.conclusion, explanation: isosceles.explain, category: isosceles.category
+            conclusion: sameAngleEquality(isosceles.conclusion, goal) ? goal : isosceles.conclusion, explanation: isosceles.explain, category: isosceles.category
           };
           known.push(step.conclusion);
           sourceByFact.set(step.conclusion, { type: "step", index: step.index });
