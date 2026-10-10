@@ -103,4 +103,27 @@ const unrelated = rules.prove(
 assert.equal(unrelated.success, false, "共通する量がなければ推移律を適用しない");
 console.log("✓ 関係のない等式をつなげない");
 
-console.log("\\n" + (cases.length + 6) + " tests passed.");
+const sss = rules.prove(
+  ["side(AB)=side(DE)", "side(BC)=side(EF)", "side(CA)=side(FD)", "triangle(ABC)", "triangle(DEF)"],
+  "congruent(ABC,DEF)"
+);
+assert.equal(sss.success, true, "3組の辺がそろえば合同を導く");
+assert.equal(sss.steps[0].ruleId, "triangle-congruence-sss");
+console.log("✓ 合同条件（3組の辺）");
+
+const noSss = rules.prove(
+  ["side(AB)=side(DE)", "side(BC)=side(EF)", "triangle(ABC)", "triangle(DEF)"],
+  "congruent(ABC,DEF)"
+);
+assert.equal(noSss.success, false, "3組目の辺がなければ合同を導かない");
+console.log("✓ 合同条件の不足を検出");
+
+const corresponding = rules.prove(
+  ["side(AB)=side(DE)", "side(BC)=side(EF)", "side(CA)=side(FD)", "triangle(ABC)", "triangle(DEF)"],
+  "angle(CAB)=angle(FDE)"
+);
+assert.equal(corresponding.success, true, "合同から対応する角を導く");
+assert.ok(corresponding.steps.some((step) => step.ruleId === "corresponding-parts-of-congruent-triangles"));
+console.log("✓ 合同から対応する角を導く");
+
+console.log("\\n" + (cases.length + 9) + " tests passed.");
