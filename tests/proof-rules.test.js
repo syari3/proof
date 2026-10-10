@@ -3,8 +3,8 @@ const rules = require("../js/proof-rules.js");
 
 const cases = [
   {
-    name: "二等辺三角形の底角は、等しい辺が与えられたときだけ導く",
-    facts: ["side(AB)=side(AC)"],
+    name: "二等辺三角形の底角は、三角形と等しい辺が与えられたとき導く",
+    facts: ["triangle(ABC)", "side(AB)=side(AC)"],
     expected: "angle(ABC)=angle(BCA)"
   },
   {
@@ -80,7 +80,7 @@ assert.equal(limited.reason, "step-limit");
 console.log("✓ 証明探索のステップ上限を守る");
 
 const chained = rules.prove(
-  ["side(AB)=side(AC)", "angle(BCA)=angle(DEF)"],
+  ["triangle(ABC)", "side(AB)=side(AC)", "angle(BCA)=angle(DEF)"],
   "angle(ABC)=angle(DEF)"
 );
 assert.equal(chained.success, true, "前の推論結果を次のルールが利用する");
@@ -334,6 +334,27 @@ const mismatchedTriangleAngles = rules.prove(
 );
 assert.equal(mismatchedTriangleAngles.success, false, "対象三角形の内角でない角を使って辺の等しさを導かない");
 console.log("✓ 等しい角に対する辺は等しい");
+
+const generalizedIsosceles = rules.prove(
+  ["triangle(PQR)", "side(PQ)=side(PR)"],
+  "angle(PQR)=angle(PRQ)"
+);
+assert.equal(generalizedIsosceles.success, true, "別の頂点名でも二等辺三角形の底角を導く");
+assert.equal(generalizedIsosceles.steps[0].ruleId, "triangle-isosceles-base-angles");
+
+const reversedSideOrder = rules.prove(
+  ["triangle(PQR)", "side(RP)=side(QP)"],
+  "angle(PQR)=angle(PRQ)"
+);
+assert.equal(reversedSideOrder.success, true, "辺の文字順が逆でも同じ線分として認識する");
+
+const noTriangleForIsosceles = rules.prove(
+  ["side(PQ)=side(PR)"],
+  "angle(PQR)=angle(PRQ)"
+);
+assert.equal(noTriangleForIsosceles.success, false, "三角形の明示がなければ底角定理を適用しない");
+console.log("✓ 二等辺三角形の底角（汎用ルール）");
+
 
 
 const sas = rules.prove(
