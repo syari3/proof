@@ -544,3 +544,28 @@ const reversedAngleChain = rules.prove(
 );
 assert.equal(reversedAngleChain.success, true, "角の等式も左右の向きに依存せずつなぐ");
 console.log("✓ 等式の推移（左右の向きを正規化）");
+
+// Regression: circle theorems must feed into AA similarity, not remain isolated facts.
+const circleToSimilarity = rules.prove(
+  [
+    "triangle(ABC)", "triangle(DEF)",
+    "equalArc(AB,DE)", "equalArc(BC,EF)",
+    "inscribed(ACB,AB)", "inscribed(DFE,DE)",
+    "inscribed(BAC,BC)", "inscribed(EDF,EF)"
+  ],
+  "similar(ABC,DEF)"
+);
+assert.equal(circleToSimilarity.success, true, "等しい弧→円周角の等しさ→三角形の相似を連続して導く");
+assert.deepEqual(circleToSimilarity.steps.map((step) => step.ruleId), [
+  "circle.equal-arcs-inscribed-angles",
+  "circle.equal-arcs-inscribed-angles",
+  "triangle.similarity-aa"
+]);
+console.log("✓ 円周角から相似までの複数定理チェーン");
+
+const geometricAnglesNeedTwoPairs = rules.prove(
+  ["triangle(ABC)", "triangle(DEF)", "angle(ACB)=angle(DFE)"],
+  "similar(ABC,DEF)"
+);
+assert.equal(geometricAnglesNeedTwoPairs.success, false, "角の等しさ1組だけでは相似と断定しない");
+console.log("✓ 相似条件不足のガード");
