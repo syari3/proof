@@ -220,6 +220,26 @@
           "G",
           "P"
         ]
+      },
+      {
+        "type": "corresponding-angles",
+        "angles": [
+          [
+            "A",
+            "F",
+            "E"
+          ],
+          [
+            "A",
+            "B",
+            "C"
+          ]
+        ],
+        "transversal": "line-AB",
+        "lines": [
+          "line-EF",
+          "line-BC"
+        ]
       }
     ],
     "dynamicConditions": [
