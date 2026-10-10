@@ -126,3 +126,6 @@ assert.equal(sampleResult.success, false);
  assert.equal(convertedExam.unsupported.some((x) => x.location === "geometry.dynamicConditions" && x.type === "equal-segments"), false);
 
 console.log("problem-data-engine adapter checks passed");
+
+const convertedSameSegment = Adapter.convert(sampleFile);
+assert.ok(convertedSameSegment.facts.includes("sameSegment(AB,C,P)"), "同じ弦の同じ側の位置関係を変換する");
