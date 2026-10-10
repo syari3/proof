@@ -79,4 +79,13 @@ assert.equal(limited.success, false, "ステップ上限0では新しい推論�
 assert.equal(limited.reason, "step-limit");
 console.log("✓ 証明探索のステップ上限を守る");
 
-console.log("\\n" + (cases.length + 3) + " tests passed.");
+const chained = rules.prove(
+  ["side(AB)=side(AC)", "angle(BCA)=angle(DEF)"],
+  "angle(ABC)=angle(DEF)"
+);
+assert.equal(chained.success, true, "前の推論結果を次のルールが利用する");
+assert.equal(chained.steps.length, 2, "2段階の推論が記録される");
+assert.equal(chained.steps[1].premiseSources.some((source) => source.type === "step" && source.index === 1), true, "2段階目の根拠に1段階目を記録する");
+console.log("✓ 前の結論を次の推論の根拠として追跡する");
+
+console.log("\\n" + (cases.length + 4) + " tests passed.");
