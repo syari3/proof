@@ -407,29 +407,29 @@ assert.equal(missingSasIncludedAngle.success, false, "SASの間の角が不足�
 console.log("✓ 合同条件（SAS）");
 
 const genericSAS = rules.prove(
-  ["triangle(PQR)", "triangle(XYZ)", "side(PQ)=side(YX)", "angle(QPR)=angle(YXZ)", "side(PR)=side(XZ)"],
-  "congruent(PQR,YXZ)"
+  ["triangle(PQR)", "triangle(XYZ)", "side(PQ)=side(XY)", "angle(QPR)=angle(YXZ)", "side(PR)=side(XZ)"],
+  "congruent(PQR,XYZ)"
 );
 assert.equal(genericSAS.success, true, "任意の頂点名でも2辺とその間の角から合同を導く");
 assert.equal(genericSAS.steps[0].ruleId, "triangle-congruence-sas");
 
 const nonIncludedSASAngle = rules.prove(
-  ["triangle(PQR)", "triangle(XYZ)", "side(PQ)=side(YX)", "angle(PQR)=angle(YXZ)", "side(PR)=side(XZ)"],
-  "congruent(PQR,YXZ)"
+  ["triangle(PQR)", "triangle(XYZ)", "side(PQ)=side(XY)", "angle(PQR)=angle(XYZ)", "side(PR)=side(XZ)"],
+  "congruent(PQR,XYZ)"
 );
 assert.equal(nonIncludedSASAngle.success, false, "2辺の間の角でなければSASとして合同を導かない");
 console.log("✓ 三角形の合同SAS（汎用ルール）");
 
 const genericASA = rules.prove(
-  ["triangle(PQR)", "triangle(XYZ)", "angle(QPR)=angle(YXZ)", "side(PQ)=side(YX)", "angle(PQR)=angle(XYZ)"],
-  "congruent(PQR,YXZ)"
+  ["triangle(PQR)", "triangle(XYZ)", "angle(QPR)=angle(YXZ)", "side(PQ)=side(XY)", "angle(PQR)=angle(XYZ)"],
+  "congruent(PQR,XYZ)"
 );
 assert.equal(genericASA.success, true, "任意の頂点名でも1辺と両端の角から合同を導く");
 assert.equal(genericASA.steps[0].ruleId, "triangle-congruence-asa");
 
 const wrongEndpointASA = rules.prove(
-  ["triangle(PQR)", "triangle(XYZ)", "angle(QPR)=angle(YXZ)", "side(PQ)=side(YX)", "angle(PRQ)=angle(XYZ)"],
-  "congruent(PQR,YXZ)"
+  ["triangle(PQR)", "triangle(XYZ)", "angle(QPR)=angle(YXZ)", "side(PQ)=side(XY)", "angle(PRQ)=angle(XYZ)"],
+  "congruent(PQR,XYZ)"
 );
 assert.equal(wrongEndpointASA.success, false, "対応する辺の両端でない角を使ってASA合同を導かない");
 console.log("✓ 三角形の合同ASA（汎用ルール）");
