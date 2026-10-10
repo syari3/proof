@@ -1072,8 +1072,12 @@
           steps.push(step); changed = true;
           if (step.conclusion === goal) return { success: true, goal, facts: known, steps, reason: "proved" };
         }
-        const circle = circleGoal(known, goal);
-        if (circle && !known.includes(circle.conclusion)) {
+        const circleCandidatesNow = circleCandidates(known);
+        // Prefer the requested conclusion, but also retain intermediate circle facts
+        // so a later equality-transitivity step can use them.
+        const circle = circleCandidatesNow.find((rule) => rule.conclusion === goal && !known.includes(rule.conclusion)) ||
+          circleCandidatesNow.find((rule) => !known.includes(rule.conclusion));
+        if (circle) {
           const step = { index: steps.length+1, ruleId: circle.id, ruleName: circle.name, premises: circle.premises,
             premiseSources: circle.premises.map(p => ({fact:p, ...(sourceByFact.get(p)||{type:"unknown"})})),
             conclusion: circle.conclusion, explanation: circle.explain, category:"circle" };
