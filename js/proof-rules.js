@@ -192,7 +192,7 @@
       }
 
       if (steps.length < maxSteps) {
-        const congruence = known.find((fact) => /^congruent\\([A-Z]{3},[A-Z]{3}\\)$/.test(fact));
+        const congruence = known.find((fact) => /^congruent\([A-Z]{3},[A-Z]{3}\)$/.test(fact));
         if (congruence) {
           const generated = congruenceCorrespondences(congruence);
           const correspondence = generated.find((item) => !known.includes(item.fact));
