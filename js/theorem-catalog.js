@@ -272,6 +272,32 @@
       testCases: { positive: "BがAとCの間にあればAC=AB+BC", negative: "点の順序が分からない場合は線分の加法を使わない" }
     },
     {
+      id: "angle.addition-substitution",
+      name: "角の加法への等式の代入",
+      subject: "angle",
+      premises: [
+        { type: "angle-sum-equals", leftAngle: ["A", "O", "C"], rightAngles: [["A", "O", "B"], ["B", "O", "C"]] },
+        { type: "equal-angles", angles: [["A", "O", "B"], ["X", "O", "Y"]] }
+      ],
+      conclusions: [{ type: "angle-sum-equals", leftAngle: ["A", "O", "C"], rightAngles: [["X", "O", "Y"], ["B", "O", "C"]] }],
+      reason: "等しい角は、角の加法で表した和の中で互いに置き換えられる。",
+      level: "initial",
+      testCases: { positive: "和の一部の角と等しい角が分かっていれば置き換えられる", negative: "等しいと示されていない角を置き換えない" }
+    },
+    {
+      id: "segment.addition-substitution",
+      name: "線分の加法への等式の代入",
+      subject: "segment",
+      premises: [
+        { type: "segment-sum-equals", whole: ["A", "C"], parts: [["A", "B"], ["B", "C"]] },
+        { type: "equal-segments", segments: [["A", "B"], ["D", "E"]] }
+      ],
+      conclusions: [{ type: "segment-sum-equals", whole: ["A", "C"], parts: [["D", "E"], ["B", "C"]] }],
+      reason: "等しい線分は、線分の加法で表した和の中で互いに置き換えられる。",
+      level: "initial",
+      testCases: { positive: "和の一部の線分と等しい線分が分かっていれば置き換えられる", negative: "等しいと示されていない線分を置き換えない" }
+    },
+    {
       id: "logic.equality-transitivity",
       name: "等式の推移",
       subject: "logic",
