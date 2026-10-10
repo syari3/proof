@@ -177,7 +177,7 @@
   // Equality is transitive for angles and segment lengths. Generate the
   // actual conclusion from the available facts instead of hard-coding one
   // particular chain of angle names.
-  function findTransitiveEquality(known) {
+  function findTransitiveEquality(known, goal) {
     const equalities = known.map((fact) => ({ fact, equality: parseEquality(fact) })).filter((item) => item.equality);
     for (let i = 0; i < equalities.length; i++) {
       for (let j = i + 1; j < equalities.length; j++) {
@@ -190,7 +190,11 @@
           const right = b.find((term) => term !== shared);
           if (!left || !right || left === right) continue;
           const conclusion = left + "=" + right;
-          if (!known.includes(conclusion) && !known.includes(right + "=" + left)) {
+          const reverse = right + "=" + left;
+          if (goal === reverse && !known.includes(reverse)) {
+            return { premises: [first.fact, second.fact], conclusion: reverse };
+          }
+          if (!known.includes(conclusion) && !known.includes(reverse)) {
             return { premises: [first.fact, second.fact], conclusion };
           }
         }
@@ -1070,7 +1074,7 @@
           known.push(step.conclusion); sourceByFact.set(step.conclusion,{type:"step",index:step.index}); steps.push(step); changed=true;
           if(step.conclusion===goal) return {success:true,goal,facts:known,steps,reason:"proved"};
         }
-        const transitive = findTransitiveEquality(known);
+        const transitive = findTransitiveEquality(known, goal);
         if (transitive) {
           const step = {
             index: steps.length + 1,
