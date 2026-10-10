@@ -103,6 +103,13 @@ const unrelated = rules.prove(
 assert.equal(unrelated.success, false, "共通する量がなければ推移律を適用しない");
 console.log("✓ 関係のない等式をつなげない");
 
+const mixedQuantityTypes = rules.prove(
+  ["angle(A)=side(AB)", "side(AB)=angle(B)"],
+  "angle(A)=angle(B)"
+);
+assert.equal(mixedQuantityTypes.success, false, "角と線分の長さを推移律で混同しない");
+console.log("✓ 角と長さを混同しない");
+
 const sss = rules.prove(
   ["side(AB)=side(DE)", "side(BC)=side(EF)", "side(CA)=side(FD)", "triangle(ABC)", "triangle(DEF)"],
   "congruent(ABC,DEF)"
