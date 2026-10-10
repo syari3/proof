@@ -93,6 +93,7 @@ assert.equal(sampleResult.success, false);
  const convertedExam = Adapter.convert(sampleFile);
  assert.ok(convertedExam.facts.includes("onCircle(A)"));
  assert.ok(convertedExam.facts.includes("onCircle(B)"));
+ assert.ok(convertedExam.facts.includes("onCircle(P)"));
  assert.ok(convertedExam.facts.includes("parallel(line-EF,line-BC)"));
  assert.ok(convertedExam.facts.includes("side(AB)=side(BG)"));
  assert.equal(convertedExam.unsupported.some((x) => x.location === "geometry.dynamicConditions" && x.type === "equal-segments"), false);
