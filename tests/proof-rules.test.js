@@ -88,4 +88,19 @@ assert.equal(chained.steps.length, 2, "2段階の推論が記録される");
 assert.equal(chained.steps[1].premiseSources.some((source) => source.type === "step" && source.index === 1), true, "2段階目の根拠に1段階目を記録する");
 console.log("✓ 前の結論を次の推論の根拠として追跡する");
 
-console.log("\\n" + (cases.length + 4) + " tests passed.");
+const sideChain = rules.prove(
+  ["side(AB)=side(CD)", "side(CD)=side(EF)"],
+  "side(AB)=side(EF)"
+);
+assert.equal(sideChain.success, true, "辺の長さの等式にも推移律を適用する");
+assert.equal(sideChain.steps[0].ruleId, "equality-transitivity");
+console.log("✓ 辺の等式の推移律を一般的に適用する");
+
+const unrelated = rules.prove(
+  ["side(AB)=side(CD)", "side(EF)=side(GH)"],
+  "side(AB)=side(GH)"
+);
+assert.equal(unrelated.success, false, "共通する量がなければ推移律を適用しない");
+console.log("✓ 関係のない等式をつなげない");
+
+console.log("\\n" + (cases.length + 6) + " tests passed.");
