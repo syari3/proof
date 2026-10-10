@@ -157,7 +157,11 @@
         explanation: rule.explain,
         category: rule.category
       }));
-    const dynamicResults = triangleAngleSumCandidates(facts).map((rule) => ({
+    const dynamicRules = [
+      ...triangleAngleSumCandidates(facts),
+      ...equalRadiusCandidates(facts)
+    ];
+    const dynamicResults = dynamicRules.map((rule) => ({
       ruleId: rule.id,
       ruleName: rule.name,
       premises: [...rule.premises],
@@ -228,6 +232,33 @@
     return results;
   }
 
+  // Points explicitly marked on circles with the same center have equal radii.
+  function equalRadiusCandidates(known) {
+    const points = known.map((fact) => {
+      const match = /^onCircle\\(([A-Z]),([A-Z])\\)$/.exec(fact);
+      return match ? { fact, point: match[1], center: match[2] } : null;
+    }).filter(Boolean);
+    const results = [];
+    for (let i = 0; i < points.length; i++) {
+      for (let j = i + 1; j < points.length; j++) {
+        const a = points[i], b = points[j];
+        if (a.center !== b.center || a.point === b.point) continue;
+        const left = "side(" + a.center + a.point + ")";
+        const right = "side(" + b.center + b.point + ")";
+        const conclusion = [left, right].sort().join("=");
+        results.push({
+          id: "circle-equal-radii",
+          name: "同じ円の半径は等しい",
+          premises: [a.fact, b.fact],
+          conclusion,
+          explain: "同じ円の半径はすべて等しい。",
+          category: "circle"
+        });
+      }
+    }
+    return results;
+  }
+
   // Forward-chain from the supplied facts, recording every inference.
   // This is a bounded rule engine, not a complete geometry prover.
   function prove(facts, goal, maxSteps = 100) {
@@ -276,6 +307,30 @@
       }
 
       if (steps.length < maxSteps) {
+        const equalRadius = equalRadiusCandidates(known).find((rule) => !known.includes(rule.conclusion));
+        if (equalRadius) {
+          const step = {
+            index: steps.length + 1,
+            ruleId: equalRadius.id,
+            ruleName: equalRadius.name,
+            premises: [...equalRadius.premises],
+            premiseSources: equalRadius.premises.map((premise) => ({
+              fact: premise,
+              ...(sourceByFact.get(premise) || { type: "unknown" })
+            })),
+            conclusion: equalRadius.conclusion,
+            explanation: equalRadius.explain,
+            category: equalRadius.category
+          };
+          known.push(step.conclusion);
+          sourceByFact.set(step.conclusion, { type: "step", index: step.index });
+          steps.push(step);
+          changed = true;
+          if (step.conclusion === goal) {
+            return { success: true, goal, facts: known, steps, reason: "proved" };
+          }
+        }
+
         const angleSum = triangleAngleSumCandidates(known).find((rule) => !known.includes(rule.conclusion));
         if (angleSum) {
           const step = {
