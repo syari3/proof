@@ -1,0 +1,235 @@
+/**
+ * Structured theorem catalog — initial executable schema.
+ *
+ * This file is intentionally separate from proof-rules.js while the new
+ * data model is being established. Facts are typed objects, not geometry
+ * claims inferred from a drawing. A rule may fire only when its premises
+ * match facts already supplied or derived by another rule.
+ *
+ * This is an initial subset, not yet the complete catalog of all numbered
+ * properties in the source materials.
+ */
+(function (root) {
+  "use strict";
+
+  const rules = [
+    {
+      id: "triangle.isosceles-base-angles",
+      name: "二等辺三角形の底角",
+      subject: "triangle",
+      premises: [
+        { type: "triangle", vertices: ["A", "B", "C"] },
+        { type: "equal-segments", segments: [["A", "B"], ["A", "C"]] }
+      ],
+      conclusions: [
+        { type: "equal-angles", angles: [["A", "B", "C"], ["B", "C", "A"]] }
+      ],
+      reason: "二等辺三角形の底角は等しい。",
+      level: "initial",
+      testCases: {
+        positive: "三角形ABCとAB=ACから∠ABC=∠BCAを導ける",
+        negative: "等しい2辺が対象三角形の辺でなければ導けない"
+      }
+    },
+    {
+      id: "triangle.equal-angles-imply-equal-sides",
+      name: "等しい角に対する辺は等しい",
+      subject: "triangle",
+      premises: [
+        { type: "triangle", vertices: ["A", "B", "C"] },
+        { type: "equal-angles", angles: [["A", "B", "C"], ["B", "C", "A"]] }
+      ],
+      conclusions: [
+        { type: "equal-segments", segments: [["A", "C"], ["A", "B"]] }
+      ],
+      reason: "三角形で等しい角に対する辺は等しい。",
+      level: "initial",
+      testCases: {
+        positive: "三角形ABCで∠ABC=∠BCAならAB=ACを導ける",
+        negative: "対象三角形の内角でない角の等しさでは導けない"
+      }
+    },
+    {
+      id: "angle.vertical-angles",
+      name: "対頂角",
+      subject: "angle",
+      premises: [
+        { type: "intersecting-lines", lines: ["l", "m"], point: "O" },
+        { type: "vertical-angle-pair", angles: [["A", "O", "B"], ["C", "O", "D"]] }
+      ],
+      conclusions: [
+        { type: "equal-angles", angles: [["A", "O", "B"], ["C", "O", "D"]] }
+      ],
+      reason: "対頂角は等しい。",
+      level: "initial",
+      testCases: {
+        positive: "2直線の交点で対頂角の位置にある角は等しい",
+        negative: "同じ頂点の角でも隣り合う角を対頂角として扱わない"
+      }
+    },
+    {
+      id: "triangle.angle-sum",
+      name: "三角形の内角の和",
+      subject: "triangle",
+      premises: [
+        { type: "triangle", vertices: ["A", "B", "C"] }
+      ],
+      conclusions: [
+        { type: "angle-sum", angles: [["B", "A", "C"], ["A", "B", "C"], ["B", "C", "A"]], degrees: 180 }
+      ],
+      reason: "三角形の内角の和は180°である。",
+      level: "initial",
+      testCases: {
+        positive: "三角形ABCの3内角の和を180°とできる",
+        negative: "三角形の外角を内角の和に含めない"
+      }
+    },
+    {
+      id: "circle.diameter-inscribed-angle",
+      name: "直径に対する円周角",
+      subject: "circle",
+      premises: [
+        { type: "circle-point", circle: "O", point: "A" },
+        { type: "circle-point", circle: "O", point: "B" },
+        { type: "circle-point", circle: "O", point: "C" },
+        { type: "diameter", circle: "O", endpoints: ["B", "C"] }
+      ],
+      conclusions: [
+        { type: "angle-measure", angle: ["B", "A", "C"], degrees: 90 }
+      ],
+      reason: "直径に対する円周角は90°である。",
+      level: "initial",
+      testCases: {
+        positive: "Aが円O上にありBCが直径なら∠BAC=90°",
+        negative: "角の頂点が円周上にあることや直径の端点が不明なら導けない"
+      }
+    },
+    {
+      id: "circle.equal-radii",
+      name: "同じ円の半径は等しい",
+      subject: "circle",
+      premises: [
+        { type: "circle-center", circle: "O", point: "O" },
+        { type: "circle-point", circle: "O", point: "A" },
+        { type: "circle-point", circle: "O", point: "B" }
+      ],
+      conclusions: [
+        { type: "equal-segments", segments: [["O", "A"], ["O", "B"]] }
+      ],
+      reason: "同じ円の半径は等しい。",
+      level: "initial",
+      testCases: {
+        positive: "A,Bが同じ円O上ならOA=OB",
+        negative: "別々の円の半径を理由なく等しいとしない"
+      }
+    },
+    {
+      id: "triangle.similarity-aa",
+      name: "三角形の相似条件（2組の角）",
+      subject: "similarity",
+      premises: [
+        { type: "triangle", vertices: ["A", "B", "C"] },
+        { type: "triangle", vertices: ["D", "E", "F"] },
+        { type: "equal-angles", angles: [["B", "A", "C"], ["E", "D", "F"]] },
+        { type: "equal-angles", angles: [["A", "B", "C"], ["D", "E", "F"]] }
+      ],
+      conclusions: [
+        { type: "similar-triangles", triangles: [["A", "B", "C"], ["D", "E", "F"]], correspondence: [["A", "D"], ["B", "E"], ["C", "F"]] }
+      ],
+      reason: "2組の角がそれぞれ等しい2つの三角形は相似である。",
+      level: "initial",
+      testCases: {
+        positive: "対応する2組の角が等しい三角形は相似",
+        negative: "頂点の対応が矛盾する角の組み合わせでは相似を導かない"
+      }
+    },
+    {
+      id: "triangle.congruence-sss",
+      name: "三角形の合同条件（3組の辺）",
+      subject: "congruence",
+      premises: [
+        { type: "triangle", vertices: ["A", "B", "C"] },
+        { type: "triangle", vertices: ["D", "E", "F"] },
+        { type: "equal-segments", segments: [["A", "B"], ["D", "E"]] },
+        { type: "equal-segments", segments: [["B", "C"], ["E", "F"]] },
+        { type: "equal-segments", segments: [["C", "A"], ["F", "D"]] }
+      ],
+      conclusions: [
+        { type: "congruent-triangles", triangles: [["A", "B", "C"], ["D", "E", "F"]], correspondence: [["A", "D"], ["B", "E"], ["C", "F"]] }
+      ],
+      reason: "3組の辺がそれぞれ等しい2つの三角形は合同である。",
+      level: "initial",
+      testCases: {
+        positive: "対応する3組の辺が等しいとき合同",
+        negative: "辺の対応を取り違えた場合は合同と判定しない"
+      }
+    },
+    {
+      id: "triangle.congruence-sas",
+      name: "三角形の合同条件（2組の辺とその間の角）",
+      subject: "congruence",
+      premises: [
+        { type: "triangle", vertices: ["A", "B", "C"] },
+        { type: "triangle", vertices: ["D", "E", "F"] },
+        { type: "equal-segments", segments: [["A", "B"], ["D", "E"]] },
+        { type: "equal-angles", angles: [["B", "A", "C"], ["E", "D", "F"]] },
+        { type: "equal-segments", segments: [["A", "C"], ["D", "F"]] }
+      ],
+      conclusions: [
+        { type: "congruent-triangles", triangles: [["A", "B", "C"], ["D", "E", "F"]], correspondence: [["A", "D"], ["B", "E"], ["C", "F"]] }
+      ],
+      reason: "2組の辺とその間の角がそれぞれ等しい2つの三角形は合同である。",
+      level: "initial",
+      testCases: {
+        positive: "対応する2辺とその間の角が等しいとき合同",
+        negative: "2辺とその間ではない角だけではこの条件を適用しない"
+      }
+    },
+    {
+      id: "triangle.congruence-asa",
+      name: "三角形の合同条件（1組の辺とその両端の角）",
+      subject: "congruence",
+      premises: [
+        { type: "triangle", vertices: ["A", "B", "C"] },
+        { type: "triangle", vertices: ["D", "E", "F"] },
+        { type: "equal-angles", angles: [["B", "A", "C"], ["E", "D", "F"]] },
+        { type: "equal-segments", segments: [["A", "B"], ["D", "E"]] },
+        { type: "equal-angles", angles: [["A", "B", "C"], ["D", "E", "F"]] }
+      ],
+      conclusions: [
+        { type: "congruent-triangles", triangles: [["A", "B", "C"], ["D", "E", "F"]], correspondence: [["A", "D"], ["B", "E"], ["C", "F"]] }
+      ],
+      reason: "1組の辺とその両端の角がそれぞれ等しい2つの三角形は合同である。",
+      level: "initial",
+      testCases: {
+        positive: "1辺とその両端の2角が対応して等しいとき合同",
+        negative: "等しい辺の両端でない角を使ってASAと判定しない"
+      }
+    }
+  ];
+
+  const ruleIds = new Set();
+  for (const rule of rules) {
+    if (ruleIds.has(rule.id)) throw new Error("Duplicate theorem rule id: " + rule.id);
+    ruleIds.add(rule.id);
+    if (!rule.premises.length || !rule.conclusions.length) {
+      throw new Error("Every theorem rule needs premises and conclusions: " + rule.id);
+    }
+    if (!rule.testCases || !rule.testCases.positive || !rule.testCases.negative) {
+      throw new Error("Every theorem rule needs positive and negative test descriptions: " + rule.id);
+    }
+  }
+
+  root.TheoremCatalog = Object.freeze({
+    list: () => rules.map(({ id, name, subject, reason, level }) => ({ id, name, subject, reason, level })),
+    get: (id) => rules.find((rule) => rule.id === id) || null,
+    all: () => rules.map((rule) => ({
+      ...rule,
+      premises: rule.premises.map((item) => ({ ...item })),
+      conclusions: rule.conclusions.map((item) => ({ ...item })),
+      testCases: { ...rule.testCases }
+    }))
+  });
+
+  if (typeof module !== "undefined" && module.exports) module.exports = root.TheoremCatalog;
+})(typeof globalThis !== "undefined" ? globalThis : this);
