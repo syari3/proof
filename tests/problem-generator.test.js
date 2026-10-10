@@ -4,7 +4,7 @@ const templates = {
   one: { facts: ["x"], expectedConclusion: "y" },
   two: { facts: ["z"], expectedConclusion: "w" }
 };
-const rules = { derive(facts) { return facts.includes("x") ? [{ conclusion: "y" }] : []; } };
+const rules = { prove(facts, goal) { return { success: facts.includes("x") && goal === "y" }; } };
 const result = generator.generate(templates, rules, () => 0);
 assert.equal(result.validation, "passed");
 assert.equal(result.key, "one");
