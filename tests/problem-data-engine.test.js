@@ -27,9 +27,10 @@ const isosceles = {
   goal: { type: "angle-equality", angles: [["A", "B", "C"], ["B", "C", "A"]] },
   proofFacts: ["triangle(ABC)"]
 };
-// Angle equality is not yet a supported goal data type; the adapter must report this,
-// rather than silently converting it into a different proposition.
-assert.equal(Adapter.convert(isosceles).goal, null);
+assert.equal(Adapter.convert(isosceles).goal, "angle(ABC)=angle(ACB)");
+const isoscelesResult = Adapter.run(isosceles, Rules);
+assert.equal(isoscelesResult.success, true);
+assert.equal(isoscelesResult.proof.steps.at(-1).conclusion, "angle(ABC)=angle(ACB)");
 
 const sampleFile = require("../data/problem-examples/shizuoka-2025-proof-7-1.json");
 const sampleResult = Adapter.run(sampleFile, Rules);
