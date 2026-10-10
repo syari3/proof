@@ -543,7 +543,8 @@
           }
         }
 
-        const isoscelesCandidates = isoscelesBaseAngleCandidates(known);\n        const isosceles = isoscelesCandidates.find((rule) => rule.conclusion === goal) || isoscelesCandidates.find((rule) => !known.includes(rule.conclusion));
+        const isoscelesCandidates = isoscelesBaseAngleCandidates(known);
+        const isosceles = isoscelesCandidates.find((rule) => rule.conclusion === goal) || isoscelesCandidates.find((rule) => !known.includes(rule.conclusion));
         if (isosceles) {
           const step = {
             index: steps.length + 1, ruleId: isosceles.id, ruleName: isosceles.name,
