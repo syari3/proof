@@ -476,3 +476,25 @@ const genericDiameterMissingEndpoint = rules.prove(
 );
 assert.equal(genericDiameterMissingEndpoint.success, false, "直径の端点・頂点が円周上と示されない場合は直角を導かない");
 console.log("✓ 直径に対する円周角（汎用ルール）");
+
+
+const genericAlternate = rules.prove(
+  ["parallel(p,q)", "intersects(r,p)", "intersects(r,q)", "alternateAngles(alpha,beta,r,p,q)"],
+  "alpha=beta"
+);
+assert.equal(genericAlternate.success, true, "任意の直線・角ラベルで錯角を導く");
+assert.equal(genericAlternate.steps[0].ruleId, "parallel-alternate-interior");
+
+const genericCorresponding = rules.prove(
+  ["parallel(p,q)", "intersects(r,p)", "intersects(r,q)", "correspondingAngles(gamma,delta,r,p,q)"],
+  "gamma=delta"
+);
+assert.equal(genericCorresponding.success, true, "任意の直線・角ラベルで同位角を導く");
+assert.equal(genericCorresponding.steps[0].ruleId, "parallel-corresponding-angles");
+
+const missingParallelForGenericAngle = rules.prove(
+  ["intersects(r,p)", "intersects(r,q)", "alternateAngles(alpha,beta,r,p,q)"],
+  "alpha=beta"
+);
+assert.equal(missingParallelForGenericAngle.success, false, "平行条件なしに錯角の等しさを導かない");
+console.log("✓ 平行線の錯角・同位角（汎用ルール）");
