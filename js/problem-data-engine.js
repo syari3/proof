@@ -51,6 +51,8 @@
         add("side(" + canonicalSegment(a[0], a[1]) + ")=side(" + canonicalSegment(b[0], b[1]) + ")");
       } else if (constraint.type === "same-ray" && constraint.vertex && constraint.points && constraint.points.length === 2) {
         add("sameRay(" + constraint.vertex + "," + constraint.points[0] + "," + constraint.points[1] + ")");
+      } else if (constraint.type === "opposite-rays" || constraint.type === "between") {
+        // Handled by GeometryRelations below; keep these typed constraints supported.
       } else if (constraint.type !== "point-on-circle") {
         unsupported.push({ location: "geometry.constraints", type: constraint.type, reason: "この条件型はまだ安全に事実へ変換できません。" });
       }
