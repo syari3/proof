@@ -286,14 +286,14 @@
   // Two distinct corresponding angle pairs determine the third pair by angle sum.
   function triangleSimilarityAACandidates(known) {
     const triangles = known.map((fact) => {
-      const match = /^triangle\\(([A-Z])([A-Z])([A-Z])\\)$/.exec(fact);
+      const match = /^triangle\(([A-Z])([A-Z])([A-Z])\)$/.exec(fact);
       return match ? { fact, vertices: match.slice(1) } : null;
     }).filter(Boolean).filter((triangle) => new Set(triangle.vertices).size === 3);
     // Accept both abstract vertex-angle facts (angle(A)=angle(D)) and
     // geometric angle facts (angle(ABC)=angle(DEF)), so circle/parallel
     // theorems can feed directly into AA similarity.
     const anglePairs = known.map((fact) => {
-      const match = /^angle\\(([A-Z]{1,3})\\)=angle\\(([A-Z]{1,3})\\)$/.exec(fact);
+      const match = /^angle\(([A-Z]{1,3})\)=angle\(([A-Z]{1,3})\)$/.exec(fact);
       if (!match) return null;
       const parse = (text) => text.length === 1
         ? { vertex: text, points: [text] }
