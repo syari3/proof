@@ -128,7 +128,21 @@
     return { premises, conclusion: goal };
   }
 
-  function derive(facts) {
+
+  function circleGoal(known, goal) {
+    const ins = known.map(x => { const m = /^inscribed\\(([A-Z]{3}),([A-Z]{2})\\)$/.exec(x); return m && { fact:x, angle:m[1], arc:m[2] }; }).filter(Boolean);
+    const cen = known.map(x => { const m = /^central\\(([A-Z]{3}),([A-Z]{2})\\)$/.exec(x); return m && { fact:x, angle:m[1], arc:m[2] }; }).filter(Boolean);
+    const arcs = known.map(x => { const m = /^equalArc\\(([A-Z]{2}),([A-Z]{2})\\)$/.exec(x); return m && { fact:x, a:m[1], b:m[2] }; }).filter(Boolean);
+    for (let i=0;i<ins.length;i++) for(let j=i+1;j<ins.length;j++) {
+      const a=ins[i], b=ins[j], g1="angle("+a.angle+")=angle("+b.angle+")", g2="angle("+b.angle+")=angle("+a.angle+")";
+      if(a.arc===b.arc && (goal===g1||goal===g2)) return {id:"inscribed-angles-same-arc",name:"同じ弧に対する円周角",premises:[a.fact,b.fact],conclusion:goal,explain:"同じ弧に対する円周角は等しい。"};
+      const eq=arcs.find(x=>(x.a===a.arc&&x.b===b.arc)||(x.a===b.arc&&x.b===a.arc));
+      if(eq&&(goal===g1||goal===g2)) return {id:"inscribed-angles-equal-arcs",name:"等しい弧に対する円周角",premises:[eq.fact,a.fact,b.fact],conclusion:goal,explain:"等しい弧に対する円周角は等しい。"};
+    }
+    for(const a of cen) for(const b of ins) { const g="angle("+a.angle+")=2*angle("+b.angle+")"; if(a.arc===b.arc&&goal===g) return {id:"central-inscribed-angle",name:"中心角と円周角の関係",premises:[a.fact,b.fact],conclusion:g,explain:"同じ弧に対する中心角は円周角の2倍である。"}; }
+    return null;
+  }
+\n  function derive(facts) {
     if (!Array.isArray(facts) || !facts.every((fact) => typeof fact === "string")) {
       throw new TypeError("facts は文字列の配列で指定してください。");
     }
