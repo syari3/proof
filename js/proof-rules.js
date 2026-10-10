@@ -166,7 +166,8 @@
       ...angleAdditionCandidates(facts),
       ...segmentAdditionCandidates(facts),
       ...equalAnglesImplyEqualSidesCandidates(facts),
-      ...triangleSimilarityAACandidates(facts)
+      ...triangleSimilarityAACandidates(facts),
+      ...triangleCongruenceSSSCandidates(facts)
     ];
     const dynamicResults = dynamicRules.map((rule) => ({
       ruleId: rule.id,
@@ -315,6 +316,60 @@
               category: "similarity"
             });
           }
+        }
+      }
+    }
+    return results;
+  }
+
+  // SSS congruence with arbitrary vertex labels. Side order is unordered,
+  // and all three side equalities must support the same one-to-one mapping.
+  function triangleCongruenceSSSCandidates(known) {
+    const triangles = known.map((fact) => {
+      const match = /^triangle\(([A-Z])([A-Z])([A-Z])\)$/.exec(fact);
+      return match ? { fact, vertices: match.slice(1) } : null;
+    }).filter(Boolean).filter((triangle) => new Set(triangle.vertices).size === 3);
+    const equalSides = known.map((fact) => {
+      const match = /^side\(([A-Z])([A-Z])\)=side\(([A-Z])([A-Z])\)$/.exec(fact);
+      if (!match || match[1] === match[2] || match[3] === match[4]) return null;
+      return { fact, left: match.slice(1, 3).sort().join(""), right: match.slice(3, 5).sort().join("") };
+    }).filter(Boolean);
+    const results = [];
+    function sideKey(a, b) { return [a, b].sort().join(""); }
+    function permutations(values) {
+      return [
+        [values[0], values[1], values[2]],
+        [values[0], values[2], values[1]],
+        [values[1], values[0], values[2]],
+        [values[1], values[2], values[0]],
+        [values[2], values[0], values[1]],
+        [values[2], values[1], values[0]]
+      ];
+    }
+    for (let i = 0; i < triangles.length; i++) {
+      for (let j = i + 1; j < triangles.length; j++) {
+        const first = triangles[i], second = triangles[j];
+        for (const mapped of permutations(second.vertices)) {
+          const required = [
+            [sideKey(first.vertices[0], first.vertices[1]), sideKey(mapped[0], mapped[1])],
+            [sideKey(first.vertices[1], first.vertices[2]), sideKey(mapped[1], mapped[2])],
+            [sideKey(first.vertices[2], first.vertices[0]), sideKey(mapped[2], mapped[0])]
+          ];
+          const supporting = required.map(([left, right]) => equalSides.find((item) =>
+            (item.left === left && item.right === right) ||
+            (item.left === right && item.right === left)
+          ));
+          if (supporting.some((item) => !item) || new Set(supporting.map((item) => item.fact)).size !== 3) continue;
+          const conclusion = "congruent(" + first.vertices.join("") + "," + mapped.join("") + ")";
+          if (results.some((rule) => rule.conclusion === conclusion)) continue;
+          results.push({
+            id: "triangle-congruence-sss",
+            name: "三角形の合同条件（3組の辺）",
+            premises: [...supporting.map((item) => item.fact), first.fact, second.fact],
+            conclusion,
+            explain: "3組の辺がそれぞれ等しい2つの三角形は合同である。",
+            category: "congruence"
+          });
         }
       }
     }
@@ -707,6 +762,25 @@
           if (step.conclusion === goal) {
             return { success: true, goal, facts: known, steps, reason: "proved" };
           }
+        }
+
+        const congruenceSSS = triangleCongruenceSSSCandidates(known).find((rule) => rule.conclusion === goal && !known.includes(rule.conclusion));
+        if (congruenceSSS) {
+          const step = {
+            index: steps.length + 1,
+            ruleId: congruenceSSS.id,
+            ruleName: congruenceSSS.name,
+            premises: [...congruenceSSS.premises],
+            premiseSources: congruenceSSS.premises.map((premise) => ({ fact: premise, ...(sourceByFact.get(premise) || { type: "unknown" }) })),
+            conclusion: congruenceSSS.conclusion,
+            explanation: congruenceSSS.explain,
+            category: congruenceSSS.category
+          };
+          known.push(step.conclusion);
+          sourceByFact.set(step.conclusion, { type: "step", index: step.index });
+          steps.push(step);
+          changed = true;
+          if (step.conclusion === goal) return { success: true, goal, facts: known, steps, reason: "proved" };
         }
 
         const similarityAA = triangleSimilarityAACandidates(known).find((rule) => rule.conclusion === goal && !known.includes(rule.conclusion));
