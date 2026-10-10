@@ -150,9 +150,9 @@
   // Replace an angle ray endpoint only when the vertex-based same-ray fact
   // explicitly confirms that the two rays coincide.
   function sameRayAngleCandidates(known) {
-    const rays = known.map((fact) => /^sameRay\\(([A-Z]),([A-Z]),([A-Z])\\)$/.exec(fact)).filter(Boolean)
+    const rays = known.map((fact) => /^sameRay\(([A-Z]),([A-Z]),([A-Z])\)$/.exec(fact)).filter(Boolean)
       .map((m) => ({ fact: m[0], vertex: m[1], first: m[2], second: m[3] }));
-    const angles = known.map((fact) => /^angle\\(([A-Z])([A-Z])([A-Z])\\)$/.exec(fact)).filter(Boolean)
+    const angles = known.map((fact) => /^angle\(([A-Z])([A-Z])([A-Z])\)$/.exec(fact)).filter(Boolean)
       .map((m) => ({ fact: m[0], first: m[1], vertex: m[2], last: m[3] }));
     const results = [];
     for (const angle of angles) for (const ray of rays) {
