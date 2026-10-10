@@ -126,6 +126,8 @@
         add("equalArc(" + item.arcs[0].slice().sort().join("") + "," + item.arcs[1].slice().sort().join("") + ")");
       }
     }
+    // A point explicitly declared on an arc is also on its supporting circle.
+    // (The arc-side relation is intentionally not inferred here.)
     // Preserve line incidence from line definitions and intersection constructions.
     // Incidence is safe to infer; ray direction / point order is still not inferred.
     for (const object of (problem.geometry.objects || [])) {
