@@ -178,33 +178,26 @@
   // actual conclusion from the available facts instead of hard-coding one
   // particular chain of angle names.
   function findTransitiveEquality(known) {
-    const equalities = known
-      .map((fact) => ({ fact, equality: parseEquality(fact) }))
-      .filter((item) => item.equality);
-
-    for (const first of equalities) {
-      for (const second of equalities) {
-        if (first.fact === second.fact) continue;
-        const a = first.equality;
-        const b = second.equality;
-        let left = null;
-        let right = null;
-
-        if (a.right === b.left) {
-          left = a.left;
-          right = b.right;
-        }
-
-        if (!left || !right || left === right) continue;
-        const conclusion = left + "=" + right;
-        if (!known.includes(conclusion)) {
-          return { premises: [first.fact, second.fact], conclusion };
+    const equalities = known.map((fact) => ({ fact, equality: parseEquality(fact) })).filter((item) => item.equality);
+    for (let i = 0; i < equalities.length; i++) {
+      for (let j = i + 1; j < equalities.length; j++) {
+        const first = equalities[i], second = equalities[j];
+        const a = [first.equality.left, first.equality.right];
+        const b = [second.equality.left, second.equality.right];
+        for (const shared of a) {
+          if (!b.includes(shared)) continue;
+          const left = a.find((term) => term !== shared);
+          const right = b.find((term) => term !== shared);
+          if (!left || !right || left === right) continue;
+          const conclusion = left + "=" + right;
+          if (!known.includes(conclusion) && !known.includes(right + "=" + left)) {
+            return { premises: [first.fact, second.fact], conclusion };
+          }
         }
       }
     }
     return null;
   }
-
   function sameAngleExpression(first, second) {
     const a = parseAngle(first), b = parseAngle(second);
     return !!a && !!b && a.vertex === b.vertex &&
