@@ -87,4 +87,14 @@ const sampleResult = Adapter.run(sampleFile, Rules);
 assert.equal(sampleResult.status, "not-proved-with-current-rules");
 assert.ok(sampleResult.converted.unsupported.length > 0);
 assert.equal(sampleResult.success, false);
+
+ // Explicit circle incidence, parallel-through-point construction, and the
+ // selected moving-point equality must reach the inference facts.
+ const convertedExam = Adapter.convert(sampleFile);
+ assert.ok(convertedExam.facts.includes("onCircle(A)"));
+ assert.ok(convertedExam.facts.includes("onCircle(B)"));
+ assert.ok(convertedExam.facts.includes("parallel(line-EF,line-BC)"));
+ assert.ok(convertedExam.facts.includes("side(AB)=side(BG)"));
+ assert.equal(convertedExam.unsupported.some((x) => x.location === "geometry.dynamicConditions" && x.type === "equal-segments"), false);
+
 console.log("problem-data-engine adapter checks passed");
