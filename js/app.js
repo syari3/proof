@@ -113,11 +113,13 @@ function renderSample(key) {
   stepCount.textContent = `${sample.steps.length}ステップ`;
   diagram.innerHTML = svgFor(sample.diagram);
   diagram.setAttribute("aria-label", sample.topic + "の模式図");
-  const derivations = window.ProofRules ? window.ProofRules.derive(sample.facts) : [];
-  const matchedRule = derivations.find((item) => item.conclusion === sample.expectedConclusion);
-  note.textContent = matchedRule
-    ? "✓ 証明ルール検証OK：「" + matchedRule.ruleName + "」の前提条件がそろい、結論を導けます。" + (select.value === "random" ? " 登録済みの検証済み問題型から選びました。条件や図形そのものを自由に作る機能は今後追加します。" : " 任意の図形を証明する一般的な検証器は、まだ未実装です。")
-    : "この問題型に対応するルールが見つからず、結論を確認できませんでした。";
+  const proof = window.ProofRules
+    ? window.ProofRules.prove(sample.facts, sample.expectedConclusion)
+    : { success: false, steps: [] };
+  const finalStep = proof.steps[proof.steps.length - 1];
+  note.textContent = proof.success
+    ? "✓ 証明ルール検証OK：" + (finalStep ? "「" + finalStep.ruleName + "」を含む" + proof.steps.length + "段階の推論で結論を導けます。" : "結論は与えられた条件に含まれています。") + (select.value === "random" ? " 登録済みの検証済み問題型から選びました。条件や図形そのものを自由に作る機能は今後追加します。" : " 任意の図形を証明する一般的な検証器は、まだ未実装です。")
+    : "この条件からは証明目標を導けませんでした（対応ルール不足、または前提条件不足）。";
 }
 
 button.addEventListener("click", () => renderSample(select.value));
