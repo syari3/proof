@@ -206,8 +206,6 @@
         negative: "等しい辺の両端でない角を使ってASAと判定しない"
       }
     }
-  ];
-
 
     {
       id: "parallel.alternate-interior-angles",
@@ -328,6 +326,8 @@
       level: "initial",
       testCases: { positive: "同じ円の同じ弧に対する中心角と円周角には2倍の関係がある", negative: "対応する弧が違う場合は2倍の関係を導かない" }
     },
+
+  ];
 
   const ruleIds = new Set();
   for (const rule of rules) {
