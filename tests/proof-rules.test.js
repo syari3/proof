@@ -349,6 +349,12 @@ const mismatchedTriangleAngles = rules.prove(
   "side(AB)=side(AC)"
 );
 assert.equal(mismatchedTriangleAngles.success, false, "対象三角形の内角でない角を使って辺の等しさを導かない");
+
+const reversedGoalEqualSides = rules.prove(
+  ["triangle(XZY)", "angle(XZY)=angle(XYZ)"],
+  "side(XZ)=side(XY)"
+);
+assert.equal(reversedGoalEqualSides.success, true, "等しい角に対する辺の結論は左右を逆に指定しても証明できる");
 console.log("✓ 等しい角に対する辺は等しい");
 
 const generalizedIsosceles = rules.prove(
