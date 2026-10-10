@@ -171,7 +171,8 @@
       ...verticalAngleCandidates(facts),
       ...exteriorAngleCandidates(facts),
       ...angleAdditionCandidates(facts),
-      ...segmentAdditionCandidates(facts)
+      ...segmentAdditionCandidates(facts),
+      ...equalAnglesImplyEqualSidesCandidates(facts)
     ];
     const dynamicResults = dynamicRules.map((rule) => ({
       ruleId: rule.id,
@@ -326,6 +327,42 @@
     return results;
   }
 
+  // In a triangle, equal interior angles face equal opposite sides.
+  function equalAnglesImplyEqualSidesCandidates(known) {
+    const triangles = known.map((fact) => {
+      const match = /^triangle\(([A-Z])([A-Z])([A-Z])\)$/.exec(fact);
+      return match ? { fact, vertices: match.slice(1) } : null;
+    }).filter(Boolean);
+    const equalities = known.map((fact) => ({ fact, equality: parseEquality(fact) }))
+      .filter((item) => item.equality && item.equality.left.startsWith("angle(") && item.equality.right.startsWith("angle("));
+    const results = [];
+    for (const triangle of triangles) {
+      if (new Set(triangle.vertices).size !== 3) continue;
+      for (const item of equalities) {
+        const left = parseAngle(item.equality.left);
+        const right = parseAngle(item.equality.right);
+        if (!left || !right) continue;
+        const leftVertices = [left.first, left.vertex, left.last];
+        const rightVertices = [right.first, right.vertex, right.last];
+        if (new Set(leftVertices).size !== 3 || new Set(rightVertices).size !== 3) continue;
+        if (!triangle.vertices.every((point) => leftVertices.includes(point) && rightVertices.includes(point))) continue;
+        if (left.vertex === right.vertex) continue;
+        const leftSide = "side(" + leftVertices.filter((point) => point !== left.vertex).sort().join("") + ")";
+        const rightSide = "side(" + rightVertices.filter((point) => point !== right.vertex).sort().join("") + ")";
+        if (leftSide === rightSide) continue;
+        results.push({
+          id: "triangle-equal-angles-imply-equal-sides",
+          name: "等しい角に対する辺は等しい",
+          premises: [triangle.fact, item.fact],
+          conclusion: [leftSide, rightSide].sort().join("="),
+          explain: "三角形で等しい角に対する辺は等しい。",
+          category: "triangle"
+        });
+      }
+    }
+    return results;
+  }
+
   // rayInsideAngle(O,A,B,C) states that ray OB lies inside angle AOC.
   function angleAdditionCandidates(known) {
     const results = [];
@@ -452,6 +489,30 @@
             conclusion: verticalAngles.conclusion,
             explanation: verticalAngles.explain,
             category: verticalAngles.category
+          };
+          known.push(step.conclusion);
+          sourceByFact.set(step.conclusion, { type: "step", index: step.index });
+          steps.push(step);
+          changed = true;
+          if (step.conclusion === goal) {
+            return { success: true, goal, facts: known, steps, reason: "proved" };
+          }
+        }
+
+        const equalSides = equalAnglesImplyEqualSidesCandidates(known).find((rule) => !known.includes(rule.conclusion));
+        if (equalSides) {
+          const step = {
+            index: steps.length + 1,
+            ruleId: equalSides.id,
+            ruleName: equalSides.name,
+            premises: [...equalSides.premises],
+            premiseSources: equalSides.premises.map((premise) => ({
+              fact: premise,
+              ...(sourceByFact.get(premise) || { type: "unknown" })
+            })),
+            conclusion: equalSides.conclusion,
+            explanation: equalSides.explain,
+            category: equalSides.category
           };
           known.push(step.conclusion);
           sourceByFact.set(step.conclusion, { type: "step", index: step.index });
