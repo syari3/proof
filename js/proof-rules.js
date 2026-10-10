@@ -663,7 +663,7 @@
           }
         }
 
-        const angleSum = triangleAngleSumCandidates(known).find((rule) => !known.includes(rule.conclusion));
+        const angleSum = triangleAngleSumCandidates(known).find((rule) => rule.conclusion === goal && !known.includes(rule.conclusion));
         if (angleSum) {
           const step = {
             index: steps.length + 1,
