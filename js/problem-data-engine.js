@@ -86,6 +86,19 @@
       }
     }
 
+    // Three distinct points on one circle are non-collinear, so they name a triangle.
+    // This lets side equalities apply to the corresponding isosceles triangle without
+    // requiring the user to redundantly declare every triangle in the diagram.
+    const circlePoints = facts.map((fact) => /^onCircle\(([A-Z])\)$/.exec(fact))
+      .filter(Boolean).map((match) => match[1]);
+    for (let i = 0; i < circlePoints.length; i++) {
+      for (let j = i + 1; j < circlePoints.length; j++) {
+        for (let k = j + 1; k < circlePoints.length; k++) {
+          add("triangle(" + [circlePoints[i], circlePoints[j], circlePoints[k]].sort().join("") + ")");
+        }
+      }
+    }
+
     // A parallel-through-point construction explicitly defines a line parallel to
     // another line. Preserve that relation without guessing any angle correspondence.
     for (const object of (problem.geometry.objects || [])) {
