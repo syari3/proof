@@ -313,3 +313,24 @@ const repeatedSegmentPoints = rules.prove(
 );
 assert.equal(repeatedSegmentPoints.success, false, "点の順序に同じ点が重複する不正な事実を拒否する");
 console.log("✓ 線分の加法");
+
+
+const equalAnglesImplyEqualSides = rules.prove(
+  ["triangle(ABC)", "angle(ABC)=angle(BCA)"],
+  "side(AB)=side(AC)"
+);
+assert.equal(equalAnglesImplyEqualSides.success, true, "三角形の等しい内角に対する辺の等しさを導く");
+assert.equal(equalAnglesImplyEqualSides.steps[0].ruleId, "triangle-equal-angles-imply-equal-sides");
+
+const missingTriangleForConverse = rules.prove(
+  ["angle(ABC)=angle(BCA)"],
+  "side(AB)=side(AC)"
+);
+assert.equal(missingTriangleForConverse.success, false, "三角形の指定なしでは角の等しさから辺の等しさを導かない");
+
+const mismatchedTriangleAngles = rules.prove(
+  ["triangle(ABC)", "angle(ABC)=angle(ABD)"],
+  "side(AB)=side(AC)"
+);
+assert.equal(mismatchedTriangleAngles.success, false, "対象三角形の内角でない角を使って辺の等しさを導かない");
+console.log("✓ 等しい角に対する辺は等しい");
