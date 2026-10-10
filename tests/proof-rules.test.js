@@ -463,15 +463,15 @@ console.log("✓ 円周角・中心角の負例");
 
 
 const genericDiameter = rules.prove(
-  ["onCircle(P)", "onCircle(Q)", "onCircle(R)", "diameter(PR)"],
+  ["onCircle(P)", "onCircle(Q)", "onCircle(R)", "diameter(PQ)"],
   "angle(PRQ)=90"
 );
 assert.equal(genericDiameter.success, true, "任意の頂点名でも直径に対する円周角を導く");
 assert.equal(genericDiameter.steps[0].ruleId, "diameter-inscribed-angle");
-assert.deepEqual(genericDiameter.steps[0].premises, ["onCircle(R)", "onCircle(P)", "onCircle(R)"].filter((x,i,a)=>a.indexOf(x)===i).concat(["diameter(PR)"]));
+assert.deepEqual(genericDiameter.steps[0].premises, ["onCircle(R)", "onCircle(P)", "onCircle(Q)", "diameter(PQ)"]);
 
 const genericDiameterMissingEndpoint = rules.prove(
-  ["onCircle(P)", "onCircle(Q)", "diameter(PR)"],
+  ["onCircle(P)", "onCircle(Q)", "diameter(PQ)"],
   "angle(PRQ)=90"
 );
 assert.equal(genericDiameterMissingEndpoint.success, false, "直径の端点・頂点が円周上と示されない場合は直角を導かない");
