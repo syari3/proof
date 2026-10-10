@@ -92,40 +92,40 @@
 
 
   // sameRay(V,A,D) means A and D lie on the same ray starting at V.
-  // This is stronger than merely saying that V, A, D are collinear.
+  // Collinearity alone is insufficient: the points could lie on opposite rays.
   function parseAngle(fact) {
     const match = /^angle\\(([A-Z])([A-Z])([A-Z])\\)$/.exec(fact);
     return match ? { text: fact, first: match[1], vertex: match[2], last: match[3] } : null;
   }
 
-  function findSameAngleNotation(known) {
-    const angles = known.map(parseAngle).filter(Boolean);
+  function findSameAngleNotation(known, goal) {
+    const equality = parseEquality(goal);
+    if (!equality) return null;
+    const a = parseAngle(equality.left);
+    const b = parseAngle(equality.right);
+    if (!a || !b || a.vertex !== b.vertex) return null;
+
     const sameRayFacts = known
       .map((fact) => /^sameRay\\(([A-Z]),([A-Z]),([A-Z])\\)$/.exec(fact))
-      .filter(Boolean)
-      .map((match) => ({ vertex: match[1], points: [match[2], match[3]] }));
+      .filter(Boolean);
 
-    for (let i = 0; i < angles.length; i++) {
-      for (let j = i + 1; j < angles.length; j++) {
-        const a = angles[i];
-        const b = angles[j];
-        if (a.text === b.text || a.vertex !== b.vertex) continue;
-        const firstMatches = a.first === b.first || sameRayFacts.some((ray) =>
-          ray.vertex === a.vertex &&
-          ((ray.points.includes(a.first) && ray.points.includes(b.first)))
-        );
-        const lastMatches = a.last === b.last || sameRayFacts.some((ray) =>
-          ray.vertex === a.vertex &&
-          ((ray.points.includes(a.last) && ray.points.includes(b.last)))
-        );
-        if (!firstMatches || !lastMatches) continue;
-        const conclusion = a.text + "=" + b.text;
-        if (!known.includes(conclusion)) {
-          return { premises: [ "sameRay(" + a.vertex + "," + a.first + "," + b.first + ")", "sameRay(" + a.vertex + "," + a.last + "," + b.last + ")" ].filter((fact) => known.includes(fact)), conclusion };
-        }
-      }
+    function raysMatch(first, second, vertex) {
+      return first === second || sameRayFacts.some((ray) =>
+        ray[1] === vertex &&
+        ((ray[2] === first && ray[3] === second) ||
+         (ray[2] === second && ray[3] === first))
+      );
     }
-    return null;
+
+    if (!raysMatch(a.first, b.first, a.vertex) ||
+        !raysMatch(a.last, b.last, a.vertex)) return null;
+
+    const premises = sameRayFacts
+      .filter((ray) => ray[1] === a.vertex)
+      .filter((ray) => [a.first, b.first].every((point) => ray.slice(2).includes(point)) ||
+                       [a.last, b.last].every((point) => ray.slice(2).includes(point)))
+      .map((ray) => "sameRay(" + ray[1] + "," + ray[2] + "," + ray[3] + ")");
+    return { premises, conclusion: goal };
   }
 
   function derive(facts) {
@@ -256,7 +256,7 @@
       }
 
       if (steps.length < maxSteps) {
-        const sameAngle = findSameAngleNotation(known);
+        const sameAngle = findSameAngleNotation(known, goal);
         if (sameAngle) {
           const step = {
             index: steps.length + 1,
