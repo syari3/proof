@@ -208,6 +208,127 @@
     }
   ];
 
+
+    {
+      id: "parallel.alternate-interior-angles",
+      name: "平行線の錯角",
+      subject: "parallel",
+      premises: [
+        { type: "parallel-lines", lines: ["l", "m"] },
+        { type: "transversal-intersects-lines", transversal: "t", lines: ["l", "m"] },
+        { type: "angle-position", relation: "alternate-interior", angles: ["angle1", "angle2"], transversal: "t", lines: ["l", "m"] }
+      ],
+      conclusions: [{ type: "equal-angle-symbols", angles: ["angle1", "angle2"] }],
+      reason: "平行な2直線に1本の直線が交わると、錯角は等しい。",
+      level: "initial",
+      testCases: { positive: "平行条件と錯角の位置がそろえば角が等しい", negative: "平行条件または錯角の位置が不明なら導けない" }
+    },
+    {
+      id: "parallel.corresponding-angles",
+      name: "平行線の同位角",
+      subject: "parallel",
+      premises: [
+        { type: "parallel-lines", lines: ["l", "m"] },
+        { type: "transversal-intersects-lines", transversal: "t", lines: ["l", "m"] },
+        { type: "angle-position", relation: "corresponding", angles: ["angle1", "angle2"], transversal: "t", lines: ["l", "m"] }
+      ],
+      conclusions: [{ type: "equal-angle-symbols", angles: ["angle1", "angle2"] }],
+      reason: "平行な2直線に1本の直線が交わると、同位角は等しい。",
+      level: "initial",
+      testCases: { positive: "平行条件と同位角の位置がそろえば角が等しい", negative: "角の位置が同位角でなければ導けない" }
+    },
+    {
+      id: "triangle.exterior-angle",
+      name: "三角形の外角定理",
+      subject: "triangle",
+      premises: [
+        { type: "triangle", vertices: ["A", "B", "C"] },
+        { type: "side-extension", side: ["B", "C"], through: "C", extensionPoint: "D" }
+      ],
+      conclusions: [{ type: "angle-sum-equals", leftAngle: ["A", "C", "D"], rightAngles: [["B", "A", "C"], ["A", "B", "C"]] }],
+      reason: "三角形の外角は、それと隣り合わない2つの内角の和に等しい。",
+      level: "initial",
+      testCases: { positive: "正しく指定した外角は離れた2内角の和", negative: "隣接する内角を外角定理の右辺に含めない" }
+    },
+    {
+      id: "angle.addition",
+      name: "角の加法",
+      subject: "angle",
+      premises: [
+        { type: "ray-inside-angle", vertex: "O", outerRays: ["OA", "OC"], innerRay: "OB" }
+      ],
+      conclusions: [{ type: "angle-sum-equals", leftAngle: ["A", "O", "C"], rightAngles: [["A", "O", "B"], ["B", "O", "C"]] }],
+      reason: "大きな角は、内部にある半直線で分けた角の和に等しい。",
+      level: "initial",
+      testCases: { positive: "OBが∠AOCの内部にあれば∠AOC=∠AOB+∠BOC", negative: "半直線が角の内部にあると確認できなければ加法を使わない" }
+    },
+    {
+      id: "segment.addition",
+      name: "線分の加法",
+      subject: "segment",
+      premises: [
+        { type: "collinear-point-order", points: ["A", "B", "C"], middle: "B" }
+      ],
+      conclusions: [{ type: "segment-sum-equals", whole: ["A", "C"], parts: [["A", "B"], ["B", "C"]] }],
+      reason: "Bが線分AC上にあるとき、AC=AB+BCである。",
+      level: "initial",
+      testCases: { positive: "BがAとCの間にあればAC=AB+BC", negative: "点の順序が分からない場合は線分の加法を使わない" }
+    },
+    {
+      id: "logic.equality-transitivity",
+      name: "等式の推移",
+      subject: "logic",
+      premises: [
+        { type: "equal-quantities", left: "X", right: "Y", quantityKind: "same" },
+        { type: "equal-quantities", left: "Y", right: "Z", quantityKind: "same" }
+      ],
+      conclusions: [{ type: "equal-quantities", left: "X", right: "Z", quantityKind: "same" }],
+      reason: "同じ種類の量について、X=Y、Y=ZならX=Zである。",
+      level: "initial",
+      testCases: { positive: "等しい角や等しい長さをつなげて結論を導ける", negative: "角度と長さなど異なる種類の量はつながない" }
+    },
+    {
+      id: "circle.inscribed-angles-same-arc",
+      name: "同じ弧に対する円周角",
+      subject: "circle",
+      premises: [
+        { type: "circle-point", circle: "O", point: "A" },
+        { type: "inscribed-angle", circle: "O", angle: ["A", "C", "B"], interceptedArc: ["A", "B"] },
+        { type: "inscribed-angle", circle: "O", angle: ["A", "D", "B"], interceptedArc: ["A", "B"] }
+      ],
+      conclusions: [{ type: "equal-angles", angles: [["A", "C", "B"], ["A", "D", "B"]] }],
+      reason: "同じ弧に対する円周角は等しい。",
+      level: "initial",
+      testCases: { positive: "同じ円の同じ弧に対する2つの円周角は等しい", negative: "円または対応する弧が異なる場合は導けない" }
+    },
+    {
+      id: "circle.equal-arcs-inscribed-angles",
+      name: "等しい弧に対する円周角",
+      subject: "circle",
+      premises: [
+        { type: "equal-arcs", circle: "O", arcs: [["A", "B"], ["C", "D"]] },
+        { type: "inscribed-angle", circle: "O", angle: ["A", "E", "B"], interceptedArc: ["A", "B"] },
+        { type: "inscribed-angle", circle: "O", angle: ["C", "F", "D"], interceptedArc: ["C", "D"] }
+      ],
+      conclusions: [{ type: "equal-angles", angles: [["A", "E", "B"], ["C", "F", "D"]] }],
+      reason: "同じ円の等しい弧に対する円周角は等しい。",
+      level: "initial",
+      testCases: { positive: "同じ円の等しい弧に対する円周角は等しい", negative: "等しい弧の条件がなければ導けない" }
+    },
+    {
+      id: "circle.central-inscribed-angle",
+      name: "中心角と円周角の関係",
+      subject: "circle",
+      premises: [
+        { type: "central-angle", circle: "O", angle: ["A", "O", "B"], interceptedArc: ["A", "B"] },
+        { type: "inscribed-angle", circle: "O", angle: ["A", "C", "B"], interceptedArc: ["A", "B"] }
+      ],
+      conclusions: [{ type: "angle-measure-ratio", largerAngle: ["A", "O", "B"], smallerAngle: ["A", "C", "B"], ratio: 2 }],
+      reason: "同じ弧に対する中心角は円周角の2倍である。",
+      level: "initial",
+      testCases: { positive: "同じ円の同じ弧に対する中心角と円周角には2倍の関係がある", negative: "対応する弧が違う場合は2倍の関係を導かない" }
+    },
+
   const ruleIds = new Set();
   for (const rule of rules) {
     if (ruleIds.has(rule.id)) throw new Error("Duplicate theorem rule id: " + rule.id);
