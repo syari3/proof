@@ -34,6 +34,12 @@
 - `tests/theorem-catalog.test.js`: カタログ構造と実行時ID接続のテスト
 - `docs/geometry-theorem-catalog.md`: 定理カタログの仕様と未実装範囲
 
+## 問題データ形式（初版）
+
+- `docs/problem-data-format.md`: 専用形式 v1 の仕様
+- `data/problem-examples/shizuoka-2025-proof-7-1.json`: 2025年度の入試問題を構造化した例（証明そのものは未検証）
+- `tests/problem-data-format.test.js`: JSON構造と参照IDの基本検査
+
 ## 次の開発ステップ
 
 1. 型付きカタログの前提・結論を実行時の推論処理に段階的に接続する
