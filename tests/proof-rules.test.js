@@ -250,3 +250,25 @@ const missingParallelCondition = rules.prove(
 );
 assert.equal(missingParallelCondition.success, false, "平行条件がなければ同位角の定理を適用しない");
 console.log("✓ 平行線の同位角");
+
+
+const exteriorAngle = rules.prove(
+  ["triangle(ABC)", "extends(BC,D)"],
+  "angle(ACD)=angle(BAC)+angle(ABC)"
+);
+assert.equal(exteriorAngle.success, true, "辺BCをCの先へ延長した外角は離れた2内角の和になる");
+assert.equal(exteriorAngle.steps[0].ruleId, "triangle-exterior-angle");
+assert.deepEqual(exteriorAngle.steps[0].premises, ["triangle(ABC)", "extends(BC,D)"]);
+
+const missingExtension = rules.prove(
+  ["triangle(ABC)"],
+  "angle(ACD)=angle(BAC)+angle(ABC)"
+);
+assert.equal(missingExtension.success, false, "延長線の事実がなければ外角定理を適用しない");
+
+const wrongSideExtension = rules.prove(
+  ["triangle(ABC)", "extends(AB,D)"],
+  "angle(ACD)=angle(BAC)+angle(ABC)"
+);
+assert.equal(wrongSideExtension.success, false, "別の辺を延長した事実では指定した外角を導かない");
+console.log("✓ 三角形の外角定理");
