@@ -205,8 +205,7 @@
         positive: "1辺とその両端の2角が対応して等しいとき合同",
         negative: "等しい辺の両端でない角を使ってASAと判定しない"
       }
-    }
-
+    },
     {
       id: "parallel.alternate-interior-angles",
       name: "平行線の錯角",
