@@ -413,8 +413,6 @@
         ];
         for (let a = 0; a < sides.length; a++) for (let b = a + 1; b < sides.length; b++) {
           const [u,v] = sides[a], [x,y] = sides[b];
-          const third = first.vertices.find((p) => p !== u && p !== v && p !== x && p !== y);
-          if (!third) continue;
           const s1 = sideEqualities.find((e) => (e.left === sideKey(u,v) && e.right === sideKey(pairs.get(u),pairs.get(v))) || (e.right === sideKey(u,v) && e.left === sideKey(pairs.get(u),pairs.get(v))));
           const s2 = sideEqualities.find((e) => (e.left === sideKey(x,y) && e.right === sideKey(pairs.get(x),pairs.get(y))) || (e.right === sideKey(x,y) && e.left === sideKey(pairs.get(x),pairs.get(y))));
           if (!s1 || !s2 || s1.fact === s2.fact) continue;
@@ -450,8 +448,7 @@
     }).filter(Boolean);
     const angleEqualities = known.map((fact) => {
       const match = /^angle\(([A-Z])([A-Z])([A-Z])\)=angle\(([A-Z])([A-Z])([A-Z])\)$/.exec(fact);
-      if (!match) return null;
-      return { fact, left: match.slice(1, 4), right: match.slice(4, 7) };
+      return match ? { fact, left: match.slice(1, 4), right: match.slice(4, 7) } : null;
     }).filter(Boolean);
     const results = [];
     const sideKey = (a,b) => [a,b].sort().join("");
@@ -459,7 +456,8 @@
       [v[0],v[1],v[2]],[v[0],v[2],v[1]],[v[1],v[0],v[2]],
       [v[1],v[2],v[0]],[v[2],v[0],v[1]],[v[2],v[1],v[0]]
     ];
-    const angleAt = (angle, vertex) => angle[1] === vertex && angle[0] !== angle[2];
+    const angleAt = (angle, vertex, other1, other2) =>
+      angle[1] === vertex && [angle[0],angle[2]].sort().join("") === [other1,other2].sort().join("");
     for (let i = 0; i < triangles.length; i++) for (let j = i + 1; j < triangles.length; j++) {
       const first = triangles[i], second = triangles[j];
       for (const mapped of permutations(second.vertices)) {
@@ -470,30 +468,22 @@
             (e.right === sideKey(u,v) && e.left === sideKey(pairs.get(u),pairs.get(v)))
           );
           if (!side) continue;
-          const endpointPairs = [[u,v],[v,u]];
-          for (const [a,b] of endpointPairs) {
-            const angle1 = angleEqualities.find((e) =>
-              (angleAt(e.left,a) && angleAt(e.right,pairs.get(a)) && [e.left[0],e.left[2]].sort().join("") === [first.vertices.find(p=>p!==a), first.vertices.find(p=>p!==a)].sort().join("") ) ||
-              (angleAt(e.right,a) && angleAt(e.left,pairs.get(a)))
+          const w = first.vertices.find((p) => p !== u && p !== v);
+          const mw = pairs.get(w);
+          const matchingAngleAt = (vertex, other, mappedVertex, mappedOther) =>
+            angleEqualities.find((e) =>
+              (angleAt(e.left,vertex,other,w) && angleAt(e.right,mappedVertex,mappedOther,mw)) ||
+              (angleAt(e.right,vertex,other,w) && angleAt(e.left,mappedVertex,mappedOther,mw))
             );
-            const angle2 = angleEqualities.find((e) => e !== angle1 &&
-              ((angleAt(e.left,b) && angleAt(e.right,pairs.get(b))) || (angleAt(e.right,b) && angleAt(e.left,pairs.get(b))))
-            );
-            if (!angle1 || !angle2 || angle1.fact === angle2.fact || angle1.fact === side.fact || angle2.fact === side.fact) continue;
-            // Each endpoint angle must be formed by the side's endpoint and the third vertex.
-            const otherFirst = first.vertices.find((p) => p !== a && p !== b);
-            const otherSecond = mapped.find((p) => p !== pairs.get(a) && p !== pairs.get(b));
-            const valid = (e, vertex, third, mappedVertex, mappedThird) =>
-              ((e.left[1] === vertex && [e.left[0],e.left[2]].includes(third) && [e.left[0],e.left[2]].includes(b === vertex ? a : b) &&
-                e.right[1] === mappedVertex && [e.right[0],e.right[2]].includes(mappedThird)) ||
-               (e.right[1] === vertex && [e.right[0],e.right[2]].includes(third) && e.left[1] === mappedVertex && [e.left[0],e.left[2]].includes(mappedThird)));
-            if (!valid(angle1,a,otherFirst,pairs.get(a),otherSecond) || !valid(angle2,b,otherFirst,pairs.get(b),otherSecond)) continue;
-            const conclusion = "congruent(" + first.vertices.join("") + "," + mapped.join("") + ")";
-            if (results.some((r) => r.conclusion === conclusion)) continue;
-            results.push({ id:"triangle-congruence-asa", name:"三角形の合同条件（1組の辺とその両端の角）",
-              premises:[angle1.fact,side.fact,angle2.fact,first.fact,second.fact], conclusion,
-              explain:"1組の辺とその両端の角がそれぞれ等しい2つの三角形は合同である。", category:"congruence" });
-          }
+          const angleU = matchingAngleAt(u,v,pairs.get(u),pairs.get(v));
+          const angleV = matchingAngleAt(v,u,pairs.get(v),pairs.get(u));
+          if (!angleU || !angleV || angleU.fact === angleV.fact ||
+              angleU.fact === side.fact || angleV.fact === side.fact) continue;
+          const conclusion = "congruent(" + first.vertices.join("") + "," + mapped.join("") + ")";
+          if (results.some((r) => r.conclusion === conclusion)) continue;
+          results.push({ id:"triangle-congruence-asa", name:"三角形の合同条件（1組の辺とその両端の角）",
+            premises:[angleU.fact,side.fact,angleV.fact,first.fact,second.fact], conclusion,
+            explain:"1組の辺とその両端の角がそれぞれ等しい2つの三角形は合同である。", category:"congruence" });
         }
       }
     }
