@@ -62,6 +62,14 @@ function svgFor(kind) {
 }
 
 function renderSample(key) {
+  if (key === "random") {
+    const result = window.ProblemGenerator.generate(samples, window.ProofRules);
+    if (!result.problem) {
+      note.textContent = "登録済みの問題型に、証明ルールで確認できるものがありません。";
+      return;
+    }
+    key = result.key;
+  }
   const sample = samples[key];
   if (!sample) return;
   topic.textContent = sample.topic;
@@ -92,8 +100,8 @@ function renderSample(key) {
   const derivations = window.ProofRules ? window.ProofRules.derive(sample.facts) : [];
   const matchedRule = derivations.find((item) => item.conclusion === sample.expectedConclusion);
   note.textContent = matchedRule
-    ? "✓ 初期ルール検証OK：「" + matchedRule.ruleName + "」の前提条件がそろい、結論を導けます。任意の図形を証明する一般的な検証器は、まだ未実装です。"
-    : "このサンプルに対応するルールが見つからず、結論を確認できませんでした。";
+    ? "✓ 証明ルール検証OK：「" + matchedRule.ruleName + "」の前提条件がそろい、結論を導けます。" + (select.value === "random" ? " 登録済みの検証済み問題型から選びました。条件や図形そのものを自由に作る機能は今後追加します。" : " 任意の図形を証明する一般的な検証器は、まだ未実装です。")
+    : "この問題型に対応するルールが見つからず、結論を確認できませんでした。";
 }
 
 button.addEventListener("click", () => renderSample(select.value));
