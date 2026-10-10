@@ -497,8 +497,8 @@
     const knownSet = new Set(known);
     const results = [];
     const patterns = [
-      { fact: /^alternateAngles\\(([^,()]+),([^,()]+),([A-Z]),([A-Z]),([A-Z])\\)$/, id: "parallel-alternate-interior", name: "平行線の錯角", relation: "alternateAngles", explain: "平行線の錯角は等しい。" },
-      { fact: /^correspondingAngles\\(([^,()]+),([^,()]+),([A-Z]),([A-Z]),([A-Z])\\)$/, id: "parallel-corresponding-angles", name: "平行線の同位角", relation: "correspondingAngles", explain: "平行線の同位角は等しい。" }
+      { fact: /^alternateAngles\(([^,()]+),([^,()]+),([A-Z]),([A-Z]),([A-Z])\)$/, id: "parallel-alternate-interior", name: "平行線の錯角", relation: "alternateAngles", explain: "平行線の錯角は等しい。" },
+      { fact: /^correspondingAngles\(([^,()]+),([^,()]+),([A-Z]),([A-Z]),([A-Z])\)$/, id: "parallel-corresponding-angles", name: "平行線の同位角", relation: "correspondingAngles", explain: "平行線の同位角は等しい。" }
     ];
     for (const fact of known) for (const pattern of patterns) {
       const match = pattern.fact.exec(fact);
