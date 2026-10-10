@@ -169,7 +169,9 @@
       ...triangleAngleSumCandidates(facts),
       ...equalRadiusCandidates(facts),
       ...verticalAngleCandidates(facts),
-      ...exteriorAngleCandidates(facts)
+      ...exteriorAngleCandidates(facts),
+      ...angleAdditionCandidates(facts),
+      ...segmentAdditionCandidates(facts)
     ];
     const dynamicResults = dynamicRules.map((rule) => ({
       ruleId: rule.id,
@@ -324,6 +326,46 @@
     return results;
   }
 
+  // rayInsideAngle(O,A,B,C) states that ray OB lies inside angle AOC.
+  function angleAdditionCandidates(known) {
+    const results = [];
+    for (const fact of known) {
+      const match = /^rayInsideAngle\(([A-Z]),([A-Z]),([A-Z]),([A-Z])\)$/.exec(fact);
+      if (!match) continue;
+      const [, o, a, b, c] = match;
+      if (new Set([o, a, b, c]).size !== 4) continue;
+      results.push({
+        id: "angle-addition",
+        name: "角の加法",
+        premises: [fact],
+        conclusion: "angle(" + a + o + c + ")=angle(" + a + o + b + ")+angle(" + b + o + c + ")",
+        explain: "大きな角は、内部にある半直線で分けた角の和に等しい。",
+        category: "angle"
+      });
+    }
+    return results;
+  }
+
+  // between(A,B,C) states that B lies between A and C on one straight line.
+  function segmentAdditionCandidates(known) {
+    const results = [];
+    for (const fact of known) {
+      const match = /^between\(([A-Z]),([A-Z]),([A-Z])\)$/.exec(fact);
+      if (!match) continue;
+      const [, a, b, c] = match;
+      if (new Set([a, b, c]).size !== 3) continue;
+      results.push({
+        id: "segment-addition",
+        name: "線分の加法",
+        premises: [fact],
+        conclusion: "side(" + a + c + ")=side(" + a + b + ")+side(" + b + c + ")",
+        explain: "Bが線分AC上にあるとき、AC=AB+BCである。",
+        category: "segment"
+      });
+    }
+    return results;
+  }
+
   // Forward-chain from the supplied facts, recording every inference.
   // This is a bounded rule engine, not a complete geometry prover.
   function prove(facts, goal, maxSteps = 100) {
@@ -410,6 +452,54 @@
             conclusion: verticalAngles.conclusion,
             explanation: verticalAngles.explain,
             category: verticalAngles.category
+          };
+          known.push(step.conclusion);
+          sourceByFact.set(step.conclusion, { type: "step", index: step.index });
+          steps.push(step);
+          changed = true;
+          if (step.conclusion === goal) {
+            return { success: true, goal, facts: known, steps, reason: "proved" };
+          }
+        }
+
+        const angleAddition = angleAdditionCandidates(known).find((rule) => !known.includes(rule.conclusion));
+        if (angleAddition) {
+          const step = {
+            index: steps.length + 1,
+            ruleId: angleAddition.id,
+            ruleName: angleAddition.name,
+            premises: [...angleAddition.premises],
+            premiseSources: angleAddition.premises.map((premise) => ({
+              fact: premise,
+              ...(sourceByFact.get(premise) || { type: "unknown" })
+            })),
+            conclusion: angleAddition.conclusion,
+            explanation: angleAddition.explain,
+            category: angleAddition.category
+          };
+          known.push(step.conclusion);
+          sourceByFact.set(step.conclusion, { type: "step", index: step.index });
+          steps.push(step);
+          changed = true;
+          if (step.conclusion === goal) {
+            return { success: true, goal, facts: known, steps, reason: "proved" };
+          }
+        }
+
+        const segmentAddition = segmentAdditionCandidates(known).find((rule) => !known.includes(rule.conclusion));
+        if (segmentAddition) {
+          const step = {
+            index: steps.length + 1,
+            ruleId: segmentAddition.id,
+            ruleName: segmentAddition.name,
+            premises: [...segmentAddition.premises],
+            premiseSources: segmentAddition.premises.map((premise) => ({
+              fact: premise,
+              ...(sourceByFact.get(premise) || { type: "unknown" })
+            })),
+            conclusion: segmentAddition.conclusion,
+            explanation: segmentAddition.explain,
+            category: segmentAddition.category
           };
           known.push(step.conclusion);
           sourceByFact.set(step.conclusion, { type: "step", index: step.index });
