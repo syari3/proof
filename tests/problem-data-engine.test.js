@@ -22,6 +22,29 @@ assert.equal(converted.goal, "similar(ABC,ACB)");
 assert.equal(Adapter.canonicalAngle("A", "B", "C"), Adapter.canonicalAngle("C", "B", "A"));
 assert.equal(Adapter.canonicalSegment("B", "A"), "AB");
 
+// Three distinct points on one circle form a triangle, allowing the isosceles rule to apply.
+const circleTriangleProblem = {
+  format: "proof-problem",
+  version: 1,
+  id: "circle-points-form-triangle",
+  geometry: {
+    points: [{ id: "A" }, { id: "C" }, { id: "D" }],
+    constraints: [
+      { type: "point-on-circle", point: "A", circle: "O" },
+      { type: "point-on-circle", point: "C", circle: "O" },
+      { type: "point-on-circle", point: "D", circle: "O" },
+      { type: "equal-segments", segments: [["C", "A"], ["C", "D"]] }
+    ],
+    constructions: [],
+    dynamicConditions: []
+  },
+  goal: { type: "angle-equality", angles: [["C", "A", "D"], ["C", "D", "A"]] }
+};
+const circleTriangleConverted = Adapter.convert(circleTriangleProblem);
+assert.ok(circleTriangleConverted.facts.includes("triangle(ACD)"));
+const circleTriangleProof = Adapter.run(circleTriangleProblem, Rules);
+assert.equal(circleTriangleProof.success, true, "円周上の3点から三角形を認識し、二等辺三角形の底角を導く");
+
 // A known supported problem should pass through the same adapter and inference engine.
 const isosceles = {
   ...sample,
