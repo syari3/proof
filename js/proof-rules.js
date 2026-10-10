@@ -509,9 +509,9 @@
   // A diameter's endpoints and the angle vertex must be explicitly on the circle.
   // The legacy fact format uses onCircle(P) plus diameter(QR); arbitrary labels work.
   function diameterInscribedAngleCandidates(known) {
-    const onCircle = new Set(known.map((fact) => /^onCircle\\(([A-Z])\\)$/.exec(fact)).filter(Boolean).map((m) => m[1]));
+    const onCircle = new Set(known.map((fact) => /^onCircle\(([A-Z])\)$/.exec(fact)).filter(Boolean).map((m) => m[1]));
     const diameters = known.map((fact) => {
-      const match = /^diameter\\(([A-Z])([A-Z])\\)$/.exec(fact);
+      const match = /^diameter\(([A-Z])([A-Z])\)$/.exec(fact);
       return match && match[1] !== match[2] ? { fact, first: match[1], last: match[2] } : null;
     }).filter(Boolean);
     const results = [];
