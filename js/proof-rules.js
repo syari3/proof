@@ -286,12 +286,20 @@
   // Two distinct corresponding angle pairs determine the third pair by angle sum.
   function triangleSimilarityAACandidates(known) {
     const triangles = known.map((fact) => {
-      const match = /^triangle\(([A-Z])([A-Z])([A-Z])\)$/.exec(fact);
+      const match = /^triangle\\(([A-Z])([A-Z])([A-Z])\\)$/.exec(fact);
       return match ? { fact, vertices: match.slice(1) } : null;
     }).filter(Boolean).filter((triangle) => new Set(triangle.vertices).size === 3);
+    // Accept both abstract vertex-angle facts (angle(A)=angle(D)) and
+    // geometric angle facts (angle(ABC)=angle(DEF)), so circle/parallel
+    // theorems can feed directly into AA similarity.
     const anglePairs = known.map((fact) => {
-      const match = /^angle\(([A-Z])\)=angle\(([A-Z])\)$/.exec(fact);
-      return match ? { fact, first: match[1], second: match[2] } : null;
+      const match = /^angle\\(([A-Z]{1,3})\\)=angle\\(([A-Z]{1,3})\\)$/.exec(fact);
+      if (!match) return null;
+      const parse = (text) => text.length === 1
+        ? { vertex: text, points: [text] }
+        : { vertex: text[1], points: text.split("") };
+      const first = parse(match[1]), second = parse(match[2]);
+      return { fact, first: first.vertex, second: second.vertex, firstAngle: first, secondAngle: second };
     }).filter(Boolean);
     const results = [];
     for (let i = 0; i < triangles.length; i++) {
@@ -299,10 +307,15 @@
         const first = triangles[i], second = triangles[j];
         for (const a of anglePairs) {
           if (!first.vertices.includes(a.first) || !second.vertices.includes(a.second)) continue;
+          if (a.firstAngle.points.length === 3 && !a.firstAngle.points.every((p) => first.vertices.includes(p))) continue;
+          if (a.secondAngle.points.length === 3 && !a.secondAngle.points.every((p) => second.vertices.includes(p))) continue;
           for (const b of anglePairs) {
             if (a.fact === b.fact || a.first === b.first || a.second === b.second) continue;
             if (!first.vertices.includes(b.first) || !second.vertices.includes(b.second)) continue;
+            if (b.firstAngle.points.length === 3 && !b.firstAngle.points.every((p) => first.vertices.includes(p))) continue;
+            if (b.secondAngle.points.length === 3 && !b.secondAngle.points.every((p) => second.vertices.includes(p))) continue;
             const mapping = new Map([[a.first, a.second], [b.first, b.second]]);
+            if (new Set(mapping.values()).size !== 2) continue;
             const remainingFirst = first.vertices.find((point) => !mapping.has(point));
             const usedSecond = new Set(mapping.values());
             const remainingSecond = second.vertices.find((point) => !usedSecond.has(point));
