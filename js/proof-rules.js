@@ -34,14 +34,6 @@
       category: "circle"
     },
     {
-      id: "angle-equality-transitivity",
-      name: "等しい角の推移",
-      premises: ["angle(ABC)=angle(BCA)", "angle(BCA)=angle(DEF)"],
-      conclusion: "angle(ABC)=angle(DEF)",
-      explain: "∠ABCと∠BCAが等しく、∠BCAと∠DEFも等しいので、∠ABCと∠DEFは等しい。",
-      category: "angle"
-    },
-    {
       id: "triangle-similarity-aa",
       name: "三角形の相似条件（2組の角）",
       premises: ["angle(A)=angle(D)", "angle(B)=angle(E)", "triangle(ABC)", "triangle(DEF)"],
@@ -69,6 +61,52 @@
         explanation: rule.explain,
         category: rule.category
       }));
+  }
+
+  // Parse equalities between angle/side expressions, e.g. angle(ABC)=angle(BCA).
+  function parseEquality(fact) {
+    const match = /^(angle\\([^()]+\\)|side\\([^()]+\\))=(angle\\([^()]+\\)|side\\([^()]+\\))$/.exec(fact);
+    return match ? { left: match[1], right: match[2] } : null;
+  }
+
+  // Equality is transitive for angles and segment lengths. Generate the
+  // actual conclusion from the available facts instead of hard-coding one
+  // particular chain of angle names.
+  function findTransitiveEquality(known) {
+    const equalities = known
+      .map((fact) => ({ fact, equality: parseEquality(fact) }))
+      .filter((item) => item.equality);
+
+    for (const first of equalities) {
+      for (const second of equalities) {
+        if (first.fact === second.fact) continue;
+        const a = first.equality;
+        const b = second.equality;
+        let left = null;
+        let right = null;
+
+        if (a.right === b.left) {
+          left = a.left;
+          right = b.right;
+        } else if (a.right === b.right) {
+          left = a.left;
+          right = b.left;
+        } else if (a.left === b.left) {
+          left = a.right;
+          right = b.right;
+        } else if (a.left === b.right) {
+          left = a.right;
+          right = b.left;
+        }
+
+        if (!left || !right || left === right) continue;
+        const conclusion = left + "=" + right;
+        if (!known.includes(conclusion)) {
+          return { premises: [first.fact, second.fact], conclusion };
+        }
+      }
+    }
+    return null;
   }
 
   // Forward-chain from the supplied facts, recording every inference.
@@ -115,6 +153,32 @@
 
         if (rule.conclusion === goal) {
           return { success: true, goal, facts: known, steps, reason: "proved" };
+        }
+      }
+
+      if (steps.length < maxSteps) {
+        const transitive = findTransitiveEquality(known);
+        if (transitive) {
+          const step = {
+            index: steps.length + 1,
+            ruleId: "equality-transitivity",
+            ruleName: "等式の推移",
+            premises: transitive.premises,
+            premiseSources: transitive.premises.map((premise) => ({
+              fact: premise,
+              ...(sourceByFact.get(premise) || { type: "unknown" })
+            })),
+            conclusion: transitive.conclusion,
+            explanation: "等しい2つの量がそれぞれ同じ量に等しいので、その2つの量も等しい。",
+            category: transitive.conclusion.startsWith("angle(") ? "angle" : "side"
+          };
+          known.push(step.conclusion);
+          sourceByFact.set(step.conclusion, { type: "step", index: step.index });
+          steps.push(step);
+          changed = true;
+          if (step.conclusion === goal) {
+            return { success: true, goal, facts: known, steps, reason: "proved" };
+          }
         }
       }
     }
