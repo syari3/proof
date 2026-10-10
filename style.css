@@ -49,6 +49,8 @@ button { font: inherit; cursor: pointer; }
 .diagram-wrap svg { display: block; width: 100%; max-height: 190px; overflow: visible; }
 .triangle-line { fill: #f6f7ff; stroke: #465bd1; stroke-width: 2.5; stroke-linejoin: round; }
 .equal-side { fill: none; stroke: #465bd1; stroke-width: 2.5; }
+.circle-line { fill: #f8f9ff; stroke: #465bd1; stroke-width: 2.5; }
+.center-dot { fill: #465bd1; stroke: none; }
 .diagram-wrap text { fill: var(--ink); font-size: 12px; font-weight: 700; }
 .diagram-wrap .side-mark { fill: #465bd1; font-size: 17px; }
 .diagram-caption { margin: 2px 0 0; color: #8790a2; font-size: 11px; }
