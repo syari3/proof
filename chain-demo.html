@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>証明チェーンの試作 | 証明問題メーカー</title>
+<link rel="stylesheet" href="./style.css">
+<script src="./js/proof-patterns.js" defer></script>
+<script src="./js/chain-demo.js" defer></script>
+</head>
+<body>
+<header class="topbar"><a class="brand" href="./"><span class="brand-mark">∠</span><span>証明問題メーカー</span></a><span class="prototype-label">証明チェーン試作</span></header>
+<main class="page-shell">
+<section class="hero"><p class="eyebrow">FIRST PROOF CHAIN</p><h1>条件から結論まで、<br><span>1段階ずつつなぐ。</span></h1><p class="hero-copy">今回は、二等辺三角形の性質と平行線の性質を組み合わせ、相似までたどり着く小さな例題を検証します。</p></section>
+<section class="workspace">
+<div class="workspace-heading"><div><p class="section-kicker">EXAMPLE</p><h2>問題</h2></div><span class="status-pill"><span class="status-dot"></span>検証用パターン</span></div>
+<div class="problem-panel"><h3>二等辺三角形と平行線</h3><p>△ABC は AB = AC の二等辺三角形である。A を通り BC に平行な直線上に、A とは異なる点 D を AB = DB となるようにとる。△ABC ∽ △BAD であることを証明しなさい。</p>
+<div class="goal-box"><span class="goal-label">証明すること</span><strong>△ABC ∽ △BAD</strong></div>
+<div class="diagram-wrap"><svg viewBox="0 0 320 180" role="img" aria-label="二等辺三角形ABCと、Aを通るBCに平行な直線上の点Dの模式図">
+<path d="M62 40 L160 145 L258 40 Z" fill="#f6f7ff" stroke="#465bd1" stroke-width="2.5"/>
+<path d="M62 40 H280" fill="none" stroke="#465bd1" stroke-width="2" stroke-dasharray="5 4"/>
+<path d="M62 40 L160 145" fill="none" stroke="#465bd1" stroke-width="2.5"/>
+<text x="54" y="28">D</text><text x="168" y="155">B</text><text x="258" y="30">A</text><text x="267" y="57">C</text>
+<text x="105" y="91" class="side-mark">／</text><text x="213" y="91" class="side-mark">／</text>
+</svg><p class="diagram-caption">模式図。条件は問題文を基準に確認してください。</p></div></div>
+<section class="proof-section"><div class="proof-heading"><h3>証明の流れ</h3><span id="step-count" class="step-count">検証中…</span></div><ol id="proof-steps" class="proof-steps"></ol><p id="validation-note" class="validation-note" aria-live="polite">証明の各段階を検証しています。</p></section>
+</section>
+<section class="roadmap"><p class="section-kicker">NEXT</p><h2>今回の確認ポイント</h2><div class="roadmap-grid"><article class="roadmap-card"><span class="roadmap-icon">1</span><div><h3>仮定から開始</h3><p>AB = AC、AB = DB、AD ∥ BC を使う</p></div></article><article class="roadmap-card"><span class="roadmap-icon">2</span><div><h3>中間の結論を追加</h3><p>角の等しさを1つずつ導く</p></div></article><article class="roadmap-card"><span class="roadmap-icon">3</span><div><h3>相似で終了</h3><p>2組の角が等しいことを確認する</p></div></article></div></section>
+<footer><a href="./">← メイン画面に戻る</a><a href="https://github.com/syari3/proof">GitHubリポジトリ</a></footer>
+</main></body></html>
