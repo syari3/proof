@@ -26,6 +26,14 @@
       category: "parallel"
     },
     {
+      id: "parallel-corresponding-angles",
+      name: "平行線の同位角",
+      premises: ["parallel(l,m)", "intersects(t,l)", "intersects(t,m)", "correspondingAngles(angle1,angle2,t,l,m)"],
+      conclusion: "angle1=angle2",
+      explain: "平行な2直線に1本の直線が交わると、同位角は等しい。",
+      category: "parallel"
+    },
+    {
       id: "diameter-inscribed-angle",
       name: "直径に対する円周角",
       premises: ["onCircle(A)", "onCircle(B)", "onCircle(C)", "diameter(BC)"],
