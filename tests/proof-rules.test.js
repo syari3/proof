@@ -639,4 +639,16 @@ const noMixedAngleSegmentAlgebra = rules.prove(
   "side(AB)=angle(DOE)"
 );
 assert.equal(noMixedAngleSegmentAlgebra.success, false, "角と線分を混同した加法計算は導かない");
+const descriptiveLineIds = rules.prove(
+  [
+    "parallel(line-EF,line-BC)",
+    "intersects(line-AB,line-EF)",
+    "intersects(line-AB,line-BC)",
+    "correspondingAngles(angle(AFE),angle(ABC),line-AB,line-EF,line-BC)"
+  ],
+  "angle(AFE)=angle(ABC)"
+);
+assert.equal(descriptiveLineIds.success, true, "parallel-angle rules accept descriptive line IDs");
+assert.equal(descriptiveLineIds.steps[0].ruleId, "parallel.corresponding-angles");
+
 console.log("✓ 角・線分の加法の逆と等しい和の推論");
