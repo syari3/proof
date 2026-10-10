@@ -63,9 +63,64 @@
       }));
   }
 
+  // Forward-chain from the supplied facts, recording every inference.
+  // This is a bounded rule engine, not a complete geometry prover.
+  function prove(facts, goal, maxSteps = 100) {
+    if (!Array.isArray(facts) || !facts.every((fact) => typeof fact === "string")) {
+      throw new TypeError("facts は文字列の配列で指定してください。");
+    }
+    if (typeof goal !== "string" || goal.length === 0) {
+      throw new TypeError("goal は空でない文字列で指定してください。");
+    }
+    if (!Number.isInteger(maxSteps) || maxSteps < 0) {
+      throw new TypeError("maxSteps は0以上の整数で指定してください。");
+    }
+
+    const known = [...new Set(facts)];
+    const steps = [];
+    if (known.includes(goal)) {
+      return { success: true, goal, facts: known, steps, reason: "goal-is-given" };
+    }
+
+    let changed = true;
+    while (changed && steps.length < maxSteps) {
+      changed = false;
+      for (const rule of rules) {
+        if (steps.length >= maxSteps) break;
+        if (!hasAllPremises(rule, known) || known.includes(rule.conclusion)) continue;
+
+        const step = {
+          index: steps.length + 1,
+          ruleId: rule.id,
+          ruleName: rule.name,
+          premises: [...rule.premises],
+          conclusion: rule.conclusion,
+          explanation: rule.explain,
+          category: rule.category
+        };
+        known.push(rule.conclusion);
+        steps.push(step);
+        changed = true;
+
+        if (rule.conclusion === goal) {
+          return { success: true, goal, facts: known, steps, reason: "proved" };
+        }
+      }
+    }
+
+    return {
+      success: false,
+      goal,
+      facts: known,
+      steps,
+      reason: steps.length >= maxSteps ? "step-limit" : "no-derivation"
+    };
+  }
+
   const api = Object.freeze({
     list: () => rules.map((rule) => ({ ...rule, premises: [...rule.premises] })),
     derive,
+    prove,
     hasAllPremises
   });
 
