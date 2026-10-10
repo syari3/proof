@@ -652,3 +652,18 @@ assert.equal(descriptiveLineIds.success, true, "parallel-angle rules accept desc
 assert.equal(descriptiveLineIds.steps[0].ruleId, "parallel.corresponding-angles");
 
 console.log("✓ 角・線分の加法の逆と等しい和の推論");
+
+
+// Same-chord inscribed angles require an explicit same-segment premise.
+const sameSegmentAngles = rules.prove(
+  ["onCircle(A)", "onCircle(B)", "onCircle(C)", "onCircle(P)", "sameSegment(AB,C,P)"],
+  "angle(ACB)=angle(APB)"
+);
+assert.equal(sameSegmentAngles.success, true, "同じ弦ABの同じ側にある円周角を導く");
+assert.equal(sameSegmentAngles.steps.some((step) => step.ruleId === "circle.angles-same-segment"), true);
+const missingSameSegment = rules.prove(
+  ["onCircle(A)", "onCircle(B)", "onCircle(C)", "onCircle(P)"],
+  "angle(ACB)=angle(APB)"
+);
+assert.equal(missingSameSegment.success, false, "円周上にあるだけでは円周角の等しさを導かない");
+console.log("✓ 同じ弦に対する円周角（同じ側の条件付き）");
