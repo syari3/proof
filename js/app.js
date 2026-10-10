@@ -8,7 +8,8 @@ const samples = {
       { statement: "AB = AC", explanation: "問題文で与えられた条件です。", reason: "仮定" },
       { statement: "∠ABC = ∠BCA", explanation: "二等辺三角形では、等しい辺に対する底角は等しくなります。", reason: "二等辺三角形の底角" }
     ],
-    diagram: "isosceles"
+    diagram: "isosceles",
+    facts: ["side(AB)=side(AC)"]
   },
   parallel: {
     topic: "平行線と角",
@@ -19,7 +20,8 @@ const samples = {
       { statement: "ℓ ∥ m", explanation: "問題文で与えられた条件です。", reason: "仮定" },
       { statement: "∠1 = ∠2", explanation: "平行な2直線に1本の直線が交わると、錯角は等しくなります。", reason: "平行線の錯角" }
     ],
-    diagram: "parallel"
+    diagram: "parallel",
+    facts: ["parallel(l,m)", "intersects(t,l)", "intersects(t,m)", "alternateAngles(angle1,angle2,t,l,m)"]
   },
   similarity: {
     topic: "三角形の相似",
@@ -30,7 +32,8 @@ const samples = {
       { statement: "∠A = ∠D、∠B = ∠E", explanation: "問題文で与えられた2組の角の等しさです。", reason: "仮定" },
       { statement: "△ABC ∽ △DEF", explanation: "2組の角がそれぞれ等しい2つの三角形は相似です。", reason: "三角形の相似条件" }
     ],
-    diagram: "similarity"
+    diagram: "similarity",
+    facts: ["angle(A)=angle(D)", "angle(B)=angle(E)", "triangle(ABC)", "triangle(DEF)"]
   }
 };
 
