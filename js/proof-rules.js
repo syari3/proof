@@ -88,15 +88,6 @@
         if (a.right === b.left) {
           left = a.left;
           right = b.right;
-        } else if (a.right === b.right) {
-          left = a.left;
-          right = b.left;
-        } else if (a.left === b.left) {
-          left = a.right;
-          right = b.right;
-        } else if (a.left === b.right) {
-          left = a.right;
-          right = b.left;
         }
 
         if (!left || !right || left === right) continue;
