@@ -355,6 +355,21 @@ const noTriangleForIsosceles = rules.prove(
 assert.equal(noTriangleForIsosceles.success, false, "三角形の明示がなければ底角定理を適用しない");
 console.log("✓ 二等辺三角形の底角（汎用ルール）");
 
+const genericSimilarity = rules.prove(
+  ["triangle(PQR)", "triangle(XYZ)", "angle(P)=angle(Y)", "angle(Q)=angle(Z)"],
+  "similar(PQR,YZX)"
+);
+assert.equal(genericSimilarity.success, true, "任意の頂点名と対応順でAA相似を導く");
+assert.equal(genericSimilarity.steps[0].ruleId, "triangle-similarity-aa");
+
+const missingSecondAngle = rules.prove(
+  ["triangle(PQR)", "triangle(XYZ)", "angle(P)=angle(Y)"],
+  "similar(PQR,YZX)"
+);
+assert.equal(missingSecondAngle.success, false, "相似の角条件が1組だけでは相似を導かない");
+console.log("✓ 三角形の相似AA（汎用ルール）");
+
+
 
 
 const sas = rules.prove(
