@@ -53,4 +53,30 @@ for (const test of cases) {
   }
   console.log("✓ " + test.name);
 }
-console.log("\n" + cases.length + " tests passed.");
+const chain = rules.prove(
+  ["onCircle(A)", "onCircle(B)", "onCircle(C)", "diameter(BC)"],
+  "angle(BAC)=90"
+);
+assert.equal(chain.success, true, "証明探索は円周角の結論に到達する");
+assert.equal(chain.steps.length, 1, "推論ステップを記録する");
+assert.equal(chain.steps[0].ruleId, "diameter-inscribed-angle");
+console.log("✓ 証明探索は推論ステップを記録する");
+
+const failed = rules.prove(
+  ["onCircle(A)", "onCircle(B)", "onCircle(C)"],
+  "angle(BAC)=90"
+);
+assert.equal(failed.success, false, "直径がなければ目標に到達しない");
+assert.equal(failed.reason, "no-derivation");
+console.log("✓ 証明探索は前提不足を失敗として返す");
+
+const limited = rules.prove(
+  ["onCircle(A)", "onCircle(B)", "onCircle(C)", "diameter(BC)"],
+  "angle(BAC)=90",
+  0
+);
+assert.equal(limited.success, false, "ステップ上限0では新しい推論をしない");
+assert.equal(limited.reason, "step-limit");
+console.log("✓ 証明探索のステップ上限を守る");
+
+console.log("\\n" + (cases.length + 3) + " tests passed.");
