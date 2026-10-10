@@ -735,6 +735,47 @@
     return results;
   }
 
+  // Substitute equal angles/segments into a previously derived addition equality.
+  // Supported forms are measure = measure + measure; no numerical algebra is assumed.
+  function additionSubstitutionCandidates(known) {
+    const results = [];
+    const additionPattern = /^(angle\\([A-Z]{3}\\)|side\\([A-Z]{2}\\))=(angle\\([A-Z]{3}\\)|side\\([A-Z]{2}\\))\\+(angle\\([A-Z]{3}\\)|side\\([A-Z]{2}\\))$/;
+    const equalities = known.map((fact) => ({ fact, equality: parseEquality(fact) }))
+      .filter((item) => item.equality);
+    for (const fact of known) {
+      const match = additionPattern.exec(fact);
+      if (!match) continue;
+      const [, whole, first, second] = match;
+      const parts = [first, second];
+      for (const equality of equalities) {
+        const left = equality.equality.left;
+        const right = equality.equality.right;
+        const alternatives = [[left, right], [right, left]];
+        for (let index = 0; index < parts.length; index++) {
+          for (const [from, to] of alternatives) {
+            if (parts[index] !== from) continue;
+            const replaced = [...parts];
+            replaced[index] = to;
+            // Angles cannot be substituted for lengths, and vice versa.
+            if (whole.startsWith("angle(") !== replaced.every((part) => part.startsWith("angle("))) continue;
+            if (whole.startsWith("side(") !== replaced.every((part) => part.startsWith("side("))) continue;
+            const conclusion = whole + "=" + replaced[0] + "+" + replaced[1];
+            if (known.includes(conclusion)) continue;
+            results.push({
+              id: whole.startsWith("angle(") ? "angle.addition-substitution" : "segment.addition-substitution",
+              name: whole.startsWith("angle(") ? "角の加法への等式の代入" : "線分の加法への等式の代入",
+              premises: [fact, equality.fact],
+              conclusion,
+              explain: "すでに等しいと分かっている角（線分）を、加法の式に代入する。",
+              category: whole.startsWith("angle(") ? "angle" : "segment"
+            });
+          }
+        }
+      }
+    }
+    return results;
+  }
+
   // Forward-chain from the supplied facts, recording every inference.
   // This is a bounded rule engine, not a complete geometry prover.
   function prove(facts, goal, maxSteps = 100) {
@@ -1127,6 +1168,31 @@
             conclusion: transitive.conclusion,
             explanation: "等しい2つの量がそれぞれ同じ量に等しいので、その2つの量も等しい。",
             category: transitive.conclusion.startsWith("angle(") ? "angle" : "side"
+          };
+          known.push(step.conclusion);
+          sourceByFact.set(step.conclusion, { type: "step", index: step.index });
+          steps.push(step);
+          changed = true;
+          if (step.conclusion === goal) {
+            return { success: true, goal, facts: known, steps, reason: "proved" };
+          }
+        }
+
+        const substitution = additionSubstitutionCandidates(known).find((rule) => rule.conclusion === goal) ||
+          additionSubstitutionCandidates(known).find((rule) => !known.includes(rule.conclusion));
+        if (substitution && steps.length < maxSteps) {
+          const step = {
+            index: steps.length + 1,
+            ruleId: substitution.id,
+            ruleName: substitution.name,
+            premises: [...substitution.premises],
+            premiseSources: substitution.premises.map((premise) => ({
+              fact: premise,
+              ...(sourceByFact.get(premise) || { type: "unknown" })
+            })),
+            conclusion: substitution.conclusion,
+            explanation: substitution.explain,
+            category: substitution.category
           };
           known.push(step.conclusion);
           sourceByFact.set(step.conclusion, { type: "step", index: step.index });
