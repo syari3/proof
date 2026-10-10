@@ -66,7 +66,7 @@ const note = document.querySelector("#validation-note");
 
 function svgFor(kind) {
   if (kind === "circle") {
-    return `<circle cx="160" cy="86" r="61" class="circle-line"/><path d="M99 86 H221 M122 38 L221 86 L122 134 Z" class="triangle-line"/><path d="M122 38 L122 134" class="equal-side"/><circle cx="160" cy="86" r="2.5" class="center-dot"/><text x="166" y="80">O</text><text x="112" y="31">A</text><text x="88" y="91">B</text><text x="226" y="91">C</text>`;
+    return `<circle cx="160" cy="86" r="61" class="circle-line"/><path d="M99 86 H221" class="equal-side"/><path d="M160 25 L99 86 L221 86 Z" class="triangle-line"/><circle cx="160" cy="86" r="2.5" class="center-dot"/><text x="166" y="80">O</text><text x="160" y="18" text-anchor="middle">A</text><text x="88" y="91">B</text><text x="230" y="91">C</text>`;
   }
   if (kind === "parallel") {
     return `<path d="M30 48 H290 M30 118 H290" class="triangle-line"/><path d="M82 145 L235 22" class="equal-side"/><text x="18" y="44">ℓ</text><text x="18" y="114">m</text><text x="112" y="70">1</text><text x="205" y="111">2</text>`;
