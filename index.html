@@ -8,6 +8,7 @@
   <title>証明問題メーカー</title>
   <link rel="stylesheet" href="./style.css">
   <script src="./js/proof-rules.js" defer></script>
+  <script src="./js/problem-generator.js" defer></script>
   <script src="./js/app.js" defer></script>
 </head>
 <body>
@@ -30,7 +31,7 @@
       <div class="workspace-heading">
         <div>
           <p class="section-kicker">PRACTICE</p>
-          <h2 id="practice-title">証明サンプル</h2>
+          <h2 id="practice-title">問題生成・証明チェック</h2>
         </div>
         <span class="status-pill"><span class="status-dot"></span>サンプルモード</span>
       </div>
@@ -41,9 +42,10 @@
             <option value="isosceles">二等辺三角形の性質</option>
             <option value="parallel">平行線と角</option>
             <option value="similarity">相似の条件</option>
+            <option value="random">自動生成（検証済みの型）</option>
           </select>
         </label>
-        <button id="show-sample" class="primary-button" type="button">サンプルを表示 <span aria-hidden="true">→</span></button>
+        <button id="show-sample" class="primary-button" type="button">問題を表示・生成 <span aria-hidden="true">→</span></button>
       </div>
 
       <div id="problem-panel" class="problem-panel" aria-live="polite">
@@ -91,7 +93,7 @@
       <div class="roadmap-grid">
         <article class="roadmap-card done"><span class="roadmap-icon">✓</span><div><h3>学習画面の土台</h3><p>問題文・図・証明手順の表示</p><span class="mini-status">実装済み</span></div></article>
         <article class="roadmap-card"><span class="roadmap-icon">2</span><div><h3>証明ルールの検証</h3><p>3つの基本ルールと前提条件チェック</p><span class="mini-status">初期実装済み</span></div></article>
-        <article class="roadmap-card"><span class="roadmap-icon">3</span><div><h3>問題の自動生成</h3><p>検証済みパターンから少しずつ拡張</p><span class="mini-status">未実装</span></div></article>
+        <article class="roadmap-card"><span class="roadmap-icon">3</span><div><h3>型からの問題生成</h3><p>登録済みの問題型を選び、証明ルールで成立を確認</p><span class="mini-status">初期実装</span></div></article>
       </div>
     </section>
     <footer><span>証明問題メーカー · 開発中</span><a href="https://github.com/syari3/proof">GitHubリポジトリ</a></footer>
