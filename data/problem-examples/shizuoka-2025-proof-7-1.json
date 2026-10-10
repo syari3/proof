@@ -138,6 +138,17 @@
     ],
     "constraints": [
       {
+        "type": "same-segment",
+        "chord": [
+          "A",
+          "B"
+        ],
+        "vertices": [
+          "C",
+          "P"
+        ]
+      },
+      {
         "type": "point-on-circle",
         "point": "A",
         "circle": "circle-O"
