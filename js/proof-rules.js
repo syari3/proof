@@ -167,7 +167,9 @@
       ...segmentAdditionCandidates(facts),
       ...equalAnglesImplyEqualSidesCandidates(facts),
       ...triangleSimilarityAACandidates(facts),
-      ...triangleCongruenceSSSCandidates(facts)
+      ...triangleCongruenceSSSCandidates(facts),
+      ...triangleCongruenceSASCandidates(facts),
+      ...triangleCongruenceASACandidates(facts)
     ];
     const dynamicResults = dynamicRules.map((rule) => ({
       ruleId: rule.id,
@@ -370,6 +372,128 @@
             explain: "3組の辺がそれぞれ等しい2つの三角形は合同である。",
             category: "congruence"
           });
+        }
+      }
+    }
+    return results;
+  }
+
+  // General SAS: the equal angle must be included between the two equal sides.
+  function triangleCongruenceSASCandidates(known) {
+    const triangles = known.map((fact) => {
+      const match = /^triangle\(([A-Z])([A-Z])([A-Z])\)$/.exec(fact);
+      return match ? { fact, vertices: match.slice(1) } : null;
+    }).filter(Boolean).filter((triangle) => new Set(triangle.vertices).size === 3);
+    const sideEqualities = known.map((fact) => {
+      const match = /^side\(([A-Z])([A-Z])\)=side\(([A-Z])([A-Z])\)$/.exec(fact);
+      if (!match || match[1] === match[2] || match[3] === match[4]) return null;
+      return { fact, left: match.slice(1, 3).sort().join(""), right: match.slice(3, 5).sort().join("") };
+    }).filter(Boolean);
+    const angleEqualities = known.map((fact) => {
+      const match = /^angle\(([A-Z])([A-Z])([A-Z])\)=angle\(([A-Z])([A-Z])([A-Z])\)$/.exec(fact);
+      if (!match) return null;
+      return { fact, left: match.slice(1, 4), right: match.slice(4, 7) };
+    }).filter(Boolean);
+    const results = [];
+    const sideKey = (a, b) => [a, b].sort().join("");
+    const permutations = (v) => [
+      [v[0],v[1],v[2]],[v[0],v[2],v[1]],[v[1],v[0],v[2]],
+      [v[1],v[2],v[0]],[v[2],v[0],v[1]],[v[2],v[1],v[0]]
+    ];
+    const angleMatches = (angle, a, vertex, c) =>
+      angle[1] === vertex && [angle[0], angle[2]].sort().join("") === [a, c].sort().join("");
+    for (let i = 0; i < triangles.length; i++) for (let j = i + 1; j < triangles.length; j++) {
+      const first = triangles[i], second = triangles[j];
+      for (const mapped of permutations(second.vertices)) {
+        const pairs = new Map(first.vertices.map((v, index) => [v, mapped[index]]));
+        const sides = [
+          [first.vertices[0], first.vertices[1]],
+          [first.vertices[1], first.vertices[2]],
+          [first.vertices[2], first.vertices[0]]
+        ];
+        for (let a = 0; a < sides.length; a++) for (let b = a + 1; b < sides.length; b++) {
+          const [u,v] = sides[a], [x,y] = sides[b];
+          const third = first.vertices.find((p) => p !== u && p !== v && p !== x && p !== y);
+          if (!third) continue;
+          const s1 = sideEqualities.find((e) => (e.left === sideKey(u,v) && e.right === sideKey(pairs.get(u),pairs.get(v))) || (e.right === sideKey(u,v) && e.left === sideKey(pairs.get(u),pairs.get(v))));
+          const s2 = sideEqualities.find((e) => (e.left === sideKey(x,y) && e.right === sideKey(pairs.get(x),pairs.get(y))) || (e.right === sideKey(x,y) && e.left === sideKey(pairs.get(x),pairs.get(y))));
+          if (!s1 || !s2 || s1.fact === s2.fact) continue;
+          const shared = [u,v].find((p) => p === x || p === y);
+          if (!shared) continue;
+          const end1 = [u,v].find((p) => p !== shared), end2 = [x,y].find((p) => p !== shared);
+          const angle = angleEqualities.find((e) =>
+            (angleMatches(e.left, end1, shared, end2) && angleMatches(e.right, pairs.get(end1), pairs.get(shared), pairs.get(end2))) ||
+            (angleMatches(e.right, end1, shared, end2) && angleMatches(e.left, pairs.get(end1), pairs.get(shared), pairs.get(end2)))
+          );
+          if (!angle || [s1.fact,s2.fact,angle.fact].some((fact, idx, all) => all.indexOf(fact) !== idx)) continue;
+          const conclusion = "congruent(" + first.vertices.join("") + "," + mapped.join("") + ")";
+          if (results.some((r) => r.conclusion === conclusion)) continue;
+          results.push({ id:"triangle-congruence-sas", name:"三角形の合同条件（2組の辺とその間の角）",
+            premises:[s1.fact, angle.fact, s2.fact, first.fact, second.fact], conclusion,
+            explain:"2組の辺とその間の角がそれぞれ等しい2つの三角形は合同である。", category:"congruence" });
+        }
+      }
+    }
+    return results;
+  }
+
+  // General ASA: the equal side and both endpoint angles must correspond.
+  function triangleCongruenceASACandidates(known) {
+    const triangles = known.map((fact) => {
+      const match = /^triangle\(([A-Z])([A-Z])([A-Z])\)$/.exec(fact);
+      return match ? { fact, vertices: match.slice(1) } : null;
+    }).filter(Boolean).filter((triangle) => new Set(triangle.vertices).size === 3);
+    const sideEqualities = known.map((fact) => {
+      const match = /^side\(([A-Z])([A-Z])\)=side\(([A-Z])([A-Z])\)$/.exec(fact);
+      if (!match || match[1] === match[2] || match[3] === match[4]) return null;
+      return { fact, left: match.slice(1, 3).sort().join(""), right: match.slice(3, 5).sort().join("") };
+    }).filter(Boolean);
+    const angleEqualities = known.map((fact) => {
+      const match = /^angle\(([A-Z])([A-Z])([A-Z])\)=angle\(([A-Z])([A-Z])([A-Z])\)$/.exec(fact);
+      if (!match) return null;
+      return { fact, left: match.slice(1, 4), right: match.slice(4, 7) };
+    }).filter(Boolean);
+    const results = [];
+    const sideKey = (a,b) => [a,b].sort().join("");
+    const permutations = (v) => [
+      [v[0],v[1],v[2]],[v[0],v[2],v[1]],[v[1],v[0],v[2]],
+      [v[1],v[2],v[0]],[v[2],v[0],v[1]],[v[2],v[1],v[0]]
+    ];
+    const angleAt = (angle, vertex) => angle[1] === vertex && angle[0] !== angle[2];
+    for (let i = 0; i < triangles.length; i++) for (let j = i + 1; j < triangles.length; j++) {
+      const first = triangles[i], second = triangles[j];
+      for (const mapped of permutations(second.vertices)) {
+        const pairs = new Map(first.vertices.map((v,index) => [v,mapped[index]]));
+        for (const [u,v] of [[first.vertices[0],first.vertices[1]],[first.vertices[1],first.vertices[2]],[first.vertices[2],first.vertices[0]]]) {
+          const side = sideEqualities.find((e) =>
+            (e.left === sideKey(u,v) && e.right === sideKey(pairs.get(u),pairs.get(v))) ||
+            (e.right === sideKey(u,v) && e.left === sideKey(pairs.get(u),pairs.get(v)))
+          );
+          if (!side) continue;
+          const endpointPairs = [[u,v],[v,u]];
+          for (const [a,b] of endpointPairs) {
+            const angle1 = angleEqualities.find((e) =>
+              (angleAt(e.left,a) && angleAt(e.right,pairs.get(a)) && [e.left[0],e.left[2]].sort().join("") === [first.vertices.find(p=>p!==a), first.vertices.find(p=>p!==a)].sort().join("") ) ||
+              (angleAt(e.right,a) && angleAt(e.left,pairs.get(a)))
+            );
+            const angle2 = angleEqualities.find((e) => e !== angle1 &&
+              ((angleAt(e.left,b) && angleAt(e.right,pairs.get(b))) || (angleAt(e.right,b) && angleAt(e.left,pairs.get(b))))
+            );
+            if (!angle1 || !angle2 || angle1.fact === angle2.fact || angle1.fact === side.fact || angle2.fact === side.fact) continue;
+            // Each endpoint angle must be formed by the side's endpoint and the third vertex.
+            const otherFirst = first.vertices.find((p) => p !== a && p !== b);
+            const otherSecond = mapped.find((p) => p !== pairs.get(a) && p !== pairs.get(b));
+            const valid = (e, vertex, third, mappedVertex, mappedThird) =>
+              ((e.left[1] === vertex && [e.left[0],e.left[2]].includes(third) && [e.left[0],e.left[2]].includes(b === vertex ? a : b) &&
+                e.right[1] === mappedVertex && [e.right[0],e.right[2]].includes(mappedThird)) ||
+               (e.right[1] === vertex && [e.right[0],e.right[2]].includes(third) && e.left[1] === mappedVertex && [e.left[0],e.left[2]].includes(mappedThird)));
+            if (!valid(angle1,a,otherFirst,pairs.get(a),otherSecond) || !valid(angle2,b,otherFirst,pairs.get(b),otherSecond)) continue;
+            const conclusion = "congruent(" + first.vertices.join("") + "," + mapped.join("") + ")";
+            if (results.some((r) => r.conclusion === conclusion)) continue;
+            results.push({ id:"triangle-congruence-asa", name:"三角形の合同条件（1組の辺とその両端の角）",
+              premises:[angle1.fact,side.fact,angle2.fact,first.fact,second.fact], conclusion,
+              explain:"1組の辺とその両端の角がそれぞれ等しい2つの三角形は合同である。", category:"congruence" });
+          }
         }
       }
     }
@@ -762,6 +886,28 @@
           if (step.conclusion === goal) {
             return { success: true, goal, facts: known, steps, reason: "proved" };
           }
+        }
+
+        const congruenceSAS = triangleCongruenceSASCandidates(known).find((rule) => rule.conclusion === goal && !known.includes(rule.conclusion));
+        if (congruenceSAS) {
+          const step = { index: steps.length + 1, ruleId: congruenceSAS.id, ruleName: congruenceSAS.name,
+            premises: [...congruenceSAS.premises],
+            premiseSources: congruenceSAS.premises.map((premise) => ({ fact: premise, ...(sourceByFact.get(premise) || { type: "unknown" }) })),
+            conclusion: congruenceSAS.conclusion, explanation: congruenceSAS.explain, category: congruenceSAS.category };
+          known.push(step.conclusion); sourceByFact.set(step.conclusion, { type: "step", index: step.index });
+          steps.push(step); changed = true;
+          if (step.conclusion === goal) return { success: true, goal, facts: known, steps, reason: "proved" };
+        }
+
+        const congruenceASA = triangleCongruenceASACandidates(known).find((rule) => rule.conclusion === goal && !known.includes(rule.conclusion));
+        if (congruenceASA) {
+          const step = { index: steps.length + 1, ruleId: congruenceASA.id, ruleName: congruenceASA.name,
+            premises: [...congruenceASA.premises],
+            premiseSources: congruenceASA.premises.map((premise) => ({ fact: premise, ...(sourceByFact.get(premise) || { type: "unknown" }) })),
+            conclusion: congruenceASA.conclusion, explanation: congruenceASA.explain, category: congruenceASA.category };
+          known.push(step.conclusion); sourceByFact.set(step.conclusion, { type: "step", index: step.index });
+          steps.push(step); changed = true;
+          if (step.conclusion === goal) return { success: true, goal, facts: known, steps, reason: "proved" };
         }
 
         const congruenceSSS = triangleCongruenceSSSCandidates(known).find((rule) => rule.conclusion === goal && !known.includes(rule.conclusion));
