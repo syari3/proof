@@ -334,3 +334,45 @@ const mismatchedTriangleAngles = rules.prove(
 );
 assert.equal(mismatchedTriangleAngles.success, false, "対象三角形の内角でない角を使って辺の等しさを導かない");
 console.log("✓ 等しい角に対する辺は等しい");
+
+
+const sas = rules.prove(
+  ["side(AB)=side(DE)", "angle(BAC)=angle(EDF)", "side(AC)=side(DF)", "triangle(ABC)", "triangle(DEF)"],
+  "congruent(ABC,DEF)"
+);
+assert.equal(sas.success, true, "2辺とその間の角が対応して等しければ合同");
+assert.equal(sas.steps[0].ruleId, "triangle-congruence-sas");
+
+const missingSasIncludedAngle = rules.prove(
+  ["side(AB)=side(DE)", "side(AC)=side(DF)", "triangle(ABC)", "triangle(DEF)"],
+  "congruent(ABC,DEF)"
+);
+assert.equal(missingSasIncludedAngle.success, false, "SASの間の角が不足すれば合同を導かない");
+console.log("✓ 合同条件（SAS）");
+
+const asa = rules.prove(
+  ["angle(BAC)=angle(EDF)", "side(AB)=side(DE)", "angle(ABC)=angle(DEF)", "triangle(ABC)", "triangle(DEF)"],
+  "congruent(ABC,DEF)"
+);
+assert.equal(asa.success, true, "1辺とその両端の角が対応して等しければ合同");
+assert.equal(asa.steps[0].ruleId, "triangle-congruence-asa");
+
+const missingAsaEndpointAngle = rules.prove(
+  ["angle(BAC)=angle(EDF)", "side(AB)=side(DE)", "triangle(ABC)", "triangle(DEF)"],
+  "congruent(ABC,DEF)"
+);
+assert.equal(missingAsaEndpointAngle.success, false, "ASAの両端の角の一方が不足すれば合同を導かない");
+console.log("✓ 合同条件（ASA）");
+
+const missingEqualArcCondition = rules.prove(
+  ["inscribed(AEB,AB)", "inscribed(CFD,CD)"],
+  "angle(AEB)=angle(CFD)"
+);
+assert.equal(missingEqualArcCondition.success, false, "別々の弧の円周角は弧が等しい条件なしに等しいとしない");
+
+const mismatchedCentralArc = rules.prove(
+  ["central(AOB,AB)", "inscribed(ACB,CD)"],
+  "angle(AOB)=2*angle(ACB)"
+);
+assert.equal(mismatchedCentralArc.success, false, "対応する弧が異なる中心角と円周角に2倍関係を適用しない");
+console.log("✓ 円周角・中心角の負例");
