@@ -1,5 +1,6 @@
 const assert = require("node:assert/strict");
 const Adapter = require("../js/problem-data-engine.js");
+const GeometryRelations = require("../js/geometry-relations.js");
 const Rules = require("../js/proof-rules.js");
 
 const sample = {
@@ -31,6 +32,55 @@ assert.equal(Adapter.convert(isosceles).goal, "angle(ABC)=angle(ACB)");
 const isoscelesResult = Adapter.run(isosceles, Rules);
 assert.equal(isoscelesResult.success, true);
 assert.equal(isoscelesResult.proof.steps.at(-1).conclusion, "angle(ABC)=angle(ACB)");
+
+// Point order matters: B and C on the same ray from A make these angles equal.
+const sameRayProblem = {
+  format: "proof-problem",
+  version: 1,
+  id: "same-ray-angle-notation",
+  geometry: {
+    points: [{ id: "A" }, { id: "B" }, { id: "C" }, { id: "D" }],
+    constraints: [{ type: "between", points: ["A", "B", "C"] }],
+    constructions: [],
+    dynamicConditions: []
+  },
+  goal: { type: "angle-equality", angles: [["B", "A", "D"], ["C", "A", "D"]] }
+};
+const sameRayConverted = Adapter.convert(sameRayProblem);
+assert.ok(sameRayConverted.facts.includes("sameRay(A,B,C)"));
+assert.equal(sameRayConverted.unsupported.some((x) => x.type === "between"), false);
+const sameRayResult = Adapter.run(sameRayProblem, Rules);
+assert.equal(sameRayResult.success, true);
+assert.equal(sameRayResult.proof.steps.at(-1).conclusion, "angle(BAD)=angle(CAD)");
+
+// Two pairs of opposite rays at one intersection generate vertical-angle facts.
+const verticalFacts = GeometryRelations.derive([
+  { type: "opposite-rays", vertex: "E", points: ["A", "C"] },
+  { type: "opposite-rays", vertex: "E", points: ["B", "D"] }
+]);
+assert.ok(verticalFacts.includes("verticalAngles(AEB,CED)"));
+assert.ok(verticalFacts.includes("verticalAngles(AED,CEB)"));
+const verticalProblem = {
+  format: "proof-problem",
+  version: 1,
+  id: "vertical-angle-from-rays",
+  geometry: {
+    points: ["A", "B", "C", "D", "E"].map((id) => ({ id })),
+    constraints: [
+      { type: "opposite-rays", vertex: "E", points: ["A", "C"] },
+      { type: "opposite-rays", vertex: "E", "points": ["B", "D"] }
+    ],
+    constructions: [],
+    dynamicConditions: []
+  },
+  goal: { type: "angle-equality", angles: [["A", "E", "B"], ["C", "E", "D"]] }
+};
+const verticalResult = Adapter.run(verticalProblem, Rules);
+assert.equal(verticalResult.success, true);
+assert.equal(verticalResult.proof.steps.at(-1).ruleId, "angle.vertical-angles");
+
+// Collinearity by itself must not infer same/opposite rays.
+assert.deepEqual(GeometryRelations.derive([]), []);
 
 const sampleFile = require("../data/problem-examples/shizuoka-2025-proof-7-1.json");
 const sampleResult = Adapter.run(sampleFile, Rules);
