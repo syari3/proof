@@ -26,6 +26,10 @@ for (const object of geometry.objects) {
   if (object.type === "line") {
     assert.ok(object.through.every((id) => pointIds.has(id)), object.id + " must refer to declared points");
   }
+  if (object.type === "parallel-through-point") {
+    assert.ok(object.through.every((id) => pointIds.has(id)), object.id + " must refer to declared points");
+    assert.ok(objectIds.has(object.parallelTo), object.id + " must reference an existing parallel line");
+  }
 }
 for (const construction of geometry.constructions) {
   assert.ok(pointIds.has(construction.point), "construction must define a declared point");
@@ -38,9 +42,6 @@ for (const constraint of geometry.constraints) {
   }
   if (constraint.type === "equal-segments") {
     assert.ok(constraint.segments.flat().every((id) => pointIds.has(id)));
-  }
-  if (constraint.type === "parallel-lines") {
-    assert.ok(constraint.lines.every((id) => objectIds.has(id)));
   }
 }
 for (const triangle of problem.goal.triangles) {
