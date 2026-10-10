@@ -221,6 +221,20 @@
       (sameAngleExpression(a.left, b.right) && sameAngleExpression(a.right, b.left));
   }
 
+  function sameSideExpression(first, second) {
+    const a = /^side\\(([A-Z])([A-Z])\\)$/.exec(first);
+    const b = /^side\\(([A-Z])([A-Z])\\)$/.exec(second);
+    return !!a && !!b && a[1] !== a[2] && b[1] !== b[2] &&
+      a.slice(1).sort().join("") === b.slice(1).sort().join("");
+  }
+
+  function sameSideEquality(first, second) {
+    const a = parseEquality(first), b = parseEquality(second);
+    if (!a || !b) return false;
+    return (sameSideExpression(a.left, b.left) && sameSideExpression(a.right, b.right)) ||
+      (sameSideExpression(a.left, b.right) && sameSideExpression(a.right, b.left));
+  }
+
   // In a triangle, equal sides imply equal opposite base angles.
   // Explicit triangle/equality facts are required; segment notation is unordered.
   function isoscelesBaseAngleCandidates(known) {
@@ -819,7 +833,9 @@
           if (step.conclusion === goal) return { success: true, goal, facts: known, steps, reason: "proved" };
         }
 
-        const equalSides = equalAnglesImplyEqualSidesCandidates(known).find((rule) => !known.includes(rule.conclusion));
+        const equalSideCandidates = equalAnglesImplyEqualSidesCandidates(known);
+        const equalSides = equalSideCandidates.find((rule) => sameSideEquality(rule.conclusion, goal) && !known.includes(goal)) ||
+          equalSideCandidates.find((rule) => !known.includes(rule.conclusion));
         if (equalSides) {
           const step = {
             index: steps.length + 1,
@@ -830,7 +846,7 @@
               fact: premise,
               ...(sourceByFact.get(premise) || { type: "unknown" })
             })),
-            conclusion: equalSides.conclusion,
+            conclusion: sameSideEquality(equalSides.conclusion, goal) ? goal : equalSides.conclusion,
             explanation: equalSides.explain,
             category: equalSides.category
           };
