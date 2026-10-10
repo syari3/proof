@@ -169,6 +169,46 @@
             "D"
           ]
         ]
+      },
+      {
+        "type": "between",
+        "points": [
+          "A",
+          "E",
+          "C"
+        ]
+      },
+      {
+        "type": "between",
+        "points": [
+          "B",
+          "E",
+          "G"
+        ]
+      },
+      {
+        "type": "between",
+        "points": [
+          "E",
+          "G",
+          "D"
+        ]
+      },
+      {
+        "type": "between",
+        "points": [
+          "A",
+          "F",
+          "B"
+        ]
+      },
+      {
+        "type": "between",
+        "points": [
+          "A",
+          "G",
+          "P"
+        ]
       }
     ],
     "dynamicConditions": [
