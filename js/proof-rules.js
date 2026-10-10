@@ -10,14 +10,6 @@
 
   const rules = [
     {
-      id: "isosceles-base-angles",
-      name: "二等辺三角形の底角",
-      premises: ["side(AB)=side(AC)"],
-      conclusion: "angle(ABC)=angle(BCA)",
-      explain: "AB = AC なので △ABC は二等辺三角形。底角は等しい。",
-      category: "isosceles"
-    },
-    {
       id: "parallel-alternate-interior",
       name: "平行線の錯角",
       premises: ["parallel(l,m)", "intersects(t,l)", "intersects(t,m)", "alternateAngles(angle1,angle2,t,l,m)"],
@@ -166,6 +158,7 @@
         category: rule.category
       }));
     const dynamicRules = [
+      ...isoscelesBaseAngleCandidates(facts),
       ...triangleAngleSumCandidates(facts),
       ...equalRadiusCandidates(facts),
       ...verticalAngleCandidates(facts),
@@ -220,6 +213,51 @@
       }
     }
     return null;
+  }
+
+  // In a triangle, equal sides imply equal opposite base angles.
+  // Explicit triangle/equality facts are required; segment notation is unordered.
+  function isoscelesBaseAngleCandidates(known) {
+    const triangles = known.map((fact) => {
+      const match = /^triangle\(([A-Z])([A-Z])([A-Z])\)$/.exec(fact);
+      return match ? { fact, vertices: match.slice(1) } : null;
+    }).filter(Boolean);
+    const equalities = known.map((fact) => ({ fact, equality: parseEquality(fact) }))
+      .filter((item) => item.equality && item.equality.left.startsWith("side(") && item.equality.right.startsWith("side("));
+    const results = [];
+    function parseSide(expression) {
+      const match = /^side\(([A-Z])([A-Z])\)$/.exec(expression);
+      if (!match || match[1] === match[2]) return null;
+      return match.slice(1).sort();
+    }
+    for (const triangle of triangles) {
+      if (new Set(triangle.vertices).size !== 3) continue;
+      const vertexSet = new Set(triangle.vertices);
+      for (const item of equalities) {
+        const left = parseSide(item.equality.left), right = parseSide(item.equality.right);
+        if (!left || !right || left.join("") === right.join("")) continue;
+        if (![...left, ...right].every((point) => vertexSet.has(point))) continue;
+        const shared = left.find((point) => right.includes(point));
+        if (!shared) continue;
+        const leftBase = left.find((point) => point !== shared);
+        const rightBase = right.find((point) => point !== shared);
+        if (!leftBase || !rightBase || leftBase === rightBase) continue;
+        const angleFor = (vertex) => {
+          const other = triangle.vertices.filter((point) => point !== vertex);
+          return "angle(" + other[0] + vertex + other[1] + ")";
+        };
+        const leftAngle = angleFor(leftBase), rightAngle = angleFor(rightBase);
+        results.push({
+          id: "triangle-isosceles-base-angles",
+          name: "二等辺三角形の底角",
+          premises: [triangle.fact, item.fact],
+          conclusion: [leftAngle, rightAngle].sort().join("="),
+          explain: "二等辺三角形の等しい辺に対する角は等しい。",
+          category: "isosceles"
+        });
+      }
+    }
+    return results;
   }
 
   // A triangle fact licenses its three interior angles to sum to 180 degrees.
@@ -497,6 +535,20 @@
           if (step.conclusion === goal) {
             return { success: true, goal, facts: known, steps, reason: "proved" };
           }
+        }
+
+        const isosceles = isoscelesBaseAngleCandidates(known).find((rule) => !known.includes(rule.conclusion));
+        if (isosceles) {
+          const step = {
+            index: steps.length + 1, ruleId: isosceles.id, ruleName: isosceles.name,
+            premises: [...isosceles.premises],
+            premiseSources: isosceles.premises.map((premise) => ({ fact: premise, ...(sourceByFact.get(premise) || { type: "unknown" }) })),
+            conclusion: isosceles.conclusion, explanation: isosceles.explain, category: isosceles.category
+          };
+          known.push(step.conclusion);
+          sourceByFact.set(step.conclusion, { type: "step", index: step.index });
+          steps.push(step); changed = true;
+          if (step.conclusion === goal) return { success: true, goal, facts: known, steps, reason: "proved" };
         }
 
         const equalSides = equalAnglesImplyEqualSidesCandidates(known).find((rule) => !known.includes(rule.conclusion));
