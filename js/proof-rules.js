@@ -777,7 +777,7 @@
   }
 
   function parseAdditionEquality(fact) {
-    const match = /^(angle\\([A-Z]{3}\\)|side\\([A-Z]{2}\\))=(angle\\([A-Z]{3}\\)|side\\([A-Z]{2}\\))\\+(angle\\([A-Z]{3}\\)|side\\([A-Z]{2}\\))$/.exec(fact);
+    const match = /^(angle\([A-Z]{3}\)|side\([A-Z]{2}\))=(angle\([A-Z]{3}\)|side\([A-Z]{2}\))\+(angle\([A-Z]{3}\)|side\([A-Z]{2}\))$/.exec(fact);
     if (!match) return null;
     const [, whole, first, second] = match;
     const kind = whole.startsWith("angle(") ? "angle" : "side";
