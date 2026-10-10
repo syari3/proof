@@ -38,6 +38,19 @@ const samples = {
     facts: ["onCircle(A)", "onCircle(B)", "onCircle(C)", "diameter(BC)"],
     expectedConclusion: "angle(BAC)=90"
   },
+  chain: {
+    topic: "二等辺三角形と角の等しさ",
+    title: "前の結論を次の根拠に使おう",
+    text: "△ABC で AB = AC とし、∠BCA = ∠DEF とする。∠ABC = ∠DEF であることを説明しなさい。",
+    goal: "∠ABC = ∠DEF",
+    steps: [
+      { statement: "AB = AC", explanation: "問題文で与えられた条件です。", reason: "仮定" },
+      { statement: "∠BCA = ∠DEF", explanation: "問題文で与えられた条件です。", reason: "仮定" }
+    ],
+    diagram: "isosceles",
+    facts: ["side(AB)=side(AC)", "angle(BCA)=angle(DEF)"],
+    expectedConclusion: "angle(ABC)=angle(DEF)"
+  },
   similarity: {
     topic: "三角形の相似",
     title: "2組の角から相似を示そう",
@@ -103,7 +116,8 @@ function renderSample(key) {
     "angle(ABC)=angle(BCA)": "∠ABC = ∠BCA",
     "angle1=angle2": "∠1 = ∠2",
     "angle(BAC)=90": "∠BAC = 90°",
-    "similar(ABC,DEF)": "△ABC ∽ △DEF"
+    "similar(ABC,DEF)": "△ABC ∽ △DEF",
+    "angle(ABC)=angle(DEF)": "∠ABC = ∠DEF"
   }[fact] || fact);
 
   const rows = [
@@ -114,7 +128,7 @@ function renderSample(key) {
     })),
     ...proof.steps.map((step) => ({
       statement: displayConclusion(step.conclusion),
-      explanation: step.explanation,
+      explanation: step.explanation + (step.premiseSources && step.premiseSources.length ? " 根拠：" + step.premiseSources.map((source) => source.type === "step" ? "ステップ" + source.index : displayConclusion(source.fact)).join("、") + "。" : ""),
       reason: step.ruleName
     }))
   ];
