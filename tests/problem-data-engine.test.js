@@ -125,7 +125,7 @@ assert.equal(sampleResult.success, false);
  assert.ok(convertedExam.facts.includes("side(AB)=side(BG)"));
  assert.ok(convertedExam.facts.includes("correspondingAngles(angle(AFE),angle(ABC),line-AB,line-EF,line-BC)"),
    "平行線の角対応を型付き制約から推論事実へ変換する");
- assert.equal(convertedExam.converted?.unsupported?.some((x) => x.type === "corresponding-angles"), false);
+ assert.equal(convertedExam.unsupported.some((x) => x.type === "corresponding-angles"), false);
  const parallelAngleProof = Rules.prove(convertedExam.facts, "angle(AFE)=angle(ABC)");
  assert.equal(parallelAngleProof.success, true, "平行線と角対応から同位角の等しさを導く");
  assert.equal(parallelAngleProof.steps.at(-1).ruleId, "parallel.corresponding-angles");
