@@ -507,3 +507,18 @@ assert.ok(circleDeriveEqualArc.some((rule) => rule.ruleId === "circle.equal-arcs
 const circleDeriveCentral = rules.derive(["central(AOB,AB)", "inscribed(ACB,AB)"]);
 assert.ok(circleDeriveCentral.some((rule) => rule.ruleId === "circle.central-inscribed-angle" && rule.conclusion === "angle(AOB)=2*angle(ACB)"), "中心角と円周角の関係をderiveでも列挙する");
 console.log("✓ 円周角・等しい弧・中心角（derive対応）");
+
+ 
+const reversedSideChain = rules.prove(
+  ["side(CD)=side(AB)", "side(EF)=side(CD)"],
+  "side(AB)=side(EF)"
+);
+assert.equal(reversedSideChain.success, true, "等式の左右が逆向きでも推移律を適用する");
+assert.equal(reversedSideChain.steps[0].ruleId, "equality-transitivity");
+
+const reversedAngleChain = rules.prove(
+  ["angle(DEF)=angle(ABC)", "angle(GHI)=angle(DEF)"],
+  "angle(ABC)=angle(GHI)"
+);
+assert.equal(reversedAngleChain.success, true, "角の等式も左右の向きに依存せずつなぐ");
+console.log("✓ 等式の推移（左右の向きを正規化）");
