@@ -53,6 +53,8 @@
         add("sameRay(" + constraint.vertex + "," + constraint.points[0] + "," + constraint.points[1] + ")");
       } else if (constraint.type === "point-on-circle" && constraint.point && constraint.circle) {
         add("onCircle(" + constraint.point + ")");
+      } else if (constraint.type === "same-segment" && Array.isArray(constraint.chord) && constraint.chord.length === 2 && Array.isArray(constraint.vertices) && constraint.vertices.length === 2) {
+        add("sameSegment(" + constraint.chord.slice().sort().join("") + "," + constraint.vertices[0] + "," + constraint.vertices[1] + ")");
       } else if (constraint.type === "opposite-rays" || constraint.type === "between") {
         // Handled by GeometryRelations below; keep these typed constraints supported.
       } else if (constraint.type !== "point-on-circle") {
