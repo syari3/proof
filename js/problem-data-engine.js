@@ -75,8 +75,19 @@
     let goal = null;
     if (problem.goal.type === "triangle-similarity" && problem.goal.triangles.length === 2) {
       goal = "similar(" + problem.goal.triangles[0].join("") + "," + problem.goal.triangles[1].join("") + ")";
-    } else {
-      unsupported.push({ location: "goal", type: problem.goal.type, reason: "この目標型はまだ変換できません。" });
+    } else if (problem.goal.type === "angle-equality" && Array.isArray(problem.goal.angles) && problem.goal.angles.length === 2) {
+      const [a, b] = problem.goal.angles;
+      if (a.length === 3 && b.length === 3) {
+        goal = canonicalAngle(a[0], a[1], a[2]) + "=" + canonicalAngle(b[0], b[1], b[2]);
+      }
+    } else if (problem.goal.type === "segment-equality" && Array.isArray(problem.goal.segments) && problem.goal.segments.length === 2) {
+      const [a, b] = problem.goal.segments;
+      if (a.length === 2 && b.length === 2) {
+        goal = "side(" + canonicalSegment(a[0], a[1]) + ")=side(" + canonicalSegment(b[0], b[1]) + ")";
+      }
+    }
+    if (!goal) {
+      unsupported.push({ location: "goal", type: problem.goal.type, reason: "この目標型またはそのデータ形状はまだ変換できません。" });
     }
 
     // Optional explicit facts are useful for carefully reviewed templates.
