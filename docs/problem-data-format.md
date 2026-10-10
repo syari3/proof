@@ -63,6 +63,7 @@
 - `point-on-arc`: `{ "type": "point-on-arc", "point": "P", "circle": "circle-O", "endpoints": ["D", "C"], "arcChoice": "not-containing-A" }`
 - `equal-segments`: `{ "type": "equal-segments", "segments": [["C", "A"], ["C", "D"]] }`
 - `parallel-lines`: `{ "type": "parallel-lines", "lines": ["line-EF", "line-BC"] }`
+- `same-segment`: `{ "type": "same-segment", "chord": ["A", "B"], "vertices": ["C", "P"] }`。指定した2点が、弦ABに対する円の同じ側にあることを表す。これは単なる「同じ円周上」からは推測せず、図または弧の範囲を確認して記録する。
 
 `arcChoice` は、両端点だけでは円周上のどちらの弧か区別できないための情報。原問題で弧の選択が確認できない場合は、推測して補わず未確認として記録する。
 
