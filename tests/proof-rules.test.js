@@ -373,7 +373,7 @@ console.log("✓ 三角形の相似AA（汎用ルール）");
 
 
 const genericSSS = rules.prove(
-  ["triangle(PQR)", "triangle(XYZ)", "side(PQ)=side(YX)", "side(QR)=side(XZ)", "side(RP)=side(ZP)"],
+  ["triangle(PQR)", "triangle(XYZ)", "side(PQ)=side(YX)", "side(QR)=side(XZ)", "side(RP)=side(ZY)"],
   "congruent(PQR,YXZ)"
 );
 assert.equal(genericSSS.success, true, "任意の頂点名・辺の表記順でも3組の辺から合同を導く");
@@ -386,7 +386,7 @@ const missingThirdSide = rules.prove(
 assert.equal(missingThirdSide.success, false, "3組目の辺の等しさがなければ合同を導かない");
 
 const inconsistentCorrespondence = rules.prove(
-  ["triangle(PQR)", "triangle(XYZ)", "side(PQ)=side(XY)", "side(QR)=side(YZ)", "side(RP)=side(XZ)"],
+  ["triangle(PQR)", "triangle(XYZ)", "side(PQ)=side(XY)", "side(QR)=side(YZ)", "side(RP)=side(XY)"],
   "congruent(PQR,XYZ)"
 );
 assert.equal(inconsistentCorrespondence.success, false, "3組の辺の対応が一つの頂点対応と両立しなければ合同を導かない");
