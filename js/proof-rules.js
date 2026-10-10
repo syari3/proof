@@ -26,14 +26,6 @@
       category: "parallel"
     },
     {
-      id: "diameter-inscribed-angle",
-      name: "直径に対する円周角",
-      premises: ["onCircle(A)", "onCircle(B)", "onCircle(C)", "diameter(BC)"],
-      conclusion: "angle(BAC)=90",
-      explain: "B、Cが直径の両端でAが円周上にあるので、∠BACは90°。",
-      category: "circle"
-    },
-    {
       id: "triangle-similarity-aa",
       name: "三角形の相似条件（2組の角）",
       premises: ["angle(A)=angle(D)", "angle(B)=angle(E)", "triangle(ABC)", "triangle(DEF)"],
@@ -161,6 +153,7 @@
       ...isoscelesBaseAngleCandidates(facts),
       ...triangleAngleSumCandidates(facts),
       ...equalRadiusCandidates(facts),
+      ...diameterInscribedAngleCandidates(facts),
       ...verticalAngleCandidates(facts),
       ...exteriorAngleCandidates(facts),
       ...angleAdditionCandidates(facts),
@@ -509,6 +502,32 @@
         explain: "三角形の内角の和は180°である。",
         category: "angle"
       });
+    }
+    return results;
+  }
+
+  // A diameter's endpoints and the angle vertex must be explicitly on the circle.
+  // The legacy fact format uses onCircle(P) plus diameter(QR); arbitrary labels work.
+  function diameterInscribedAngleCandidates(known) {
+    const onCircle = new Set(known.map((fact) => /^onCircle\\(([A-Z])\\)$/.exec(fact)).filter(Boolean).map((m) => m[1]));
+    const diameters = known.map((fact) => {
+      const match = /^diameter\\(([A-Z])([A-Z])\\)$/.exec(fact);
+      return match && match[1] !== match[2] ? { fact, first: match[1], last: match[2] } : null;
+    }).filter(Boolean);
+    const results = [];
+    for (const diameter of diameters) {
+      if (!onCircle.has(diameter.first) || !onCircle.has(diameter.last)) continue;
+      for (const vertex of onCircle) {
+        if (vertex === diameter.first || vertex === diameter.last) continue;
+        results.push({
+          id: "diameter-inscribed-angle",
+          name: "直径に対する円周角",
+          premises: ["onCircle(" + vertex + ")", "onCircle(" + diameter.first + ")", "onCircle(" + diameter.last + ")", diameter.fact],
+          conclusion: "angle(" + diameter.first + vertex + diameter.last + ")=90",
+          explain: "直径の両端と円周上の点がつくる円周角は90°である。",
+          category: "circle"
+        });
+      }
     }
     return results;
   }
@@ -1015,6 +1034,16 @@
       }
 
       if (steps.length < maxSteps) {
+        const diameterAngle = diameterInscribedAngleCandidates(known).find((rule) => rule.conclusion === goal && !known.includes(rule.conclusion));
+        if (diameterAngle) {
+          const step = { index: steps.length + 1, ruleId: diameterAngle.id, ruleName: diameterAngle.name,
+            premises: [...diameterAngle.premises],
+            premiseSources: diameterAngle.premises.map((p) => ({ fact: p, ...(sourceByFact.get(p) || { type: "unknown" }) })),
+            conclusion: diameterAngle.conclusion, explanation: diameterAngle.explain, category: diameterAngle.category };
+          known.push(step.conclusion); sourceByFact.set(step.conclusion, { type: "step", index: step.index });
+          steps.push(step); changed = true;
+          if (step.conclusion === goal) return { success: true, goal, facts: known, steps, reason: "proved" };
+        }
         const circle = circleGoal(known, goal);
         if (circle && !known.includes(circle.conclusion)) {
           const step = { index: steps.length+1, ruleId: circle.id, ruleName: circle.name, premises: circle.premises,
