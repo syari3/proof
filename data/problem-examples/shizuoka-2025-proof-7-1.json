@@ -1,0 +1,98 @@
+{
+  "format": "proof-problem",
+  "version": 1,
+  "id": "shizuoka-2025-proof-7-1",
+  "source": {
+    "region": "静岡県",
+    "exam": "公立高校入学者選抜学力検査",
+    "year": 2025,
+    "questionNumber": "7 (1)",
+    "materials": ["10年間問題.pdf", "data.xlsx / Sheet1"],
+    "transcriptionStatus": "checked-against-scanned-page",
+    "notes": "問題文と分析表の対応を確認。細かな表記は公開前に原本と再照合する。"
+  },
+  "title": "円周角・二等辺三角形・相似（2025年度）",
+  "prompt": "図のように、4点A、B、C、Dは円Oの円周上にあり、CA=CDである。ACとBDとの交点をEとし、点Eを通りBCに平行な直線とABとの交点をFとする。また、点Pは弧DC上を動く点であり、APとBDとの交点をGとする。ただし、点Pは点B、C、Dと重ならないものとする。点PがBA=BGとなるように動いたとき、△AFE∽△BGPであることを証明しなさい。",
+  "geometry": {
+    "objects": [
+      { "id": "circle-O", "type": "circle", "center": "O" },
+      { "id": "line-AC", "type": "line", "through": ["A", "C"] },
+      { "id": "line-BD", "type": "line", "through": ["B", "D"] },
+      { "id": "line-BC", "type": "line", "through": ["B", "C"] },
+      { "id": "line-AB", "type": "line", "through": ["A", "B"] },
+      { "id": "line-AP", "type": "line", "through": ["A", "P"] },
+      { "id": "line-EF", "type": "line", "through": ["E", "F"] }
+    ],
+    "points": [
+      { "id": "O", "role": "circle-center" },
+      { "id": "A", "role": "given-point" },
+      { "id": "B", "role": "given-point" },
+      { "id": "C", "role": "given-point" },
+      { "id": "D", "role": "given-point" },
+      { "id": "E", "role": "constructed-point" },
+      { "id": "F", "role": "constructed-point" },
+      { "id": "P", "role": "moving-point" },
+      { "id": "G", "role": "constructed-point" }
+    ],
+    "constructions": [
+      { "point": "E", "type": "intersection", "of": ["line-AC", "line-BD"] },
+      { "point": "F", "type": "intersection", "of": ["line-AB", "line-EF"] },
+      { "point": "G", "type": "intersection", "of": ["line-AP", "line-BD"] }
+    ],
+    "constraints": [
+      { "type": "point-on-circle", "point": "A", "circle": "circle-O" },
+      { "type": "point-on-circle", "point": "B", "circle": "circle-O" },
+      { "type": "point-on-circle", "point": "C", "circle": "circle-O" },
+      { "type": "point-on-circle", "point": "D", "circle": "circle-O" },
+      { "type": "equal-segments", "segments": [["C", "A"], ["C", "D"]] },
+      { "type": "parallel-lines", "lines": ["line-EF", "line-BC"] }
+    ],
+    "dynamicConditions": [
+      {
+        "point": "P",
+        "type": "moves-on-arc",
+        "circle": "circle-O",
+        "endpoints": ["D", "C"],
+        "arcChoice": "not-containing-A",
+        "excludedPoints": ["B", "C", "D"]
+      },
+      {
+        "type": "equal-segments",
+        "segments": [["B", "A"], ["B", "G"]],
+        "role": "select-position-of-moving-point"
+      }
+    ]
+  },
+  "goal": {
+    "type": "triangle-similarity",
+    "triangles": [["A", "F", "E"], ["B", "G", "P"]]
+  },
+  "proofPlan": {
+    "status": "candidate-only",
+    "targetMethod": "AA-similarity",
+    "recordedProperties": [
+      "円周角",
+      "同位角",
+      "二等辺三角形の底角",
+      "角の加法",
+      "等式・角の関係の連鎖"
+    ],
+    "sourceAnalysis": {
+      "fineGrainedSteps": 10,
+      "largeSteps": 4,
+      "targetCategory": "相似",
+      "targetCondition": "2組の角"
+    },
+    "warning": "これらは分析表に記録された使用性質の要約であり、検証済みの証明手順ではない。"
+  },
+  "validation": {
+    "status": "not-yet-proved",
+    "structuralChecks": "manual-initial-review",
+    "mathematicalChecks": "pending",
+    "openQuestions": [
+      "弧DCの範囲・点の位置関係を、図と原問題の表記に照らして最終確認する。",
+      "交点の定義、動点条件BA=BGを満たす位置の存在、および相似の頂点対応を幾何的に検証する。",
+      "証明エンジンで全証明ステップを導出し、各ステップの根拠を検査する。"
+    ]
+  }
+}
