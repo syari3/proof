@@ -165,7 +165,8 @@
       ...exteriorAngleCandidates(facts),
       ...angleAdditionCandidates(facts),
       ...segmentAdditionCandidates(facts),
-      ...equalAnglesImplyEqualSidesCandidates(facts)
+      ...equalAnglesImplyEqualSidesCandidates(facts),
+      ...triangleSimilarityAACandidates(facts)
     ];
     const dynamicResults = dynamicRules.map((rule) => ({
       ruleId: rule.id,
@@ -270,6 +271,51 @@
           explain: "二等辺三角形の等しい辺に対する角は等しい。",
           category: "isosceles"
         });
+      }
+    }
+    return results;
+  }
+
+  // AA similarity with arbitrary triangle labels and explicit vertex-angle facts.
+  // Two distinct corresponding angle pairs determine the third pair by angle sum.
+  function triangleSimilarityAACandidates(known) {
+    const triangles = known.map((fact) => {
+      const match = /^triangle\(([A-Z])([A-Z])([A-Z])\)$/.exec(fact);
+      return match ? { fact, vertices: match.slice(1) } : null;
+    }).filter(Boolean).filter((triangle) => new Set(triangle.vertices).size === 3);
+    const anglePairs = known.map((fact) => {
+      const match = /^angle\(([A-Z])\)=angle\(([A-Z])\)$/.exec(fact);
+      return match ? { fact, first: match[1], second: match[2] } : null;
+    }).filter(Boolean);
+    const results = [];
+    for (let i = 0; i < triangles.length; i++) {
+      for (let j = i + 1; j < triangles.length; j++) {
+        const first = triangles[i], second = triangles[j];
+        for (const a of anglePairs) {
+          if (!first.vertices.includes(a.first) || !second.vertices.includes(a.second)) continue;
+          for (const b of anglePairs) {
+            if (a.fact === b.fact || a.first === b.first || a.second === b.second) continue;
+            if (!first.vertices.includes(b.first) || !second.vertices.includes(b.second)) continue;
+            const mapping = new Map([[a.first, a.second], [b.first, b.second]]);
+            const remainingFirst = first.vertices.find((point) => !mapping.has(point));
+            const usedSecond = new Set(mapping.values());
+            const remainingSecond = second.vertices.find((point) => !usedSecond.has(point));
+            if (!remainingFirst || !remainingSecond) continue;
+            mapping.set(remainingFirst, remainingSecond);
+            const mapped = first.vertices.map((point) => mapping.get(point));
+            if (new Set(mapped).size !== 3) continue;
+            const conclusion = "similar(" + first.vertices.join("") + "," + mapped.join("") + ")";
+            if (results.some((rule) => rule.conclusion === conclusion)) continue;
+            results.push({
+              id: "triangle-similarity-aa",
+              name: "三角形の相似条件（2組の角）",
+              premises: [a.fact, b.fact, first.fact, second.fact],
+              conclusion,
+              explain: "2組の角がそれぞれ等しい2つの三角形は相似である。",
+              category: "similarity"
+            });
+          }
+        }
       }
     }
     return results;
@@ -661,6 +707,25 @@
           if (step.conclusion === goal) {
             return { success: true, goal, facts: known, steps, reason: "proved" };
           }
+        }
+
+        const similarityAA = triangleSimilarityAACandidates(known).find((rule) => rule.conclusion === goal && !known.includes(rule.conclusion));
+        if (similarityAA) {
+          const step = {
+            index: steps.length + 1,
+            ruleId: similarityAA.id,
+            ruleName: similarityAA.name,
+            premises: [...similarityAA.premises],
+            premiseSources: similarityAA.premises.map((premise) => ({ fact: premise, ...(sourceByFact.get(premise) || { type: "unknown" }) })),
+            conclusion: similarityAA.conclusion,
+            explanation: similarityAA.explain,
+            category: similarityAA.category
+          };
+          known.push(step.conclusion);
+          sourceByFact.set(step.conclusion, { type: "step", index: step.index });
+          steps.push(step);
+          changed = true;
+          if (step.conclusion === goal) return { success: true, goal, facts: known, steps, reason: "proved" };
         }
 
         const angleSum = triangleAngleSumCandidates(known).find((rule) => rule.conclusion === goal && !known.includes(rule.conclusion));
