@@ -159,7 +159,8 @@
       }));
     const dynamicRules = [
       ...triangleAngleSumCandidates(facts),
-      ...equalRadiusCandidates(facts)
+      ...equalRadiusCandidates(facts),
+      ...verticalAngleCandidates(facts)
     ];
     const dynamicResults = dynamicRules.map((rule) => ({
       ruleId: rule.id,
@@ -259,6 +260,30 @@
     return results;
   }
 
+  // verticalAngles(ABC,DBE) explicitly states that these two angles are
+  // vertically opposite. The positional relation must be supplied; a shared
+  // vertex alone is not enough to infer equality.
+  function verticalAngleCandidates(known) {
+    const results = [];
+    for (const fact of known) {
+      const match = /^verticalAngles\\(([A-Z]{3}),([A-Z]{3})\\)$/.exec(fact);
+      if (!match) continue;
+      const first = match[1], second = match[2];
+      if (first[1] !== second[1] || first === second) continue;
+      const left = "angle(" + first + ")";
+      const right = "angle(" + second + ")";
+      results.push({
+        id: "angle-vertical-angles",
+        name: "対頂角は等しい",
+        premises: [fact],
+        conclusion: [left, right].sort().join("="),
+        explain: "対頂角は等しい。",
+        category: "angle"
+      });
+    }
+    return results;
+  }
+
   // Forward-chain from the supplied facts, recording every inference.
   // This is a bounded rule engine, not a complete geometry prover.
   function prove(facts, goal, maxSteps = 100) {
@@ -321,6 +346,30 @@
             conclusion: equalRadius.conclusion,
             explanation: equalRadius.explain,
             category: equalRadius.category
+          };
+          known.push(step.conclusion);
+          sourceByFact.set(step.conclusion, { type: "step", index: step.index });
+          steps.push(step);
+          changed = true;
+          if (step.conclusion === goal) {
+            return { success: true, goal, facts: known, steps, reason: "proved" };
+          }
+        }
+
+        const verticalAngles = verticalAngleCandidates(known).find((rule) => !known.includes(rule.conclusion));
+        if (verticalAngles) {
+          const step = {
+            index: steps.length + 1,
+            ruleId: verticalAngles.id,
+            ruleName: verticalAngles.name,
+            premises: [...verticalAngles.premises],
+            premiseSources: verticalAngles.premises.map((premise) => ({
+              fact: premise,
+              ...(sourceByFact.get(premise) || { type: "unknown" })
+            })),
+            conclusion: verticalAngles.conclusion,
+            explanation: verticalAngles.explain,
+            category: verticalAngles.category
           };
           known.push(step.conclusion);
           sourceByFact.set(step.conclusion, { type: "step", index: step.index });
