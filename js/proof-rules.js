@@ -168,7 +168,8 @@
     const dynamicRules = [
       ...triangleAngleSumCandidates(facts),
       ...equalRadiusCandidates(facts),
-      ...verticalAngleCandidates(facts)
+      ...verticalAngleCandidates(facts),
+      ...exteriorAngleCandidates(facts)
     ];
     const dynamicResults = dynamicRules.map((rule) => ({
       ruleId: rule.id,
@@ -292,6 +293,37 @@
     return results;
   }
 
+  // extends(BC,D) means side BC is extended beyond C to D.
+  // Only explicit triangle and extension facts license the exterior-angle rule.
+  function exteriorAngleCandidates(known) {
+    const triangles = known.map((fact) => {
+      const match = /^triangle\(([A-Z])([A-Z])([A-Z])\)$/.exec(fact);
+      return match ? { fact, a: match[1], b: match[2], c: match[3] } : null;
+    }).filter(Boolean);
+    const extensions = known.map((fact) => {
+      const match = /^extends\(([A-Z])([A-Z]),([A-Z])\)$/.exec(fact);
+      return match ? { fact, first: match[1], through: match[2], point: match[3] } : null;
+    }).filter(Boolean);
+    const results = [];
+    for (const triangle of triangles) {
+      const { a, b, c } = triangle;
+      if (new Set([a, b, c]).size !== 3) continue;
+      for (const extension of extensions) {
+        if (extension.first !== b || extension.through !== c ||
+            [a, b, c].includes(extension.point)) continue;
+        results.push({
+          id: "triangle-exterior-angle",
+          name: "三角形の外角定理",
+          premises: [triangle.fact, extension.fact],
+          conclusion: "angle(" + a + c + extension.point + ")=angle(" + b + a + c + ")+angle(" + a + b + c + ")",
+          explain: "三角形の外角は、それと隣り合わない2つの内角の和に等しい。",
+          category: "angle"
+        });
+      }
+    }
+    return results;
+  }
+
   // Forward-chain from the supplied facts, recording every inference.
   // This is a bounded rule engine, not a complete geometry prover.
   function prove(facts, goal, maxSteps = 100) {
@@ -378,6 +410,30 @@
             conclusion: verticalAngles.conclusion,
             explanation: verticalAngles.explain,
             category: verticalAngles.category
+          };
+          known.push(step.conclusion);
+          sourceByFact.set(step.conclusion, { type: "step", index: step.index });
+          steps.push(step);
+          changed = true;
+          if (step.conclusion === goal) {
+            return { success: true, goal, facts: known, steps, reason: "proved" };
+          }
+        }
+
+        const exteriorAngle = exteriorAngleCandidates(known).find((rule) => !known.includes(rule.conclusion));
+        if (exteriorAngle) {
+          const step = {
+            index: steps.length + 1,
+            ruleId: exteriorAngle.id,
+            ruleName: exteriorAngle.name,
+            premises: [...exteriorAngle.premises],
+            premiseSources: exteriorAngle.premises.map((premise) => ({
+              fact: premise,
+              ...(sourceByFact.get(premise) || { type: "unknown" })
+            })),
+            conclusion: exteriorAngle.conclusion,
+            explanation: exteriorAngle.explain,
+            category: exteriorAngle.category
           };
           known.push(step.conclusion);
           sourceByFact.set(step.conclusion, { type: "step", index: step.index });
