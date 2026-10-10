@@ -59,7 +59,7 @@ const chain = rules.prove(
 );
 assert.equal(chain.success, true, "証明探索は円周角の結論に到達する");
 assert.equal(chain.steps.length, 1, "推論ステップを記録する");
-assert.equal(chain.steps[0].ruleId, "diameter-inscribed-angle");
+assert.equal(chain.steps[0].ruleId, "circle.diameter-inscribed-angle");
 console.log("✓ 証明探索は推論ステップを記録する");
 
 const failed = rules.prove(
@@ -93,7 +93,7 @@ const sideChain = rules.prove(
   "side(AB)=side(EF)"
 );
 assert.equal(sideChain.success, true, "辺の長さの等式にも推移律を適用する");
-assert.equal(sideChain.steps[0].ruleId, "equality-transitivity");
+assert.equal(sideChain.steps[0].ruleId, "logic.equality-transitivity");
 console.log("✓ 辺の等式の推移律を一般的に適用する");
 
 const unrelated = rules.prove(
@@ -108,7 +108,7 @@ const sss = rules.prove(
   "congruent(ABC,DEF)"
 );
 assert.equal(sss.success, true, "3組の辺がそろえば合同を導く");
-assert.equal(sss.steps[0].ruleId, "triangle-congruence-sss");
+assert.equal(sss.steps[0].ruleId, "triangle.congruence-sss");
 console.log("✓ 合同条件（3組の辺）");
 
 const noSss = rules.prove(
@@ -158,7 +158,7 @@ const angleSum = rules.prove(
   "angle(BAC)+angle(ABC)+angle(ACB)=180"
 );
 assert.equal(angleSum.success, true, "三角形ABCの内角の和を導く");
-assert.equal(angleSum.steps[0].ruleId, "triangle-angle-sum");
+assert.equal(angleSum.steps[0].ruleId, "triangle.angle-sum");
 assert.deepEqual(angleSum.steps[0].premises, ["triangle(ABC)"]);
 
 const otherTriangle = rules.prove(
@@ -187,7 +187,7 @@ const equalRadii = rules.prove(
   "side(OA)=side(OB)"
 );
 assert.equal(equalRadii.success, true, "同じ中心Oをもつ円周上の点から半径の等しさを導く");
-assert.equal(equalRadii.steps[0].ruleId, "circle-equal-radii");
+assert.equal(equalRadii.steps[0].ruleId, "circle.equal-radii");
 assert.deepEqual(equalRadii.steps[0].premises, ["onCircle(A,O)", "onCircle(B,O)"]);
 
 const differentCenters = rules.prove(
@@ -210,7 +210,7 @@ const verticalAngles = rules.prove(
   "angle(ABC)=angle(DBE)"
 );
 assert.equal(verticalAngles.success, true, "明示された対頂角の関係から角の等しさを導く");
-assert.equal(verticalAngles.steps[0].ruleId, "angle-vertical-angles");
+assert.equal(verticalAngles.steps[0].ruleId, "angle.vertical-angles");
 assert.deepEqual(verticalAngles.steps[0].premises, ["verticalAngles(ABC,DBE)"]);
 
 const adjacentAngles = rules.prove(
@@ -233,7 +233,7 @@ const correspondingAngles = rules.prove(
   "angle1=angle2"
 );
 assert.equal(correspondingAngles.success, true, "平行条件・横切る直線・同位角の位置がそろえば等しいと導く");
-assert.equal(correspondingAngles.steps[0].ruleId, "parallel-corresponding-angles");
+assert.equal(correspondingAngles.steps[0].ruleId, "parallel.corresponding-angles");
 assert.deepEqual(correspondingAngles.steps[0].premises, [
   "parallel(l,m)", "intersects(t,l)", "intersects(t,m)", "correspondingAngles(angle1,angle2,t,l,m)"
 ].map((fact, index) => index === 3 ? "correspondingAngles(angle1,angle2,t,l,m)" : fact));
@@ -257,7 +257,7 @@ const exteriorAngle = rules.prove(
   "angle(ACD)=angle(BAC)+angle(ABC)"
 );
 assert.equal(exteriorAngle.success, true, "辺BCをCの先へ延長した外角は離れた2内角の和になる");
-assert.equal(exteriorAngle.steps[0].ruleId, "triangle-exterior-angle");
+assert.equal(exteriorAngle.steps[0].ruleId, "triangle.exterior-angle");
 assert.deepEqual(exteriorAngle.steps[0].premises, ["triangle(ABC)", "extends(BC,D)"]);
 
 const missingExtension = rules.prove(
@@ -279,7 +279,7 @@ const angleAddition = rules.prove(
   "angle(AOC)=angle(AOB)+angle(BOC)"
 );
 assert.equal(angleAddition.success, true, "角の内部にある半直線で分けた角を足せる");
-assert.equal(angleAddition.steps[0].ruleId, "angle-addition");
+assert.equal(angleAddition.steps[0].ruleId, "angle.addition");
 
 const missingInnerRay = rules.prove(
   [],
@@ -299,7 +299,7 @@ const segmentAddition = rules.prove(
   "side(AC)=side(AB)+side(BC)"
 );
 assert.equal(segmentAddition.success, true, "BがAとCの間にあるとき線分を加算できる");
-assert.equal(segmentAddition.steps[0].ruleId, "segment-addition");
+assert.equal(segmentAddition.steps[0].ruleId, "segment.addition");
 
 const missingBetweenFact = rules.prove(
   [],
@@ -320,7 +320,7 @@ const equalAnglesImplyEqualSides = rules.prove(
   "side(AB)=side(AC)"
 );
 assert.equal(equalAnglesImplyEqualSides.success, true, "三角形の等しい内角に対する辺の等しさを導く");
-assert.equal(equalAnglesImplyEqualSides.steps[0].ruleId, "triangle-equal-angles-imply-equal-sides");
+assert.equal(equalAnglesImplyEqualSides.steps[0].ruleId, "triangle.equal-angles-imply-equal-sides");
 
 const missingTriangleForConverse = rules.prove(
   ["angle(ABC)=angle(BCA)"],
@@ -340,7 +340,7 @@ const generalizedIsosceles = rules.prove(
   "angle(PQR)=angle(PRQ)"
 );
 assert.equal(generalizedIsosceles.success, true, "別の頂点名でも二等辺三角形の底角を導く");
-assert.equal(generalizedIsosceles.steps[0].ruleId, "triangle-isosceles-base-angles");
+assert.equal(generalizedIsosceles.steps[0].ruleId, "triangle.isosceles-base-angles");
 
 const reversedSideOrder = rules.prove(
   ["triangle(PQR)", "side(RP)=side(QP)"],
@@ -360,7 +360,7 @@ const genericSimilarity = rules.prove(
   "similar(PQR,YZX)"
 );
 assert.equal(genericSimilarity.success, true, "任意の頂点名と対応順でAA相似を導く");
-assert.equal(genericSimilarity.steps[0].ruleId, "triangle-similarity-aa");
+assert.equal(genericSimilarity.steps[0].ruleId, "triangle.similarity-aa");
 
 const missingSecondAngle = rules.prove(
   ["triangle(PQR)", "triangle(XYZ)", "angle(P)=angle(Y)"],
@@ -377,7 +377,7 @@ const genericSSS = rules.prove(
   "congruent(PQR,YXZ)"
 );
 assert.equal(genericSSS.success, true, "任意の頂点名・辺の表記順でも3組の辺から合同を導く");
-assert.equal(genericSSS.steps[0].ruleId, "triangle-congruence-sss");
+assert.equal(genericSSS.steps[0].ruleId, "triangle.congruence-sss");
 
 const missingThirdSide = rules.prove(
   ["triangle(PQR)", "triangle(XYZ)", "side(PQ)=side(YX)", "side(QR)=side(XZ)"],
@@ -397,7 +397,7 @@ const sas = rules.prove(
   "congruent(ABC,DEF)"
 );
 assert.equal(sas.success, true, "2辺とその間の角が対応して等しければ合同");
-assert.equal(sas.steps[0].ruleId, "triangle-congruence-sas");
+assert.equal(sas.steps[0].ruleId, "triangle.congruence-sas");
 
 const missingSasIncludedAngle = rules.prove(
   ["side(AB)=side(DE)", "side(AC)=side(DF)", "triangle(ABC)", "triangle(DEF)"],
@@ -411,7 +411,7 @@ const genericSAS = rules.prove(
   "congruent(PQR,XYZ)"
 );
 assert.equal(genericSAS.success, true, "任意の頂点名でも2辺とその間の角から合同を導く");
-assert.equal(genericSAS.steps[0].ruleId, "triangle-congruence-sas");
+assert.equal(genericSAS.steps[0].ruleId, "triangle.congruence-sas");
 
 const nonIncludedSASAngle = rules.prove(
   ["triangle(PQR)", "triangle(XYZ)", "side(PQ)=side(XY)", "angle(PQR)=angle(XYZ)", "side(PR)=side(XZ)"],
@@ -425,7 +425,7 @@ const genericASA = rules.prove(
   "congruent(PQR,XYZ)"
 );
 assert.equal(genericASA.success, true, "任意の頂点名でも1辺と両端の角から合同を導く");
-assert.equal(genericASA.steps[0].ruleId, "triangle-congruence-asa");
+assert.equal(genericASA.steps[0].ruleId, "triangle.congruence-asa");
 
 const wrongEndpointASA = rules.prove(
   ["triangle(PQR)", "triangle(XYZ)", "angle(QPR)=angle(YXZ)", "side(PQ)=side(XY)", "angle(PRQ)=angle(XYZ)"],
@@ -439,7 +439,7 @@ const asa = rules.prove(
   "congruent(ABC,DEF)"
 );
 assert.equal(asa.success, true, "1辺とその両端の角が対応して等しければ合同");
-assert.equal(asa.steps[0].ruleId, "triangle-congruence-asa");
+assert.equal(asa.steps[0].ruleId, "triangle.congruence-asa");
 
 const missingAsaEndpointAngle = rules.prove(
   ["angle(BAC)=angle(EDF)", "side(AB)=side(DE)", "triangle(ABC)", "triangle(DEF)"],
@@ -467,7 +467,7 @@ const genericDiameter = rules.prove(
   "angle(PRQ)=90"
 );
 assert.equal(genericDiameter.success, true, "任意の頂点名でも直径に対する円周角を導く");
-assert.equal(genericDiameter.steps[0].ruleId, "diameter-inscribed-angle");
+assert.equal(genericDiameter.steps[0].ruleId, "circle.diameter-inscribed-angle");
 assert.deepEqual(genericDiameter.steps[0].premises, ["onCircle(R)", "onCircle(P)", "onCircle(Q)", "diameter(PQ)"]);
 
 const genericDiameterMissingEndpoint = rules.prove(
@@ -483,14 +483,14 @@ const genericAlternate = rules.prove(
   "alpha=beta"
 );
 assert.equal(genericAlternate.success, true, "任意の直線・角ラベルで錯角を導く");
-assert.equal(genericAlternate.steps[0].ruleId, "parallel-alternate-interior");
+assert.equal(genericAlternate.steps[0].ruleId, "parallel.alternate-interior-angles");
 
 const genericCorresponding = rules.prove(
   ["parallel(p,q)", "intersects(r,p)", "intersects(r,q)", "correspondingAngles(gamma,delta,r,p,q)"],
   "gamma=delta"
 );
 assert.equal(genericCorresponding.success, true, "任意の直線・角ラベルで同位角を導く");
-assert.equal(genericCorresponding.steps[0].ruleId, "parallel-corresponding-angles");
+assert.equal(genericCorresponding.steps[0].ruleId, "parallel.corresponding-angles");
 
 const missingParallelForGenericAngle = rules.prove(
   ["intersects(r,p)", "intersects(r,q)", "alternateAngles(alpha,beta,r,p,q)"],
@@ -514,7 +514,7 @@ const reversedSideChain = rules.prove(
   "side(AB)=side(EF)"
 );
 assert.equal(reversedSideChain.success, true, "等式の左右が逆向きでも推移律を適用する");
-assert.equal(reversedSideChain.steps[0].ruleId, "equality-transitivity");
+assert.equal(reversedSideChain.steps[0].ruleId, "logic.equality-transitivity");
 
 const reversedAngleChain = rules.prove(
   ["angle(DEF)=angle(ABC)", "angle(GHI)=angle(DEF)"],
