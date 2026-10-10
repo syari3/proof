@@ -147,6 +147,34 @@
     return results;
   }
 
+  // Replace an angle ray endpoint only when the vertex-based same-ray fact
+  // explicitly confirms that the two rays coincide.
+  function sameRayAngleCandidates(known) {
+    const rays = known.map((fact) => /^sameRay\\(([A-Z]),([A-Z]),([A-Z])\\)$/.exec(fact)).filter(Boolean)
+      .map((m) => ({ fact: m[0], vertex: m[1], first: m[2], second: m[3] }));
+    const angles = known.map((fact) => /^angle\\(([A-Z])([A-Z])([A-Z])\\)$/.exec(fact)).filter(Boolean)
+      .map((m) => ({ fact: m[0], first: m[1], vertex: m[2], last: m[3] }));
+    const results = [];
+    for (const angle of angles) for (const ray of rays) {
+      if (angle.vertex !== ray.vertex) continue;
+      for (const [from, to] of [[ray.first, ray.second], [ray.second, ray.first]]) {
+        let changed = false, a = angle.first, c = angle.last;
+        if (a === from && c !== to) { a = to; changed = true; }
+        else if (c === from && a !== to) { c = to; changed = true; }
+        if (!changed || a === c) continue;
+        const replacement = 'angle(' + a + angle.vertex + c + ')';
+        results.push({
+          id: 'geometry.same-ray-angle', name: '同じ半直線を使った角の置き換え',
+          premises: [angle.fact, ray.fact],
+          conclusion: [angle.fact, replacement].sort().join('='),
+          explain: '同じ半直線上にある点で角を表し直しても、角の大きさは変わらない。',
+          category: 'angle'
+        });
+      }
+    }
+    return results;
+  }
+
   function circleGoal(known, goal) {
     return circleCandidates(known).find((rule) => rule.conclusion === goal) || null;
   }
@@ -173,6 +201,7 @@
       ...diameterInscribedAngleCandidates(facts),
       ...circleCandidates(facts),
       ...sameSegmentAngleCandidates(facts),
+      ...sameRayAngleCandidates(facts),
       ...verticalAngleCandidates(facts),
       ...exteriorAngleCandidates(facts),
       ...angleAdditionCandidates(facts),
@@ -1241,6 +1270,19 @@
           known.push(step.conclusion); sourceByFact.set(step.conclusion, { type: "step", index: step.index });
           steps.push(step); changed = true;
           if (step.conclusion === goal) return { success: true, goal, facts: known, steps, reason: "proved" };
+        }
+        const sameRayCandidatesNow = sameRayAngleCandidates(known);
+        const sameRayAngle = sameRayCandidatesNow.find((rule) => sameAngleEquality(rule.conclusion, goal) && !known.includes(goal)) ||
+          sameRayCandidatesNow.find((rule) => !known.includes(rule.conclusion));
+        if (sameRayAngle) {
+          const step = { index: steps.length + 1, ruleId: sameRayAngle.id, ruleName: sameRayAngle.name,
+            premises: [...sameRayAngle.premises],
+            premiseSources: sameRayAngle.premises.map((p) => ({ fact: p, ...(sourceByFact.get(p) || { type: 'unknown' }) })),
+            conclusion: sameAngleEquality(sameRayAngle.conclusion, goal) ? goal : sameRayAngle.conclusion,
+            explanation: sameRayAngle.explain, category: 'angle' };
+          known.push(step.conclusion); sourceByFact.set(step.conclusion, { type: 'step', index: step.index });
+          steps.push(step); changed = true;
+          if (step.conclusion === goal) return { success: true, goal, facts: known, steps, reason: 'proved' };
         }
         const sameSegmentCandidatesNow = sameSegmentAngleCandidates(known);
         const sameSegmentAngle = sameSegmentCandidatesNow.find((rule) => sameAngleEquality(rule.conclusion, goal) && !known.includes(goal)) ||
