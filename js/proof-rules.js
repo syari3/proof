@@ -235,7 +235,7 @@
   // Points explicitly marked on circles with the same center have equal radii.
   function equalRadiusCandidates(known) {
     const points = known.map((fact) => {
-      const match = /^onCircle\\(([A-Z]),([A-Z])\\)$/.exec(fact);
+      const match = /^onCircle\(([A-Z]),([A-Z])\)$/.exec(fact);
       return match ? { fact, point: match[1], center: match[2] } : null;
     }).filter(Boolean);
     const results = [];
