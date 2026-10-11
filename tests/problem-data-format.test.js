@@ -11,7 +11,7 @@ assert.ok(problem.id && problem.source && problem.prompt);
 assert.equal(problem.source.year, 2025);
 assert.equal(problem.goal.type, "triangle-similarity");
 assert.deepEqual(problem.goal.triangles, [["A", "F", "E"], ["B", "G", "P"]]);
-assert.equal(problem.validation.status, "not-yet-proved");
+assert.equal(problem.validation.status, "proof-engine-check-pending");
 
 const geometry = problem.geometry;
 const pointIds = new Set(geometry.points.map((point) => point.id));
