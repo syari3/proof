@@ -50,6 +50,15 @@ const badFixed = Checker.validate(problem, {points:{
 assert.equal(badFixed.valid, false);
 assert.ok(badFixed.errors.some(item => item.code === "constraint-not-satisfied"));
 
+// Bad placement 3: E must lie inside angle FAG, not outside its boundary rays.
+const badInterior = Checker.validate(problem, {points:{
+  ...realization.points,
+  E:{x:0.25,y:1.5}
+}});
+assert.equal(badInterior.valid, false);
+assert.ok(badInterior.errors.some(item => item.path === "geometry.constraints[17]"),
+  JSON.stringify(badInterior.errors, null, 2));
+
 // Impossible movement: BA is longer than BD, so G cannot lie on segment BD.
 const impossible = Solver.solve(problem, {
   ...fixed,
