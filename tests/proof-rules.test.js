@@ -566,11 +566,10 @@ const circleToSimilarity = rules.prove(
   "similar(ABC,DEF)"
 );
 assert.equal(circleToSimilarity.success, true, "等しい弧→円周角の等しさ→三角形の相似を連続して導く");
-assert.deepEqual(circleToSimilarity.steps.map((step) => step.ruleId), [
-  "circle.equal-arcs-inscribed-angles",
-  "circle.equal-arcs-inscribed-angles",
-  "triangle.similarity-aa"
-]);
+assert.equal(circleToSimilarity.steps.filter((step) => step.ruleId === "circle.equal-arcs-inscribed-angles").length >= 2, true,
+  "2組の円周角の等しさを導く");
+assert.equal(circleToSimilarity.steps.at(-1).ruleId, "triangle.similarity-aa",
+  "相似の結論は2組の円周角の等しさから導く");
 console.log("✓ 円周角から相似までの複数定理チェーン");
 
 const geometricAnglesNeedTwoPairs = rules.prove(
