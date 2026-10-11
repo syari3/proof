@@ -260,6 +260,17 @@
           "line-EF",
           "line-BC"
         ]
+      },
+      {
+        "type": "same-segment",
+        "chord": [
+          "A",
+          "D"
+        ],
+        "vertices": [
+          "C",
+          "B"
+        ]
       }
     ],
     "dynamicConditions": [
