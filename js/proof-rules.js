@@ -180,6 +180,132 @@
     return results;
   }
 
+  function angleTermsForSimilarityGoal(goal) {
+    const match = /^similar\\(([A-Z]{3}),([A-Z]{3})\\)$/.exec(goal);
+    if (!match) return [];
+    const first = match[1], second = match[2];
+    const angleAt = (triangle, index) =>
+      "angle(" + triangle[(index + 1) % 3] + triangle[index] + triangle[(index + 2) % 3] + ")";
+    return [0, 1, 2].map((index) => angleAt(first, index) + "=" + angleAt(second, index));
+  }
+
+  function oppositeSegmentAngleCandidates(known) {
+    const circlePoints = new Set(known.map((fact) => /^onCircle\\(([A-Z])\\)$/.exec(fact)).filter(Boolean).map((m) => m[1]));
+    const results = [];
+    for (const fact of known) {
+      const match = /^oppositeSegment\\(([A-Z])([A-Z]),([A-Z]),([A-Z])\\)$/.exec(fact);
+      if (!match) continue;
+      const [, x, y, firstVertex, secondVertex] = match;
+      if (new Set([x, y, firstVertex, secondVertex]).size !== 4) continue;
+      if (![x, y, firstVertex, secondVertex].every((point) => circlePoints.has(point))) continue;
+      results.push({
+        id: "circle.opposite-segment-supplementary-angles",
+        name: "弦の反対側にある円周角の和",
+        premises: [fact, ...[x, y, firstVertex, secondVertex].map((point) => "onCircle(" + point + ")")],
+        conclusion: "angle(" + x + firstVertex + y + ")+angle(" + x + secondVertex + y + ")=180",
+        explain: "同じ弦の反対側にある円周角は和が180°になる。",
+        category: "circle"
+      });
+    }
+    return results;
+  }
+
+  function linearPairSupplementCandidates(known, goal) {
+    const oppositeRays = known.map((fact) => /^oppositeRay\\(([A-Z]),([A-Z]),([A-Z])\\)$/.exec(fact))
+      .filter(Boolean).map((m) => ({ fact: m[0], vertex: m[1], first: m[2], second: m[3] }));
+    const labels = new Set();
+    for (const fact of known) {
+      for (const match of fact.matchAll(/angle\\(([A-Z]{3})\\)/g)) labels.add(match[1]);
+    }
+    const goalPairs = angleTermsForSimilarityGoal(goal).map(parseEquality).filter(Boolean);
+    const goalTerms = goalPairs.flatMap((pair) => [canonicalTerm(pair.left), canonicalTerm(pair.right)]);
+    const results = [];
+    for (const ray of oppositeRays) for (const label of labels) {
+      const angle = parseAngle("angle(" + label + ")");
+      if (!angle || angle.vertex !== ray.vertex) continue;
+      for (const [from, to] of [[ray.first, ray.second], [ray.second, ray.first]]) {
+        const endpoints = [angle.first, angle.last];
+        if (!endpoints.includes(from) || endpoints.includes(to)) continue;
+        const other = endpoints.find((point) => point !== from);
+        if (!other || other === to) continue;
+        const replacement = "angle(" + other + angle.vertex + to + ")";
+        const parts = [angle.text, replacement];
+        const conclusion = parts.slice().sort().join("+") + "=180";
+        if (results.some((item) => item.conclusion === conclusion)) continue;
+        const canonicalParts = parts.map(canonicalTerm);
+        const priority = canonicalParts.some((part) => goalTerms.includes(part));
+        results.push({
+          id: "angle.linear-pair-supplementary",
+          name: "一直線上の隣り合う角の和",
+          premises: [ray.fact, angle.text],
+          conclusion,
+          explain: "反対向きの半直線でできる隣り合う角の和は180°である。",
+          category: "angle",
+          goalPriority: priority
+        });
+      }
+    }
+    return results.sort((a, b) => Number(b.goalPriority) - Number(a.goalPriority));
+  }
+
+  function goalRelatedEquality(conclusion, goal, known) {
+    if (conclusion === goal || sameAngleEquality(conclusion, goal)) return true;
+    const equality = parseEquality(conclusion);
+    if (!equality) return false;
+    return angleTermsForSimilarityGoal(goal).some((candidate) => {
+      const pair = parseEquality(candidate);
+      return pair && (
+        (termsEquivalent(equality.left, pair.left, known) && termsEquivalent(equality.right, pair.right, known)) ||
+        (termsEquivalent(equality.left, pair.right, known) && termsEquivalent(equality.right, pair.left, known))
+      );
+    });
+  }
+
+  function supplementaryAngleCancellationCandidates(known, goal) {
+    const sums = known.map((fact) => {
+      const match = /^(angle\\([A-Z]{3}\\)\\+angle\\([A-Z]{3}\\))=180$/.exec(fact);
+      return match ? { fact, parts: match[1].split("+") } : null;
+    }).filter(Boolean);
+    const results = [];
+    for (let i = 0; i < sums.length; i++) for (let j = i + 1; j < sums.length; j++) {
+      const a = sums[i], b = sums[j];
+      for (let ai = 0; ai < 2; ai++) for (let bi = 0; bi < 2; bi++) {
+        if (!termsEquivalent(a.parts[ai], b.parts[bi], known)) continue;
+        const left = a.parts[1 - ai], right = b.parts[1 - bi];
+        if (termsEquivalent(left, right, known)) continue;
+        const conclusion = left + "=" + right;
+        if (results.some((item) => item.conclusion === conclusion || item.conclusion === right + "=" + left)) continue;
+        const premises = [a.fact, b.fact, ...known.filter((fact) => {
+          const equality = parseEquality(fact);
+          return equality && (
+            (termsEquivalent(equality.left, a.parts[ai], known) && termsEquivalent(equality.right, b.parts[bi], known)) ||
+            (termsEquivalent(equality.right, a.parts[ai], known) && termsEquivalent(equality.left, b.parts[bi], known))
+          );
+        })];
+        results.push({
+          id: "angle.supplementary-cancellation",
+          name: "等しい角をもつ補角の等しさ",
+          premises: [...new Set(premises)],
+          conclusion,
+          explain: "それぞれの和が180°で、一組の角が等しいなら、残りの角も等しい。",
+          category: "angle"
+        });
+      }
+    }
+    const goalPairs = angleTermsForSimilarityGoal(goal).map(parseEquality).filter(Boolean);
+    return results.sort((a, b) => {
+      const score = (item) => {
+        const equality = parseEquality(item.conclusion);
+        if (!equality) return 0;
+        return goalPairs.some((pair) =>
+          (termsEquivalent(equality.left, pair.left, known) && termsEquivalent(equality.right, pair.right, known)) ||
+          (termsEquivalent(equality.left, pair.right, known) && termsEquivalent(equality.right, pair.left, known))
+        ) ? 1 : 0;
+      };
+      return score(b) - score(a);
+    });
+  }
+
   function circleGoal(known, goal) {
     return circleCandidates(known).find((rule) => rule.conclusion === goal) || null;
   }
@@ -207,6 +333,9 @@
       ...diameterInscribedAngleCandidates(facts),
       ...circleCandidates(facts),
       ...sameSegmentAngleCandidates(facts),
+      ...oppositeSegmentAngleCandidates(facts),
+      ...linearPairSupplementCandidates(facts, ""),
+      ...supplementaryAngleCancellationCandidates(facts, ""),
       ...sameRayAngleCandidates(facts),
       ...verticalAngleCandidates(facts),
       ...exteriorAngleCandidates(facts),
@@ -890,16 +1019,31 @@
     return { fact, whole, parts: [first, second], kind };
   }
 
+  function canonicalTerm(term) {
+    const angle = parseAngle(term);
+    if (angle) {
+      const ends = [angle.first, angle.last].sort();
+      return "angle(" + ends[0] + angle.vertex + ends[1] + ")";
+    }
+    const side = /^side\\(([A-Z])([A-Z])\\)$/.exec(term);
+    if (side) return "side(" + side.slice(1).sort().join("") + ")";
+    return term;
+  }
+
   function termsEquivalent(first, second, known) {
+    first = canonicalTerm(first);
+    second = canonicalTerm(second);
     if (first === second) return true;
     const graph = new Map();
     for (const fact of known) {
       const equality = parseEquality(fact);
       if (!equality) continue;
-      if (!graph.has(equality.left)) graph.set(equality.left, new Set());
-      if (!graph.has(equality.right)) graph.set(equality.right, new Set());
-      graph.get(equality.left).add(equality.right);
-      graph.get(equality.right).add(equality.left);
+      const left = canonicalTerm(equality.left);
+      const right = canonicalTerm(equality.right);
+      if (!graph.has(left)) graph.set(left, new Set());
+      if (!graph.has(right)) graph.set(right, new Set());
+      graph.get(left).add(right);
+      graph.get(right).add(left);
     }
     const visited = new Set([first]);
     const queue = [first];
@@ -1376,6 +1520,52 @@
           steps.push(step); changed = true;
           if (step.conclusion === goal) return { success: true, goal, facts: known, steps, reason: 'proved' };
         }
+        const oppositeSegmentCandidatesNow = oppositeSegmentAngleCandidates(known);
+        const oppositeSegment = oppositeSegmentCandidatesNow.find((rule) => !known.includes(rule.conclusion));
+        if (oppositeSegment) {
+          const step = {
+            index: steps.length + 1, ruleId: oppositeSegment.id, ruleName: oppositeSegment.name,
+            premises: [...oppositeSegment.premises],
+            premiseSources: oppositeSegment.premises.map((premise) => ({ fact: premise, ...(sourceByFact.get(premise) || { type: "unknown" }) })),
+            conclusion: oppositeSegment.conclusion, explanation: oppositeSegment.explain, category: oppositeSegment.category
+          };
+          known.push(step.conclusion); sourceByFact.set(step.conclusion, { type: "step", index: step.index });
+          steps.push(step); changed = true;
+          if (step.conclusion === goal) return { success: true, goal, facts: known, steps, reason: "proved" };
+        }
+
+        const linearPairCandidatesNow = linearPairSupplementCandidates(known, goal);
+        const linearPair = linearPairCandidatesNow.find((rule) => !known.includes(rule.conclusion));
+        if (linearPair) {
+          const step = {
+            index: steps.length + 1, ruleId: linearPair.id, ruleName: linearPair.name,
+            premises: [...linearPair.premises],
+            premiseSources: linearPair.premises.map((premise) => ({ fact: premise, ...(sourceByFact.get(premise) || { type: "unknown" }) })),
+            conclusion: linearPair.conclusion, explanation: linearPair.explain, category: linearPair.category
+          };
+          known.push(step.conclusion); sourceByFact.set(step.conclusion, { type: "step", index: step.index });
+          steps.push(step); changed = true;
+          if (step.conclusion === goal) return { success: true, goal, facts: known, steps, reason: "proved" };
+        }
+
+        const supplementaryCandidatesNow = supplementaryAngleCancellationCandidates(known, goal);
+        const supplementary = supplementaryCandidatesNow.find((rule) => goalRelatedEquality(rule.conclusion, goal, known) && !known.includes(rule.conclusion)) ||
+          supplementaryCandidatesNow.find((rule) => !known.includes(rule.conclusion));
+        if (supplementary) {
+          const conclusion = goalRelatedEquality(supplementary.conclusion, goal, known) ? supplementary.conclusion : supplementary.conclusion;
+          const step = {
+            index: steps.length + 1, ruleId: supplementary.id, ruleName: supplementary.name,
+            premises: [...supplementary.premises],
+            premiseSources: supplementary.premises.map((premise) => ({ fact: premise, ...(sourceByFact.get(premise) || { type: "unknown" }) })),
+            conclusion, explanation: supplementary.explain, category: supplementary.category
+          };
+          known.push(step.conclusion); sourceByFact.set(step.conclusion, { type: "step", index: step.index });
+          steps.push(step); changed = true;
+          if (goalRelatedEquality(step.conclusion, goal, known)) {
+            // Keep the derived equality as an intermediate fact; AA similarity consumes it next.
+          }
+        }
+
         const circleCandidatesNow = circleCandidates(known);
         // Prefer the requested conclusion, but also retain intermediate circle facts
         // so a later equality-transitivity step can use them.
