@@ -1651,8 +1651,10 @@
           }
         }
 
-        const triangleSumCancellation = triangleAngleSumCancellationCandidates(known)
-          .find((rule) => rule.conclusion === goal || sameAngleEquality(rule.conclusion, goal) || !known.includes(rule.conclusion));
+        const triangleSumCancellation = /^(side|angle)\\(/.test(goal)
+          ? triangleAngleSumCancellationCandidates(known)
+              .find((rule) => rule.conclusion === goal || sameAngleEquality(rule.conclusion, goal) || !known.includes(rule.conclusion))
+          : null;
         if (triangleSumCancellation) {
           const step = {
             index: steps.length + 1,
