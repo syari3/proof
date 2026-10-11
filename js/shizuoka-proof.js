@@ -13,7 +13,14 @@
     if ((m = /^oppositeSegment\(([A-Z]{2}),([A-Z]),([A-Z])\)$/.exec(fact))) return "点" + m[2] + "と点" + m[3] + "は弦" + m[1] + "の反対側";
     return fact.replaceAll("angle(", "∠").replaceAll("side(", "辺(").replaceAll(")", "");
   };
-  function render(result) {
+  function goalLabel(problem) {
+    const goal = problem && problem.goal;
+    if (goal && goal.type === "triangle-similarity" && Array.isArray(goal.triangles) && goal.triangles.length === 2) {
+      return "△" + goal.triangles[0].join("") + " ∽ △" + goal.triangles[1].join("");
+    }
+    return goal ? JSON.stringify(goal) : "目標が設定されていません";
+  }
+  function render(result, problem) {
     const list = $("#proof-steps");
     list.replaceChildren();
     const proof = result && result.proof;
@@ -24,6 +31,7 @@
       return;
     }
     const steps = proof.steps || [];
+    $("#proof-goal").textContent = goalLabel(problem);
     steps.forEach((step, index) => {
       const li = document.createElement("li");
       const number = document.createElement("span");
@@ -62,7 +70,7 @@
     $("#step-count").textContent = "（" + steps.length + "ステップ）";
     $("#proof-status").innerHTML = '<span class="status-dot"></span>' + (result.success ? "エンジンで証明済み" : "未証明");
     $("#validation-note").textContent = result.success
-      ? "推論エンジンは「△AFE ∽ △BGP」を " + steps.length + " ステップで導きました。これは登録された前提に対する推論結果です。"
+      ? "推論エンジンは「" + goalLabel(problem) + "」を " + steps.length + " ステップで導きました。これは登録された前提に対する推論結果です。"
       : "現在の推論ルールでは目標を導けませんでした。これは命題が偽という意味ではありません。";
     if (!result.success) $("#validation-note").classList.add("validation-warning");
   }
@@ -72,7 +80,7 @@
       $("#problem-title").textContent = problem.title;
       $("#problem-prompt").textContent = problem.prompt;
       $("#problem-source").textContent = problem.source.region + " " + problem.source.exam + "・" + problem.source.year + "年度 " + problem.source.questionNumber;
-      render(window.ProblemDataEngine.run(problem, window.ProofRules));
+      render(window.ProblemDataEngine.run(problem, window.ProofRules), problem);
     })
     .catch((error) => {
       $("#proof-status").textContent = "読み込みエラー";
