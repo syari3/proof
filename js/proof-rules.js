@@ -200,6 +200,7 @@
       }));
     const dynamicRules = [
       ...isoscelesBaseAngleCandidates(facts),
+      ...equalApexIsoscelesBaseAngleCandidates(facts),
       ...triangleAngleSumCandidates(facts),
       ...equalRadiusCandidates(facts),
       ...parallelAngleCandidates(facts),
@@ -576,13 +577,6 @@
       if (!match) continue;
       const [, a, b, c] = match;
       if (new Set([a, b, c]).size !== 3) continue;
-      const vertices = new Set([a, b, c]);
-      const hasEqualSides = known.some((given) => {
-        const eq = /^side\\(([A-Z])([A-Z])\\)=side\\(([A-Z])([A-Z])\\)$/.exec(given);
-        return eq && [eq[1], eq[2], eq[3], eq[4]].every((point) => vertices.has(point)) &&
-          [eq[1], eq[2]].sort().join("") !== [eq[3], eq[4]].sort().join("");
-      });
-      if (!hasEqualSides) continue;
       const conclusion = "angle(" + b + a + c + ")+angle(" + a + b + c + ")+angle(" + a + c + b + ")=180";
       results.push({
         id: "triangle.angle-sum",
@@ -591,6 +585,50 @@
         conclusion,
         explain: "三角形の内角の和は180°である。",
         category: "angle"
+      });
+    }
+    return results;
+  }
+
+  // Equal apex angles in two isosceles triangles imply equality of all four base angles.
+  function equalApexIsoscelesBaseAngleCandidates(known) {
+    const triangles = known.map((fact) => {
+      const m = /^triangle\\(([A-Z])([A-Z])([A-Z])\\)$/.exec(fact);
+      return m ? { fact, vertices: m.slice(1) } : null;
+    }).filter(Boolean).filter((t) => new Set(t.vertices).size === 3);
+    const sideEqualities = known.map((fact) => ({ fact, equality: parseEquality(fact) }))
+      .filter((x) => x.equality && x.equality.left.startsWith('side(') && x.equality.right.startsWith('side('));
+    const angleEqualities = known.map((fact) => ({ fact, equality: parseEquality(fact) }))
+      .filter((x) => x.equality && x.equality.left.startsWith('angle(') && x.equality.right.startsWith('angle('));
+    const results = [];
+    function info(triangle) {
+      for (const item of sideEqualities) {
+        const parseSide = (s) => { const m = /^side\\(([A-Z])([A-Z])\\)$/.exec(s); return m ? m.slice(1).sort().join('') : null; };
+        const l = parseSide(item.equality.left), r = parseSide(item.equality.right);
+        if (!l || !r || l === r || ![...l, ...r].every((p) => triangle.vertices.includes(p))) continue;
+        const apex = [...l].find((p) => r.includes(p));
+        if (!apex) continue;
+        const baseA = [...l].find((p) => p !== apex), baseB = [...r].find((p) => p !== apex);
+        if (!baseA || !baseB || baseA === baseB) continue;
+        return { apex, baseA, baseB, apexAngle: 'angle(' + baseA + apex + baseB + ')', sideFact: item.fact };
+      }
+      return null;
+    }
+    const bases = (x) => ['angle(' + x.apex + x.baseA + x.baseB + ')', 'angle(' + x.baseA + x.baseB + x.apex + ')'];
+    for (let i = 0; i < triangles.length; i++) for (let j = i + 1; j < triangles.length; j++) {
+      const a = info(triangles[i]), b = info(triangles[j]);
+      if (!a || !b) continue;
+      const apexEq = angleEqualities.find((x) =>
+        [x.equality.left, x.equality.right].includes(a.apexAngle) &&
+        [x.equality.left, x.equality.right].includes(b.apexAngle));
+      if (!apexEq) continue;
+      for (const aa of bases(a)) for (const bb of bases(b)) results.push({
+        id: 'triangle.isosceles-equal-apex-base-angles',
+        name: '頂角が等しい二等辺三角形の底角',
+        premises: [triangles[i].fact, a.sideFact, triangles[j].fact, b.sideFact, apexEq.fact],
+        conclusion: [aa, bb].sort().join('='),
+        explain: '頂角が等しい2つの二等辺三角形では、それぞれの底角もすべて等しい。',
+        category: 'isosceles'
       });
     }
     return results;
