@@ -146,6 +146,22 @@
         case "corresponding-angles": case "alternate-interior-angles": case "inscribed-angle": case "equal-arcs":
           // Evaluated by AngleArcModel below when available.
           break;
+        case "ray-inside-angle": {
+          const ids = c.points || [];
+          if (!c.vertex || ids.length !== 3) { defer("malformed-ray-inside-angle",path,"角の内部条件を評価できません。"); break; }
+          const v=p(c.vertex), a=p(ids[0]), q=p(ids[1]), b=p(ids[2]);
+          const angleOf = z => Math.atan2(z.y-v.y,z.x-v.x);
+          const norm = x => ((x % (2*Math.PI)) + 2*Math.PI) % (2*Math.PI);
+          const aa=angleOf(a), qq=angleOf(q), bb=angleOf(b);
+          const ab=norm(bb-aa), aq=norm(qq-aa);
+          const span = ab <= Math.PI ? ab : 2*Math.PI-ab;
+          const inside = ab <= Math.PI
+            ? aq > tolerance && aq < ab-tolerance
+            : aq > ab+tolerance && aq < 2*Math.PI-tolerance;
+          check(path, dist(v,a)>tolerance && dist(v,b)>tolerance && dist(v,q)>tolerance && span>tolerance && inside,
+            "指定点が境界半直線のなす小さい角の内部にありません。");
+          break;
+        }
         default: defer("unsupported-constraint",path,"未対応の条件型: "+String(c.type));
       }
     });
@@ -175,10 +191,17 @@
     // witness could pass while P is not on the specified arc.
     (problem.geometry.dynamicConditions || []).forEach((condition, i) => {
       const path = "geometry.dynamicConditions[" + i + "]";
-      if (!condition || condition.type !== "moves-on-arc") {
-        if (condition && condition.type !== "equal-segments") defer("unsupported-dynamic-condition", path, "未対応の動的条件です。");
+      if (!condition) { defer("unsupported-dynamic-condition", path, "空の動的条件です。"); return; }
+      if (condition.type === "equal-segments") {
+        const segments=condition.segments;
+        if (!Array.isArray(segments)||segments.length!==2||segments.some(s=>!Array.isArray(s)||s.length!==2)) {
+          defer("malformed-dynamic-equal-segments",path,"動的な線分長条件を評価できません。"); return;
+        }
+        const lengths=segments.map(s=>dist(p(s[0]),p(s[1])));
+        check(path,nearZero(lengths[0]-lengths[1],Math.max(...lengths)),"動的条件の2線分の長さが等しくありません。",lengths[0]-lengths[1]);
         return;
       }
+      if (condition.type !== "moves-on-arc") { defer("unsupported-dynamic-condition",path,"未対応の動的条件です。"); return; }
       const circle = objects.get(condition.circle);
       const center = circle && circle.type === "circle" ? p(circle.center) : null;
       const P = p(condition.point);
