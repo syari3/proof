@@ -14,7 +14,7 @@ const problem = {
   }
 };
 const witness={points:{
-  O:{x:0,y:0}, A:{x:1,y:0}, B:{x:0,y:1}, C:{x:-1,y:0}, D:{x:0,y:-1}
+  O:{x:0,y:0}, A:{x:1,y:0}, B:{x:-1,y:0}, C:{x:0,y:1}, D:{x:0,y:-1}
 }};
 const result=Model.validate(problem,witness);
 assert.equal(result.status,"angle-arc-witness-consistent");
@@ -33,5 +33,5 @@ const partial=Model.validate(ambiguous,witness);
 assert.equal(partial.status,"angle-arc-witness-partial");
 assert.ok(partial.pending.some(x=>x.code==="ambiguous-arc-choice"));
 
-assert.deepEqual(Model.cyclicOrder(["A","B","C","D"],witness.points,witness.points.O),["A","B","C","D"]);
+assert.deepEqual(Model.cyclicOrder(["A","B","C","D"],witness.points,witness.points.O),["A","C","B","D"]);
 console.log("angle-arc-model tests passed");
