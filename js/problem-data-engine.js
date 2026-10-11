@@ -63,7 +63,17 @@
         add("sameSegment(" + constraint.chord.slice().sort().join("") + "," + constraint.vertices[0] + "," + constraint.vertices[1] + ")");
       } else if (constraint.type === "opposite-segment" && Array.isArray(constraint.chord) && constraint.chord.length === 2 && Array.isArray(constraint.vertices) && constraint.vertices.length === 2) {
         add("oppositeSegment(" + constraint.chord.slice().sort().join("") + "," + constraint.vertices[0] + "," + constraint.vertices[1] + ")");
-      } else if (constraint.type === "opposite-rays" || constraint.type === "between" ||
+      } else if (constraint.type === "between" && Array.isArray(constraint.points) &&
+          constraint.points.length === 3 && constraint.points.every((point) => typeof point === "string" && /^[A-Z]$/.test(point))) {
+        // between(A,D,C) means D lies between A and C: from A, D and C
+        // share a ray, and from C, A and D share a ray. At D the rays are
+        // opposite, so deliberately do not add sameRay facts at that vertex.
+        const [first, middle, last] = constraint.points;
+        if (new Set([first, middle, last]).size === 3) {
+          add("sameRay(" + first + "," + middle + "," + last + ")");
+          add("sameRay(" + last + "," + first + "," + middle + ")");
+        }
+      } else if (constraint.type === "opposite-rays" ||
           constraint.type === "parallel-lines" || constraint.type === "corresponding-angles" ||
           constraint.type === "alternate-interior-angles" || constraint.type === "opposite-segment" || constraint.type === "inscribed-angle" ||
           constraint.type === "equal-arcs") {
