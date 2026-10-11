@@ -61,7 +61,9 @@
         add("onCircle(" + constraint.point + ")");
       } else if (constraint.type === "diameter" && constraint.circle && Array.isArray(constraint.endpoints) && constraint.endpoints.length === 2) {
         const endpoints = constraint.endpoints.slice().sort();
-        add("diameter(" + endpoints.join("") + "," + constraint.circle + ")");
+        // The inference engine uses diameter(BC) as its canonical fact. Keep the
+        // circle ID in the input schema, but do not append it to this legacy fact.
+        add("diameter(" + endpoints.join("") + ")");
       } else if (constraint.type === "perpendicular-lines" && Array.isArray(constraint.lines) && constraint.lines.length === 2) {
         const lines = constraint.lines.slice().sort();
         add("perpendicular(" + lines.join(",") + ")");
