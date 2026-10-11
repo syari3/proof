@@ -107,13 +107,15 @@ assert.deepEqual(GeometryRelations.derive([]), []);
 
 const sampleFile = require("../data/problem-examples/shizuoka-2025-proof-7-1.json");
 const sampleResult = Adapter.run(sampleFile, Rules);
-assert.equal(sampleResult.status, "not-proved-with-current-rules",
-  "証明エンジン未対応の推論を誤って証明済みにしない");
-assert.equal(sampleResult.success, false);
-assert.ok(sampleResult.proof.steps.some((step) => step.conclusion === "angle(AEF)=angle(GPB)"),
-  "平行線と同じ弦に対する円周角から、一組の角の等しさを導く");
+assert.equal(sampleResult.status, "proved",
+  "補角の関係と円周角から目標の相似を導く");
+assert.equal(sampleResult.success, true);
+assert.equal(sampleResult.proof.steps.at(-1).ruleId, "triangle.similarity-aa",
+  "最後にAA相似を適用する");
 assert.ok(sampleResult.proof.steps.some((step) => step.ruleId === "angle.addition"),
-  "既存の角の加法ルールは動作する");
+  "角の加法ルールを途中で利用する");
+assert.ok(sampleResult.proof.steps.some((step) => step.ruleId === "angle.supplementary-cancellation"),
+  "等しい補角から必要な角の等しさを導く");
 
  // Explicit circle incidence, parallel-through-point construction, and the
  // selected moving-point equality must reach the inference facts.
@@ -144,6 +146,7 @@ console.log("problem-data-engine adapter checks passed");
 
 const convertedSameSegment = Adapter.convert(sampleFile);
 assert.ok(convertedSameSegment.facts.includes("sameSegment(AB,C,P)"), "同じ弦の同じ側の位置関係を変換する");
+assert.ok(convertedSameSegment.facts.includes("oppositeSegment(AC,B,D)"), "同じ弦の反対側の位置関係を変換する");
 
 const angleSplitProblem = {
   format: "proof-problem",
