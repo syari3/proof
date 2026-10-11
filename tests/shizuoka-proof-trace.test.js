@@ -14,7 +14,7 @@ console.log(JSON.stringify({
   factCount: result.converted.facts.length,
   unsupported: result.converted.unsupported,
   targetRelatedFacts: result.proof.facts.filter((fact) =>
-    /angle\\((AFE|ABC|AEF|ACB|BPG|APB|GPB|BAG|AGB|ABG|CBD|DBG)\\)|similar\\(AFE,BGP\\)/.test(fact)
+    /angle\((AFE|ABC|AEF|ACB|BPG|APB|GPB|BAG|AGB|ABG|CBD|DBG)\)|similar\(AFE,BGP\)/.test(fact)
   ),
   steps: result.proof.steps.map((step) => ({
     index: step.index,
