@@ -1,0 +1,203 @@
+{
+  "format": "proof-problem",
+  "version": 1,
+  "id": "angle-addition-substitution-similarity",
+  "title": "角の加法と代入を使う相似の証明",
+  "prompt": "△ABCと△ADEがあり、DはBC上の点である。∠ABC＝∠AED、∠BAC＝∠EADである。また、ACとDEの交点をFとする。このとき、△ABD∽△AEFを証明しなさい。",
+  "geometry": {
+    "objects": [
+      {
+        "id": "line-AB",
+        "type": "line",
+        "through": [
+          "A",
+          "B"
+        ]
+      },
+      {
+        "id": "line-BC",
+        "type": "line",
+        "through": [
+          "B",
+          "D",
+          "C"
+        ]
+      },
+      {
+        "id": "line-AC",
+        "type": "line",
+        "through": [
+          "A",
+          "F",
+          "C"
+        ]
+      },
+      {
+        "id": "line-AE",
+        "type": "line",
+        "through": [
+          "A",
+          "E"
+        ]
+      },
+      {
+        "id": "line-AD",
+        "type": "line",
+        "through": [
+          "A",
+          "D"
+        ]
+      },
+      {
+        "id": "line-DE",
+        "type": "line",
+        "through": [
+          "E",
+          "F",
+          "D"
+        ]
+      }
+    ],
+    "points": [
+      {
+        "id": "A",
+        "role": "given-point"
+      },
+      {
+        "id": "B",
+        "role": "given-point"
+      },
+      {
+        "id": "C",
+        "role": "given-point"
+      },
+      {
+        "id": "D",
+        "role": "constructed-point"
+      },
+      {
+        "id": "E",
+        "role": "given-point"
+      },
+      {
+        "id": "F",
+        "role": "constructed-point"
+      }
+    ],
+    "triangles": [
+      {
+        "vertices": [
+          "A",
+          "B",
+          "C"
+        ]
+      },
+      {
+        "vertices": [
+          "A",
+          "D",
+          "E"
+        ]
+      },
+      {
+        "vertices": [
+          "A",
+          "B",
+          "D"
+        ]
+      },
+      {
+        "vertices": [
+          "A",
+          "E",
+          "F"
+        ]
+      }
+    ],
+    "constructions": [
+      {
+        "point": "F",
+        "type": "intersection",
+        "of": [
+          "line-AC",
+          "line-DE"
+        ]
+      }
+    ],
+    "constraints": [
+      {
+        "type": "between",
+        "points": [
+          "B",
+          "D",
+          "C"
+        ]
+      },
+      {
+        "type": "between",
+        "points": [
+          "A",
+          "F",
+          "C"
+        ]
+      },
+      {
+        "type": "between",
+        "points": [
+          "E",
+          "F",
+          "D"
+        ]
+      },
+      {
+        "type": "ray-inside-angle",
+        "vertex": "A",
+        "points": [
+          "B",
+          "D",
+          "C"
+        ]
+      },
+      {
+        "type": "ray-inside-angle",
+        "vertex": "A",
+        "points": [
+          "E",
+          "F",
+          "D"
+        ]
+      }
+    ],
+    "dynamicConditions": []
+  },
+  "proofFacts": [
+    "angle(ABC)=angle(AED)",
+    "angle(BAC)=angle(EAD)"
+  ],
+  "goal": {
+    "type": "triangle-similarity",
+    "triangles": [
+      [
+        "A",
+        "B",
+        "D"
+      ],
+      [
+        "A",
+        "E",
+        "F"
+      ]
+    ]
+  },
+  "proofPlan": {
+    "status": "candidate-only",
+    "targetMethod": "angle-addition + substitution + cancellation + AA-similarity",
+    "candidateFacts": [
+      "DがBC上にあることとFがED上にあることから、∠ABD＝∠ABC、∠AEF＝∠AED。",
+      "∠BACと∠EADをそれぞれ角の加法で分け、AFとACが同じ半直線であることを使って共通部分をそろえる。",
+      "等しい全体の角から等しい部分の角を取り除き、∠BAD＝∠EAFを導く。",
+      "2組の角がそれぞれ等しいことから△ABD∽△AEF。"
+    ],
+    "warning": "proofPlanは推論の見通しであり、検証済みの証明ログではない。"
+  }
+}
