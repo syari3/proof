@@ -593,7 +593,7 @@
   // Equal apex angles in two isosceles triangles imply equality of all four base angles.
   function equalApexIsoscelesBaseAngleCandidates(known) {
     const triangles = known.map((fact) => {
-      const m = /^triangle\\(([A-Z])([A-Z])([A-Z])\\)$/.exec(fact);
+      const m = /^triangle\(([A-Z])([A-Z])([A-Z])\)$/.exec(fact);
       return m ? { fact, vertices: m.slice(1) } : null;
     }).filter(Boolean).filter((t) => new Set(t.vertices).size === 3);
     const sideEqualities = known.map((fact) => ({ fact, equality: parseEquality(fact) }))
@@ -603,7 +603,7 @@
     const results = [];
     function info(triangle) {
       for (const item of sideEqualities) {
-        const parseSide = (s) => { const m = /^side\\(([A-Z])([A-Z])\\)$/.exec(s); return m ? m.slice(1).sort().join('') : null; };
+        const parseSide = (s) => { const m = /^side\(([A-Z])([A-Z])\)$/.exec(s); return m ? m.slice(1).sort().join('') : null; };
         const l = parseSide(item.equality.left), r = parseSide(item.equality.right);
         if (!l || !r || l === r || ![...l, ...r].every((p) => triangle.vertices.includes(p))) continue;
         const apex = [...l].find((p) => r.includes(p));
