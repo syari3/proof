@@ -31,9 +31,19 @@
       <div class="exam-note">ここに表示するのは、登録済みの条件と推論ルールから得た証明エンジンの実行結果です。入試問題自体の条件は問題文・原図に基づきます。</div>
     </div>
     <section class="proof-section">
-      <div class="proof-heading"><h3>証明の流れ</h3><span id="step-count" class="step-count">計算中…</span></div>
-      <p class="section-intro">各カードを開くと、その結論に使った前提が見られます。推論ルールが導いた順に並んでいます。</p>
-      <ol id="proof-steps" class="proof-steps"><li>証明エンジンを実行しています…</li></ol>
+      <div class="proof-heading"><h3>証明の大筋</h3><span class="step-count">相似条件：2組の角</span></div>
+      <p class="section-intro">まず答案で使う数学的な流れをまとめ、その下でエンジン内部の推論ログを確認できます。</p>
+      <ol class="proof-outline">
+        <li><span class="step-number">1</span><div><strong>平行線から1組目の角</strong><p>EF ∥ BC より、∠AFE = ∠ABC。</p></div></li>
+        <li><span class="step-number">2</span><div><strong>二等辺三角形の底角</strong><p>CA = CD、BA = BG から、それぞれの二等辺三角形の底角の等しさを使う。</p></div></li>
+        <li><span class="step-number">3</span><div><strong>補角の関係からもう1組の角</strong><p>円周角と一直線上の角の関係を使い、等しい角の補角が等しいことから ∠ABC = ∠BGP を導く。</p></div></li>
+        <li><span class="step-number">4</span><div><strong>2組の角がそれぞれ等しい</strong><p>平行線と円周角の関係から ∠AEF = ∠GPB。よって、2組の角がそれぞれ等しいので △AFE ∽ △BGP。</p></div></li>
+      </ol>
+      <details class="trace-details">
+        <summary>証明エンジンの全推論ログを開く <span id="step-count" class="step-count">計算中…</span></summary>
+        <p class="section-intro">内部の中間関係も含む詳細ログです。通常の答案では省略するステップも表示されます。</p>
+        <ol id="proof-steps" class="proof-steps"><li>証明エンジンを実行しています…</li></ol>
+      </details>
       <p id="validation-note" class="validation-note" aria-live="polite">推論結果を確認しています。</p>
     </section>
   </section>
