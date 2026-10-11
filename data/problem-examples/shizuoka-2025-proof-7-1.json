@@ -279,6 +279,35 @@
           "D",
           "G"
         ]
+      },
+      {
+        "type": "same-segment",
+        "chord": [
+          "P",
+          "D"
+        ],
+        "vertices": [
+          "A",
+          "B"
+        ]
+      },
+      {
+        "type": "ray-inside-angle",
+        "vertex": "A",
+        "points": [
+          "F",
+          "E",
+          "G"
+        ]
+      },
+      {
+        "type": "ray-inside-angle",
+        "vertex": "A",
+        "points": [
+          "C",
+          "P",
+          "D"
+        ]
       }
     ],
     "dynamicConditions": [
@@ -347,9 +376,9 @@
     "warning": "これらは分析表に記録された使用性質の要約であり、検証済みの証明手順ではない。"
   },
   "validation": {
-    "status": "not-yet-proved",
+    "status": "proof-engine-check-pending",
     "structuralChecks": "manual-initial-review",
-    "mathematicalChecks": "pending",
+    "mathematicalChecks": "source-derived-proof-relations-added; engine execution pending",
     "openQuestions": [
       "弧DCの範囲・点の位置関係を、図と原問題の表記に照らして最終確認する。",
       "交点の定義、動点条件BA=BGを満たす位置の存在、および相似の頂点対応を幾何的に検証する。",
