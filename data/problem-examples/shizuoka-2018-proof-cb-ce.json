@@ -195,12 +195,13 @@
     "warning": "資料に記録された解法方針であり、エンジン実行結果と数学的妥当性の確認は別に扱う。"
   },
   "validation": {
-    "status": "awaiting-engine-run",
-    "structuralChecks": "new JSON test added",
-    "mathematicalChecks": "analysis-sheet proof chain reconstructed; engine run pending",
+    "status": "not-proved-with-current-rules",
+    "structuralChecks": "passed by adapter execution; unsupported conditions list is empty",
+    "mathematicalChecks": "engine derived several relevant angle facts but did not complete the angle-algebra chain needed to prove CB=CE",
     "openQuestions": [
       "原問題の本文・図と、Dが線分AC上にあることを再照合する。",
-      "B,D,Eが同じ半直線上にあること、およびA,Eが弦BCに対して同じ側にあることを原図で確認する。"
+      "B,D,Eが同じ半直線上にあること、およびA,Eが弦BCに対して同じ側にあることを原図で確認する。",
+      "推論エンジンは三角形の内角の和から「同じ角を2回含む式」を整理し、等しい角を代入して角の等しさを導く一般的な代数処理に未対応の可能性がある。"
     ]
   }
 }
