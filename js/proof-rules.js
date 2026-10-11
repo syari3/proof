@@ -1038,6 +1038,24 @@
     first = canonicalTerm(first);
     second = canonicalTerm(second);
     if (first === second) return true;
+
+    // A point on the same ray from an angle's vertex is interchangeable
+    // with the other point when comparing angle measures. This lets the
+    // angle-sum cancellation rule use facts such as sameRay(C,A,D) directly,
+    // without depending on the proof search happening to emit that equality
+    // as a separate intermediate step first.
+    const firstAngle = parseAngle(first);
+    const secondAngle = parseAngle(second);
+    if (firstAngle && secondAngle && firstAngle.vertex === secondAngle.vertex) {
+      const sameRayFacts = known.map((fact) => /^sameRay\\(([A-Z]),([A-Z]),([A-Z])\\)$/.exec(fact)).filter(Boolean);
+      const raysMatch = (a, b, vertex) => a === b || sameRayFacts.some((ray) =>
+        ray[1] === vertex && ((ray[2] === a && ray[3] === b) || (ray[2] === b && ray[3] === a)));
+      if ((raysMatch(firstAngle.first, secondAngle.first, firstAngle.vertex) &&
+           raysMatch(firstAngle.last, secondAngle.last, firstAngle.vertex)) ||
+          (raysMatch(firstAngle.first, secondAngle.last, firstAngle.vertex) &&
+           raysMatch(firstAngle.last, secondAngle.first, firstAngle.vertex))) return true;
+    }
+
     const graph = new Map();
     for (const fact of known) {
       const equality = parseEquality(fact);
