@@ -190,3 +190,23 @@ assert.ok(shizuoka2019Converted.facts.includes("onLine(G,line-DE)"));
 assert.equal(shizuoka2019Converted.unsupported.some((item) =>
   ["diameter", "perpendicular-lines", "intersection"].includes(item.type)), false,
   "直径・垂直・交点の条件型を変換できる");
+
+
+// Shizuoka 2019: the first target angle equality must be derived from
+// the explicit same-segment and same-ray conditions, not injected as a proof fact.
+const shizuoka2019AngleConverted = Adapter.convert(shizuoka2019);
+assert.ok(shizuoka2019AngleConverted.facts.includes("sameSegment(CD,A,E)"));
+assert.ok(shizuoka2019AngleConverted.facts.includes("sameRay(E,D,G)"));
+assert.ok(shizuoka2019AngleConverted.facts.includes("sameSegment(AB,D,C)"));
+const shizuoka2019SecondAngle = Rules.prove(
+  shizuoka2019AngleConverted.facts,
+  "angle(ADB)=angle(ACB)"
+);
+assert.equal(shizuoka2019SecondAngle.success, true,
+  "同じ弦ABに対する円周角から2組目の角の等しさを導く");
+const shizuoka2019FirstAngle = Rules.prove(
+  shizuoka2019AngleConverted.facts,
+  "angle(DAC)=angle(GEC)"
+);
+assert.equal(shizuoka2019FirstAngle.success, true,
+  "同じ弦DCの円周角とEからの同じ半直線を使って最初の角の等しさを導く");

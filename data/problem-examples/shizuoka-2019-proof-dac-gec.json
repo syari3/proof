@@ -155,6 +155,36 @@
           "G",
           "C"
         ]
+      },
+      {
+        "type": "same-segment",
+        "chord": [
+          "D",
+          "C"
+        ],
+        "vertices": [
+          "A",
+          "E"
+        ]
+      },
+      {
+        "type": "same-ray",
+        "vertex": "E",
+        "points": [
+          "D",
+          "G"
+        ]
+      },
+      {
+        "type": "same-segment",
+        "chord": [
+          "A",
+          "B"
+        ],
+        "vertices": [
+          "D",
+          "C"
+        ]
       }
     ],
     "dynamicConditions": []
@@ -184,14 +214,14 @@
       "角の加法",
       "三段論法"
     ],
-    "warning": "直径・垂直・交点の条件変換は実装済み。相似の結論までは未証明であり、原図との照合と追加ルールの検証が必要。"
+    "warning": "原図の点の位置関係を確認済み。2組目の角の等しさを円周角・直径・垂直条件から導く回帰テストを追加し、相似までの推論を検証する。"
   },
   "validation": {
-    "status": "conditions-converted-proof-pending",
+    "status": "angle-chain-in-progress",
     "openQuestions": [
-      "原問題の本文・図でBCが直径であること、ACとDEが垂直であること、点F/Gの位置関係を確認する。",
-      "円周角・直径の円周角・垂直がつくる角の関係をつなぐ推論ルールを追加し、△DAC∽△GECまで到達できるか検証する。",
-      "同じ弦に対する円周角を使う際、AとEが弦DCに対して同じ側にあるかを原図で確認する。"
+      "同じ弦ABに対する円周角から ∠ADB=∠ACB を導けるか。",
+      "直径BC・垂直AC⊥DE・角の加法から ∠CDA=∠CGE を導けるか。",
+      "2組の角の等しさから△DAC∽△GECまで推論できるか。"
     ]
   }
 }
