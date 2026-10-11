@@ -4,8 +4,9 @@ const Adapter = require("../js/problem-data-engine.js");
 const Rules = require("../js/proof-rules.js");
 
 // Exercise the actual 2025 Shizuoka entrance-exam data through conversion and proof.
-const converted = Adapter.convert(problem);
+// Run first so this integration check mirrors the established adapter regression test.
 const result = Adapter.run(problem, Rules);
+const converted = Adapter.convert(problem);
 
 assert.equal(problem.source.region, "静岡県");
 assert.equal(problem.source.year, 2025);
