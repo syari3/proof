@@ -1103,6 +1103,51 @@
     return results;
   }
 
+  // Compare triangle angle-sum equations and cancel two pairs of equal angles.
+  // This handles three-term sums without expanding them into ad-hoc substitutions.
+  function triangleAngleSumCancellationCandidates(known) {
+    const sums = known.map((fact) => {
+      const match = /^(angle\\([A-Z]{3}\\)\\+angle\\([A-Z]{3}\\)\\+angle\\([A-Z]{3}\\))=180$/.exec(fact);
+      return match ? { fact, parts: match[1].split("+") } : null;
+    }).filter(Boolean);
+    const results = [];
+    const seen = new Set();
+    for (let i = 0; i < sums.length; i++) for (let j = i + 1; j < sums.length; j++) {
+      const a = sums[i], b = sums[j];
+      // Try every pairing of two terms; retain the unpaired terms as equal.
+      for (let ai = 0; ai < 3; ai++) for (let aj = ai + 1; aj < 3; aj++) {
+        for (let bi = 0; bi < 3; bi++) for (let bj = 0; bj < 3; bj++) {
+          if (bi === bj) continue;
+          if (!termsEquivalent(a.parts[ai], b.parts[bi], known) ||
+              !termsEquivalent(a.parts[aj], b.parts[bj], known)) continue;
+          const ak = [0, 1, 2].find((k) => k !== ai && k !== aj);
+          const bk = [0, 1, 2].find((k) => k !== bi && k !== bj);
+          const left = canonicalTerm(a.parts[ak]);
+          const right = canonicalTerm(b.parts[bk]);
+          if (left === right || termsEquivalent(left, right, known)) continue;
+          const conclusion = [left, right].sort().join("=");
+          const reverse = right + "=" + left;
+          if (seen.has(conclusion) || seen.has(reverse) || known.includes(conclusion) || known.includes(reverse)) continue;
+          seen.add(conclusion);
+          const equalityPremises = known.filter((fact) => {
+            const eq = parseEquality(fact);
+            return eq && [a.parts[ai], a.parts[aj], b.parts[bi], b.parts[bj]].some((term) =>
+              canonicalTerm(eq.left) === canonicalTerm(term) || canonicalTerm(eq.right) === canonicalTerm(term));
+          });
+          results.push({
+            id: "angle.triangle-sum-cancellation",
+            name: "三角形の内角の和から等しい角を消去",
+            premises: [...new Set([a.fact, b.fact, ...equalityPremises])],
+            conclusion,
+            explain: "和がともに180°で、2組の角がそれぞれ等しいので、残りの角も等しい。",
+            category: "angle"
+          });
+        }
+      }
+    }
+    return results;
+  }
+
   // Forward-chain from the supplied facts, recording every inference.
   // This is a bounded rule engine, not a complete geometry prover.
   function prove(facts, goal, maxSteps = 100) {
@@ -1604,6 +1649,24 @@
           if (step.conclusion === goal) {
             return { success: true, goal, facts: known, steps, reason: "proved" };
           }
+        }
+
+        const triangleSumCancellation = triangleAngleSumCancellationCandidates(known)
+          .find((rule) => rule.conclusion === goal || sameAngleEquality(rule.conclusion, goal) || !known.includes(rule.conclusion));
+        if (triangleSumCancellation) {
+          const step = {
+            index: steps.length + 1,
+            ruleId: triangleSumCancellation.id,
+            ruleName: triangleSumCancellation.name,
+            premises: [...triangleSumCancellation.premises],
+            premiseSources: triangleSumCancellation.premises.map((premise) => ({ fact: premise, ...(sourceByFact.get(premise) || { type: "unknown" }) })),
+            conclusion: sameAngleEquality(triangleSumCancellation.conclusion, goal) ? goal : triangleSumCancellation.conclusion,
+            explanation: triangleSumCancellation.explain,
+            category: triangleSumCancellation.category
+          };
+          known.push(step.conclusion); sourceByFact.set(step.conclusion, { type: "step", index: step.index });
+          steps.push(step); changed = true;
+          if (step.conclusion === goal || sameAngleEquality(step.conclusion, goal)) return { success: true, goal, facts: known, steps, reason: "proved" };
         }
 
         const algebraCandidates = additionAlgebraCandidates(known);
