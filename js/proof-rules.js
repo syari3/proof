@@ -1179,7 +1179,9 @@
           if (step.conclusion === goal) return { success: true, goal, facts: known, steps, reason: "proved" };
         }
 
-        const angleSum = triangleAngleSumCandidates(known).find((rule) => rule.conclusion === goal && !known.includes(rule.conclusion));
+        const angleSumCandidates = triangleAngleSumCandidates(known);
+        const angleSum = angleSumCandidates.find((rule) => rule.conclusion === goal && !known.includes(rule.conclusion)) ||
+          angleSumCandidates.find((rule) => !known.includes(rule.conclusion));
         if (angleSum) {
           const step = {
             index: steps.length + 1,
