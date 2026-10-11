@@ -63,7 +63,8 @@
 - `point-on-arc`: `{ "type": "point-on-arc", "point": "P", "circle": "circle-O", "endpoints": ["D", "C"], "arcChoice": "not-containing-A" }`
 - `equal-segments`: `{ "type": "equal-segments", "segments": [["C", "A"], ["C", "D"]] }`
 - `parallel-lines`: `{ "type": "parallel-lines", "lines": ["line-EF", "line-BC"] }`
-- `same-segment`: `{ "type": "same-segment", "chord": ["A", "B"], "vertices": ["C", "P"] }`。指定した2点が、弦ABに対する円の同じ側にあることを表す。これは単なる「同じ円周上」からは推測せず、図または弧の範囲を確認して記録する。
+- `same-segment`: `{ "type": "same-segment", "chord": ["A", "B"], "vertices": ["C", "P"] }`。指定した2点が、弦ABに対する円の同じ側にあることを表す。
+- `opposite-segment`: `{ "type": "opposite-segment", "chord": ["A", "C"], "vertices": ["B", "D"] }`。指定した2点が、弦ACに対する円の反対側にあることを表す。同じ側・反対側のいずれも、単なる「同じ円周上」からは推測せず、図または弧の範囲を確認して記録する。
 
 `arcChoice` は、両端点だけでは円周上のどちらの弧か区別できないための情報。原問題で弧の選択が確認できない場合は、推測して補わず未確認として記録する。
 
@@ -85,7 +86,7 @@
 
 `proofPlan.recordedProperties` は過去問分析表に記録されていた性質のメモで、具体的な証明ステップではない。`validation.status` が `not-yet-proved` なら、画面に「証明済み」として表示したり、正解の証明として採用したりしてはいけない。
 
-構造が正しいJSONであること、参照IDが存在すること、図形条件に矛盾がないこと、証明エンジンが目標を導けることは、それぞれ別の検査段階とする。
+構造が正しいJSONであること、参照IDが存在すること、図形条件に矛盾がないこと、証明エンジンが目標を導けることは、それぞれ別の検査段階とする。たとえば `proof-engine-proved-geometry-review-pending` は、エンジンが記録済み前提から目標を導いた一方、弧の範囲・作図の存在などの幾何学的な確認が残っている状態を表す。
 
 ## 作成時のルール
 
