@@ -230,7 +230,7 @@
       const start = angle(p(ends[0])), end = angle(p(ends[1]));
       let selected = null;
       if (condition.arcChoice === "not-containing-A") {
-        const reference = p.A;
+        const reference = p("A");
         if (!validPoint(reference)) {
           defer("moving-arc-reference-undetermined", path, "A点を使って弧の選択を判定できません。");
           return;
