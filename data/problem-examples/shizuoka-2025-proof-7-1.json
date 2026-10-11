@@ -273,6 +273,17 @@
         ]
       },
       {
+        "type": "opposite-segment",
+        "chord": [
+          "A",
+          "C"
+        ],
+        "vertices": [
+          "B",
+          "D"
+        ]
+      },
+      {
         "type": "same-ray",
         "vertex": "B",
         "points": [
