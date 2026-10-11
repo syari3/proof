@@ -59,7 +59,7 @@
       li.append(number, content);
       list.append(li);
     });
-    $("#step-count").textContent = steps.length + "ステップ";
+    $("#step-count").textContent = "（" + steps.length + "ステップ）";
     $("#proof-status").innerHTML = '<span class="status-dot"></span>' + (result.success ? "エンジンで証明済み" : "未証明");
     $("#validation-note").textContent = result.success
       ? "推論エンジンは「△AFE ∽ △BGP」を " + steps.length + " ステップで導きました。これは登録された前提に対する推論結果です。"
