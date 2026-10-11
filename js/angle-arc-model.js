@@ -113,7 +113,7 @@
   }
   function cyclicOrder(pointIds, points, center) {
     if (!Array.isArray(pointIds) || !points || !center || pointIds.some(id => !points[id])) return null;
-    return pointIds.map(id => ({id,angle:polar(points[id],center)}).sort((a,b)=>a.angle-b.angle).map(x=>x.id);
+    return pointIds.map(id => ({id,angle:polar(points[id],center)})).sort((a,b)=>a.angle-b.angle).map(x=>x.id);
   }
   const api = Object.freeze({validate, angle, minorAngle, polar, cyclicOrder, arcSweep});
   if (typeof module !== "undefined" && module.exports) module.exports = api;
