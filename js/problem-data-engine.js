@@ -151,6 +151,23 @@
       }
     }
 
+    // Infer triangles only when each side lies on a known line and the three
+    // side-lines are distinct. This uses explicit line incidence, not visual guesses.
+    const linesByPoint = new Map();
+    for (const fact of facts) {
+      const match = /^onLine\\(([A-Z]),([^,()]+)\\)$/.exec(fact);
+      if (!match) continue;
+      if (!linesByPoint.has(match[1])) linesByPoint.set(match[1], new Set());
+      linesByPoint.get(match[1]).add(match[2]);
+    }
+    const pointIds = [...linesByPoint.keys()].sort();
+    const sharedLine = (a, b) => [...linesByPoint.get(a)].find((lineId) => linesByPoint.get(b).has(lineId)) || null;
+    for (let i = 0; i < pointIds.length; i++) for (let j = i + 1; j < pointIds.length; j++) for (let k = j + 1; k < pointIds.length; k++) {
+      const [a, b, c] = [pointIds[i], pointIds[j], pointIds[k]];
+      const pairLines = [sharedLine(a, b), sharedLine(a, c), sharedLine(b, c)];
+      if (pairLines.every(Boolean) && new Set(pairLines).size === 3) add('triangle(' + [a, b, c].join('') + ')');
+    }
+
     // Derive ray relations only from explicit point-order constraints.
     // An intersection alone does not establish which points are on opposite sides.
     const relationFacts = root.GeometryRelations && typeof root.GeometryRelations.derive === "function"
