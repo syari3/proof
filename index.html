@@ -192,26 +192,43 @@
         .replace(/sameRay\(([^,()]+),([^,()]+),([^,()]+)\)/g, "$2 と $3 は頂点 $1 から同じ向き")
         .replace(/=/g, " = ");
 
-      // Keep only the proof steps that lead backwards to the goal.
+      // Follow the engine's recorded premise provenance backwards from the goal.
       const getGoalRelevantSteps = (steps, goal) => {
         if (!goal || !Array.isArray(steps) || !steps.length) return steps || [];
-        const byConclusion = new Map();
-        steps.forEach((step, index) => {
-          if (step && step.conclusion) {
-            if (!byConclusion.has(step.conclusion)) byConclusion.set(step.conclusion, []);
-            byConclusion.get(step.conclusion).push(index);
-          }
-        });
+        const byStepNumber = new Map(steps.map((step, index) => [step.index, index]));
         const needed = new Set();
-        const visitFact = (fact) => {
-          (byConclusion.get(fact) || []).forEach((index) => {
-            if (needed.has(index)) return;
-            needed.add(index);
-            const step = steps[index];
-            (Array.isArray(step.premises) ? step.premises : []).forEach(visitFact);
-          });
+        const visitStep = (index) => {
+          if (index == null || needed.has(index) || !steps[index]) return;
+          needed.add(index);
+          const step = steps[index];
+          const sources = Array.isArray(step.premiseSources) ? step.premiseSources : [];
+          const sourceStepIndexes = sources
+            .filter((source) => source && source.type === "step")
+            .map((source) => byStepNumber.get(source.index))
+            .filter((sourceIndex) => sourceIndex != null);
+          if (sourceStepIndexes.length) {
+            sourceStepIndexes.forEach(visitStep);
+          } else if (!sources.length) {
+            // Fallback for older rules without provenance metadata.
+            (Array.isArray(step.premises) ? step.premises : []).forEach((fact) => {
+              for (let candidate = index - 1; candidate >= 0; candidate--) {
+                if (steps[candidate].conclusion === fact) {
+                  visitStep(candidate);
+                  break;
+                }
+              }
+            });
+          }
         };
-        visitFact(goal);
+        let goalIndex = -1;
+        for (let index = steps.length - 1; index >= 0; index--) {
+          if (steps[index] && steps[index].conclusion === goal) {
+            goalIndex = index;
+            break;
+          }
+        }
+        if (goalIndex === -1) return steps;
+        visitStep(goalIndex);
         return steps.filter((step, index) => needed.has(index));
       };
 
