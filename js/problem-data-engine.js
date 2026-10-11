@@ -237,8 +237,10 @@
       if (!Array.isArray(items)) continue;
       items.forEach((item, index) => {
         const clone = JSON.parse(JSON.stringify(problem));
-        const target = path === "proofFacts" ? clone : path.split(".").reduce((node, key) => node && node[key], clone);
-        target[path === "proofFacts" ? "proofFacts" : path.split(".").pop()].splice(index, 1);
+        const parts = path.split(".");
+        const target = path === "proofFacts" ? clone : parts.slice(0, -1).reduce((node, key) => node && node[key], clone);
+        const key = path === "proofFacts" ? "proofFacts" : parts[parts.length - 1];
+        target[key].splice(index, 1);
         const convertedWithoutItem = convert(clone);
         const proofWithoutItem = convertedWithoutItem.goal
           ? proofRules.prove(convertedWithoutItem.facts, convertedWithoutItem.goal, maxSteps)
