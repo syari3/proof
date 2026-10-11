@@ -171,3 +171,18 @@ assert.ok(angleSplitConverted.facts.includes("rayInsideAngle(A,B,E,G)"));
 const angleSplitProof = Rules.prove(angleSplitConverted.facts, "angle(BAG)=angle(BAE)+angle(EAG)");
 assert.equal(angleSplitProof.success, true, "明示された内角の半直線から角の加法を導く");
 assert.equal(angleSplitProof.steps.at(-1).ruleId, "angle.addition");
+
+
+// The new example specifically exercises angle addition, substitution, and cancellation.
+const angleAdditionProblem = require("../data/problem-examples/angle-addition-substitution-similarity.json");
+const angleAdditionResult = Adapter.run(angleAdditionProblem, Rules);
+assert.equal(angleAdditionResult.success, true, "角の加法と代入から△ABD∽△AEFを導く");
+assert.equal(angleAdditionResult.proof.steps.at(-1).ruleId, "triangle.similarity-aa");
+assert.ok(angleAdditionResult.proof.steps.some((step) => step.ruleId === "angle.addition"),
+  "2つの大きな角をそれぞれ角の加法で表す");
+assert.ok(angleAdditionResult.proof.steps.some((step) => step.ruleId === "angle.addition-cancellation"),
+  "等しい全体から等しい部分を消去する");
+assert.ok(angleAdditionResult.proof.steps.some((step) => step.ruleId === "angle.addition-substitution"),
+  "等しい角を角の加法の式に代入する");
+assert.ok(angleAdditionResult.proof.steps.some((step) => step.ruleId === "geometry.same-ray-angle"),
+  "同じ半直線上の点で角を表し直す");
