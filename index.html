@@ -238,12 +238,14 @@
       };
 
       try {
-        const response = await fetch("./data/problem-examples/circle-intersecting-chords-similarity.json");
+        const response = await fetch("./data/problem-examples/cyclic-parallel-trapezoid-angle-equality.json");
         if (!response.ok) throw new Error("問題データを読み込めませんでした（HTTP " + response.status + "）。");
         problem = await response.json();
         promptNode.textContent = problem.prompt || "問題文がありません。";
         if (problem.goal && problem.goal.type === "triangle-similarity" && Array.isArray(problem.goal.triangles)) {
           goalNode.textContent = "△" + problem.goal.triangles[0].join("") + " ∽ △" + problem.goal.triangles[1].join("");
+        } else if (problem.goal && problem.goal.type === "angle-equality" && Array.isArray(problem.goal.angles)) {
+          goalNode.textContent = problem.goal.angles.map((angle) => "∠" + angle.join("")).join(" = ");
         } else {
           goalNode.textContent = problem.title || "目標データを確認してください";
         }
