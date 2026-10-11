@@ -576,6 +576,13 @@
       if (!match) continue;
       const [, a, b, c] = match;
       if (new Set([a, b, c]).size !== 3) continue;
+      const vertices = new Set([a, b, c]);
+      const hasEqualSides = known.some((given) => {
+        const eq = /^side\\(([A-Z])([A-Z])\\)=side\\(([A-Z])([A-Z])\\)$/.exec(given);
+        return eq && [eq[1], eq[2], eq[3], eq[4]].every((point) => vertices.has(point)) &&
+          [eq[1], eq[2]].sort().join("") !== [eq[3], eq[4]].sort().join("");
+      });
+      if (!hasEqualSides) continue;
       const conclusion = "angle(" + b + a + c + ")+angle(" + a + b + c + ")+angle(" + a + c + b + ")=180";
       results.push({
         id: "triangle.angle-sum",
