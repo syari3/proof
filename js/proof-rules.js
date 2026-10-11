@@ -329,7 +329,7 @@
       ...equalApexIsoscelesBaseAngleCandidates(facts),
       ...triangleAngleSumCandidates(facts),
       ...equalRadiusCandidates(facts),
-      ...parallelAngleCandidates(facts),
+      ...parallelAngleCandidates(facts),\n      ...perpendicularAngleCandidates(facts),
       ...diameterInscribedAngleCandidates(facts),
       ...circleCandidates(facts),
       ...sameSegmentAngleCandidates(facts),
@@ -810,6 +810,46 @@
           explain: "直径の両端と円周上の点がつくる円周角は90°である。",
           category: "circle"
         });
+      }
+    }
+    return results;
+  }
+
+  // Perpendicular lines create four right angles at each explicitly known intersection.
+  // We only use points explicitly incident to each line; no collinearity or point order is guessed.
+  function perpendicularAngleCandidates(known) {
+    const linePoints = new Map();
+    const perpendicularPairs = [];
+    for (const fact of known) {
+      const onLine = /^onLine\\(([A-Z]),([A-Za-z][A-Za-z0-9-]*)\\)$/.exec(fact);
+      if (onLine) {
+        if (!linePoints.has(onLine[2])) linePoints.set(onLine[2], new Set());
+        linePoints.get(onLine[2]).add(onLine[1]);
+      }
+      const perpendicular = /^perpendicular\\(([^,()]+),([^,()]+)\\)$/.exec(fact);
+      if (perpendicular && perpendicular[1] !== perpendicular[2]) {
+        perpendicularPairs.push({ fact, first: perpendicular[1], second: perpendicular[2] });
+      }
+    }
+    const results = [];
+    for (const pair of perpendicularPairs) {
+      const firstPoints = linePoints.get(pair.first) || new Set();
+      const secondPoints = linePoints.get(pair.second) || new Set();
+      for (const vertex of firstPoints) {
+        if (!secondPoints.has(vertex)) continue;
+        for (const first of firstPoints) for (const last of secondPoints) {
+          if (first === vertex || last === vertex || first === last) continue;
+          const angle = "angle(" + first + vertex + last + ")";
+          results.push({
+            id: "geometry.perpendicular-lines-right-angle",
+            name: "垂直な2直線がつくる直角",
+            premises: [pair.fact, "onLine(" + vertex + "," + pair.first + ")", "onLine(" + vertex + "," + pair.second + ")",
+              "onLine(" + first + "," + pair.first + ")", "onLine(" + last + "," + pair.second + ")"],
+            conclusion: angle + "=90",
+            explain: "垂直な2直線が交わる点には、4つの直角ができる。",
+            category: "angle"
+          });
+        }
       }
     }
     return results;
