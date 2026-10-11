@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="静岡県入試2019年度の再構成問題を使った証明チャレンジ。">
+  <title>静岡県入試2019｜証明チャレンジ</title>
+  <link rel="stylesheet" href="./style.css">
+  <script src="./js/theorem-catalog.js" defer></script>
+  <script src="./js/proof-rules.js" defer></script>
+  <script src="./js/geometry-relations.js" defer></script>
+  <script src="./js/problem-data-engine.js" defer></script>
+  <script src="./js/shizuoka-2019-proof-challenge.js" defer></script>
+</head>
+<body>
+<header class="topbar"><a class="brand" href="./"><span class="brand-mark" aria-hidden="true">∠</span><span>証明問題メーカー</span></a><span class="prototype-label">証明チャレンジ</span></header>
+<main class="page-shell">
+  <section class="hero">
+    <p class="eyebrow">REAL EXAM · SHIZUOKA 2019</p>
+    <h1>2組の角を見つけて、<br><span>相似を証明しよう。</span></h1>
+    <p class="hero-copy">条件を整理し、どの角の関係を使うか考えるチャレンジです。</p>
+  </section>
+  <section class="workspace">
+    <div class="workspace-heading"><div><p class="section-kicker">QUESTION</p><h2>問題</h2></div><span class="status-pill"><span class="status-dot"></span>再構成データ</span></div>
+    <div class="problem-panel">
+      <p class="muted">静岡県 公立高校入学者選抜学力検査・2019年度（分析表から再構成）</p>
+      <h3>△DAC ∽ △GEC を証明しよう</h3>
+      <p>同じ円周上に A、B、C、D、E があり、BC は直径。AC と DE は垂直に交わる。F は AC と DE の交点、G は BC と DE の交点とする。</p>
+      <div class="goal-box"><span class="goal-label">証明すること</span><strong>△DAC ∽ △GEC</strong></div>
+      <p class="exam-note">注意：問題文と点の位置は分析表からの再構成です。原問題の全文転記ではありません。とくに図の点の順序は原図と照合が必要です。</p>
+    </div>
+    <section class="proof-section">
+      <h3>チャレンジ 1：最初の角の等しさ</h3>
+      <p>円周角の性質を使うなら、∠DAC と同じ弧 DC に対する角はどれでしょう？</p>
+      <div class="controls">
+        <label for="angle-choice">角を選ぶ
+          <select id="angle-choice">
+            <option value="">選択してください</option>
+            <option value="DEC">∠DEC</option>
+            <option value="DBC">∠DBC</option>
+            <option value="ABC">∠ABC</option>
+          </select>
+        </label>
+        <button id="check-answer" class="primary-button" type="button">答えを確認 →</button>
+      </div>
+      <p id="answer-feedback" class="validation-note" aria-live="polite">選んだ角を確認すると、理由を表示します。</p>
+    </section>
+    <section class="proof-section">
+      <div class="proof-heading"><h3>推論エンジンの現在の判定</h3><span id="engine-status" class="step-count">実行中…</span></div>
+      <p id="engine-summary" class="section-intro">問題条件を推論エンジンに渡しています。</p>
+      <ol id="proof-steps" class="proof-steps"><li>条件を変換しています…</li></ol>
+      <p id="validation-note" class="validation-note">証明が未完成でも、命題が偽という意味ではありません。未対応の定理や図の位置関係の確認が必要な場合があります。</p>
+    </section>
+    <p><a href="./shizuoka-2018-proof.html">静岡県入試2018：証明の流れを見る →</a></p>
+  </section>
+  <footer><span>証明問題メーカー · 開発中</span><a href="https://github.com/syari3/proof">GitHubリポジトリ</a></footer>
+</main>
+</body>
+</html>
