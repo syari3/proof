@@ -140,3 +140,25 @@ console.log("problem-data-engine adapter checks passed");
 
 const convertedSameSegment = Adapter.convert(sampleFile);
 assert.ok(convertedSameSegment.facts.includes("sameSegment(AB,C,P)"), "同じ弦の同じ側の位置関係を変換する");
+
+const angleSplitProblem = {
+  format: "proof-problem",
+  version: 1,
+  id: "explicit-angle-split",
+  geometry: {
+    points: ["A", "B", "E", "G"].map((id) => ({ id })),
+    constraints: [{
+      type: "ray-inside-angle",
+      vertex: "A",
+      points: ["B", "E", "G"]
+    }],
+    constructions: [],
+    dynamicConditions: []
+  },
+  goal: { type: "angle-equality", angles: [["B", "A", "G"], ["B", "A", "E"]] }
+};
+const angleSplitConverted = Adapter.convert(angleSplitProblem);
+assert.ok(angleSplitConverted.facts.includes("rayInsideAngle(A,B,E,G)"));
+const angleSplitProof = Rules.prove(angleSplitConverted.facts, "angle(BAG)=angle(BAE)+angle(EAG)");
+assert.equal(angleSplitProof.success, true, "明示された内角の半直線から角の加法を導く");
+assert.equal(angleSplitProof.steps.at(-1).ruleId, "angle.addition");
