@@ -389,11 +389,10 @@
   "validation": {
     "status": "proof-engine-check-pending",
     "structuralChecks": "manual-initial-review",
-    "mathematicalChecks": "source-derived-proof-relations-added; engine execution pending",
+    "mathematicalChecks": "source-derived-proof-relations-added; proof-engine-proved; full geometry validation pending",
     "openQuestions": [
       "弧DCの範囲・点の位置関係を、図と原問題の表記に照らして最終確認する。",
-      "交点の定義、動点条件BA=BGを満たす位置の存在、および相似の頂点対応を幾何的に検証する。",
-      "証明エンジンで全証明ステップを導出し、各ステップの根拠を検査する。"
+      "交点の定義、動点条件BA=BGを満たす位置の存在、および相似の頂点対応を幾何的に検証する。"
     ]
   }
 }
