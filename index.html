@@ -29,12 +29,21 @@
     .engine-explanation { color: #26364b; }
     .engine-notes { margin-top: 18px; padding: 12px 16px; border-left: 3px solid #a8b5c8; background: #f8fafc; color: #586579; font-size: .92rem; line-height: 1.7; }
     .engine-notes ul { padding-left: 20px; }
+    .engine-condition-report { margin-top: 24px; }
+    .engine-condition-report h3 { margin-bottom: 8px; }
+    .engine-condition-list { display: grid; gap: 10px; padding: 0; list-style: none; }
+    .engine-condition { padding: 13px 15px; border: 1px solid #e1e7ef; border-radius: 10px; background: #fbfcfe; }
+    .engine-condition[data-state="required"] { border-left: 4px solid #b45309; }
+    .engine-condition[data-state="optional"] { border-left: 4px solid #15803d; }
+    .engine-condition strong { display: block; margin-bottom: 5px; }
+    .engine-condition-detail { margin: 5px 0; color: #586579; font-size: .9rem; overflow-wrap: anywhere; }
+    .engine-condition-source { color: #586579; font-size: .85rem; }
     @media (max-width: 560px) { .engine-step { grid-template-columns: 30px minmax(0, 1fr); gap: 8px; padding: 12px; } .engine-step-number { width: 28px; height: 28px; } }
   </style>
   <script src="./js/theorem-catalog.js?v=20261010-1" defer></script>
   <script src="./js/proof-rules.js?v=20261010-10" defer></script>
   <script src="./js/geometry-relations.js?v=20261010-1" defer></script>
-  <script src="./js/problem-data-engine.js?v=20261010-2" defer></script>
+  <script src="./js/problem-data-engine.js?v=20261011-1" defer></script>
   <script src="./js/problem-generator.js?v=20261010-7" defer></script>
   <script src="./js/app.js?v=20261010-7" defer></script>
 </head>
@@ -137,6 +146,15 @@
           <li class="engine-meta">まだ実行していません。</li>
         </ol>
       </section>
+      <section class="engine-condition-report" aria-labelledby="engine-condition-title">
+        <h3 id="engine-condition-title">条件は本当に必要？</h3>
+        <p class="engine-intro">証明できた場合、問題データの条件を1つずつ外して再実行します。外しても証明できる条件は、現在の推論ルールでは必須ではない可能性があります。</p>
+        <p id="engine-condition-summary" class="engine-meta">証明を実行すると条件チェックを表示します。</p>
+        <ol id="engine-condition-list" class="engine-condition-list">
+          <li class="engine-meta">未チェック</li>
+        </ol>
+        <p id="engine-condition-caveat" class="engine-meta">これは現在の問題データと推論ルールに対する検査で、数学的にあらゆる証明で必要かどうかを保証するものではありません。</p>
+      </section>
       <div id="engine-notes" class="engine-notes" hidden></div>
     </section>
 
@@ -161,6 +179,8 @@
       const statusNode = document.getElementById("engine-status");
       const stepsNode = document.getElementById("engine-steps");
       const notesNode = document.getElementById("engine-notes");
+      const conditionSummaryNode = document.getElementById("engine-condition-summary");
+      const conditionListNode = document.getElementById("engine-condition-list");
       let problem = null;
 
       const readableFact = (fact) => String(fact || "")
@@ -201,6 +221,8 @@
         stepsNode.replaceChildren();
         notesNode.replaceChildren();
         notesNode.hidden = true;
+        conditionListNode.replaceChildren();
+        conditionSummaryNode.textContent = "条件をチェックしています…";
         try {
           if (!window.ProblemDataEngine || !window.ProofRules) {
             throw new Error("推論エンジンのスクリプトが読み込まれていません。");
@@ -245,9 +267,57 @@
               explanation.textContent = step.explanation;
               body.append(explanation);
             }
+            if (Array.isArray(step.premiseSources) && step.premiseSources.length) {
+              const provenance = document.createElement("p");
+              provenance.className = "engine-premises";
+              provenance.textContent = "根拠の由来： " + step.premiseSources.map((source) => {
+                const origin = source.type === "step" ? "ステップ " + source.index
+                  : source.type === "given" ? "入力された条件"
+                  : source.type === "unknown" ? "由来不明"
+                  : (source.type || "由来不明");
+                return readableFact(source.fact) + " ← " + origin;
+              }).join(" ／ ");
+              body.append(provenance);
+            }
             item.append(number, body);
             stepsNode.append(item);
           });
+
+          const analysis = result.conditionAnalysis;
+          if (analysis && Array.isArray(analysis.candidates)) {
+            const required = analysis.candidates.filter((entry) => entry.status === "required-by-current-proof").length;
+            const optional = analysis.candidates.length - required;
+            conditionSummaryNode.textContent = analysis.testedCount + " 項目を個別に検査：証明に影響した項目 " + required + " 件、外しても証明できた項目 " + optional + " 件。";
+            if (!analysis.candidates.length) {
+              const empty = document.createElement("li");
+              empty.className = "engine-meta";
+              empty.textContent = "検査対象の入力条件はありませんでした。";
+              conditionListNode.append(empty);
+            }
+            analysis.candidates.forEach((entry) => {
+              const item = document.createElement("li");
+              item.className = "engine-condition";
+              item.dataset.state = entry.status === "required-by-current-proof" ? "required" : "optional";
+              const heading = document.createElement("strong");
+              heading.textContent = entry.status === "required-by-current-proof"
+                ? "この条件を外すと証明できない"
+                : "この条件を外しても証明できる";
+              const detail = document.createElement("p");
+              detail.className = "engine-condition-detail";
+              detail.textContent = entry.type + " · " + JSON.stringify(entry.item);
+              const source = document.createElement("p");
+              source.className = "engine-condition-source";
+              source.textContent = entry.source + " の " + (entry.index + 1) + " 番目：" + entry.reason;
+              item.append(heading, detail, source);
+              conditionListNode.append(item);
+            });
+          } else {
+            conditionSummaryNode.textContent = "証明が成立した場合にのみ条件チェックを行います。";
+            const empty = document.createElement("li");
+            empty.className = "engine-meta";
+            empty.textContent = "条件チェックはありません。";
+            conditionListNode.append(empty);
+          }
           const notes = [];
           if (result.warning) notes.push(result.warning);
           if (result.converted && Array.isArray(result.converted.unsupported) && result.converted.unsupported.length) {
