@@ -1280,6 +1280,32 @@
       }
 
       if (steps.length < maxSteps) {
+        const perpendicularAngle = perpendicularAngleCandidates(known).find((rule) => !known.includes(rule.conclusion));
+        if (perpendicularAngle) {
+          const step = {
+            index: steps.length + 1,
+            ruleId: perpendicularAngle.id,
+            ruleName: perpendicularAngle.name,
+            premises: [...perpendicularAngle.premises],
+            premiseSources: perpendicularAngle.premises.map((premise) => ({
+              fact: premise,
+              ...(sourceByFact.get(premise) || { type: "unknown" })
+            })),
+            conclusion: perpendicularAngle.conclusion,
+            explanation: perpendicularAngle.explain,
+            category: perpendicularAngle.category
+          };
+          known.push(step.conclusion);
+          sourceByFact.set(step.conclusion, { type: "step", index: step.index });
+          steps.push(step);
+          changed = true;
+          if (step.conclusion === goal) {
+            return { success: true, goal, facts: known, steps, reason: "proved" };
+          }
+        }
+      }
+
+      if (steps.length < maxSteps) {
         const equalRadius = equalRadiusCandidates(known).find((rule) => !known.includes(rule.conclusion));
         if (equalRadius) {
           const step = {
