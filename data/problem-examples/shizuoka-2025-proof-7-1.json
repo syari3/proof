@@ -387,7 +387,7 @@
     "warning": "これらは分析表に記録された使用性質の要約であり、検証済みの証明手順ではない。"
   },
   "validation": {
-    "status": "proof-engine-check-pending",
+    "status": "proof-engine-proved-geometry-review-pending",
     "structuralChecks": "manual-initial-review",
     "mathematicalChecks": "source-derived-proof-relations-added; proof-engine-proved; full geometry validation pending",
     "openQuestions": [
