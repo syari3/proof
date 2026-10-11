@@ -1,0 +1,81 @@
+{
+  "format": "proof-problem",
+  "version": 1,
+  "id": "circle-intersecting-chords-similarity",
+  "title": "円周上の4点と交わる弦の相似",
+  "prompt": "円周上に反時計回りに A、B、C、D があり、線分 AB、CD、AC、BD を引く。AC と BD の交点を E とする。△ABE∽△DCE を証明しなさい。",
+  "geometry": {
+    "objects": [
+      {
+        "id": "circle-O",
+        "type": "circle",
+        "center": "O"
+      },
+      {
+        "id": "line-AB",
+        "type": "line",
+        "through": ["A", "B"]
+      },
+      {
+        "id": "line-CD",
+        "type": "line",
+        "through": ["C", "D"]
+      },
+      {
+        "id": "line-AC",
+        "type": "line",
+        "through": ["A", "C"]
+      },
+      {
+        "id": "line-BD",
+        "type": "line",
+        "through": ["B", "D"]
+      }
+    ],
+    "points": [
+      { "id": "O", "role": "circle-center" },
+      { "id": "A", "role": "given-point" },
+      { "id": "B", "role": "given-point" },
+      { "id": "C", "role": "given-point" },
+      { "id": "D", "role": "given-point" },
+      { "id": "E", "role": "constructed-point" }
+    ],
+    "constructions": [
+      {
+        "point": "E",
+        "type": "intersection",
+        "of": ["line-AC", "line-BD"]
+      }
+    ],
+    "constraints": [
+      { "type": "point-on-circle", "point": "A", "circle": "circle-O" },
+      { "type": "point-on-circle", "point": "B", "circle": "circle-O" },
+      { "type": "point-on-circle", "point": "C", "circle": "circle-O" },
+      { "type": "point-on-circle", "point": "D", "circle": "circle-O" },
+      { "type": "between", "points": ["A", "E", "C"] },
+      { "type": "between", "points": ["B", "E", "D"] },
+      {
+        "type": "same-segment",
+        "chord": ["A", "D"],
+        "vertices": ["B", "C"]
+      }
+    ],
+    "dynamicConditions": []
+  },
+  "goal": {
+    "type": "triangle-similarity",
+    "triangles": [
+      ["A", "B", "E"],
+      ["D", "C", "E"]
+    ]
+  },
+  "proofPlan": {
+    "status": "candidate-only",
+    "targetMethod": "AA-similarity",
+    "candidateFacts": [
+      "angle(AEB)=angle(DEC) (対頂角)",
+      "angle(ABE)=angle(DCE) (同じ弦ADに対する円周角)"
+    ],
+    "warning": "proofPlan は推論の見通しであり、検証済みの証明ログではない。"
+  }
+}
