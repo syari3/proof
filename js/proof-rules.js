@@ -181,7 +181,7 @@
   }
 
   function angleTermsForSimilarityGoal(goal) {
-    const match = /^similar\\(([A-Z]{3}),([A-Z]{3})\\)$/.exec(goal);
+    const match = /^similar\(([A-Z]{3}),([A-Z]{3})\)$/.exec(goal);
     if (!match) return [];
     const first = match[1], second = match[2];
     const angleAt = (triangle, index) =>
@@ -190,10 +190,10 @@
   }
 
   function oppositeSegmentAngleCandidates(known) {
-    const circlePoints = new Set(known.map((fact) => /^onCircle\\(([A-Z])\\)$/.exec(fact)).filter(Boolean).map((m) => m[1]));
+    const circlePoints = new Set(known.map((fact) => /^onCircle\(([A-Z])\)$/.exec(fact)).filter(Boolean).map((m) => m[1]));
     const results = [];
     for (const fact of known) {
-      const match = /^oppositeSegment\\(([A-Z])([A-Z]),([A-Z]),([A-Z])\\)$/.exec(fact);
+      const match = /^oppositeSegment\(([A-Z])([A-Z]),([A-Z]),([A-Z])\)$/.exec(fact);
       if (!match) continue;
       const [, x, y, firstVertex, secondVertex] = match;
       if (new Set([x, y, firstVertex, secondVertex]).size !== 4) continue;
@@ -211,11 +211,11 @@
   }
 
   function linearPairSupplementCandidates(known, goal) {
-    const oppositeRays = known.map((fact) => /^oppositeRay\\(([A-Z]),([A-Z]),([A-Z])\\)$/.exec(fact))
+    const oppositeRays = known.map((fact) => /^oppositeRay\(([A-Z]),([A-Z]),([A-Z])\)$/.exec(fact))
       .filter(Boolean).map((m) => ({ fact: m[0], vertex: m[1], first: m[2], second: m[3] }));
     const labels = new Set();
     for (const fact of known) {
-      for (const match of fact.matchAll(/angle\\(([A-Z]{3})\\)/g)) labels.add(match[1]);
+      for (const match of fact.matchAll(/angle\(([A-Z]{3})\)/g)) labels.add(match[1]);
     }
     const goalPairs = angleTermsForSimilarityGoal(goal).map(parseEquality).filter(Boolean);
     const goalTerms = goalPairs.flatMap((pair) => [canonicalTerm(pair.left), canonicalTerm(pair.right)]);
@@ -263,7 +263,7 @@
 
   function supplementaryAngleCancellationCandidates(known, goal) {
     const sums = known.map((fact) => {
-      const match = /^(angle\\([A-Z]{3}\\)\\+angle\\([A-Z]{3}\\))=180$/.exec(fact);
+      const match = /^(angle\([A-Z]{3}\)\+angle\([A-Z]{3}\))=180$/.exec(fact);
       return match ? { fact, parts: match[1].split("+") } : null;
     }).filter(Boolean);
     const results = [];
@@ -1025,7 +1025,7 @@
       const ends = [angle.first, angle.last].sort();
       return "angle(" + ends[0] + angle.vertex + ends[1] + ")";
     }
-    const side = /^side\\(([A-Z])([A-Z])\\)$/.exec(term);
+    const side = /^side\(([A-Z])([A-Z])\)$/.exec(term);
     if (side) return "side(" + side.slice(1).sort().join("") + ")";
     return term;
   }
