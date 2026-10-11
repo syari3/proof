@@ -827,7 +827,7 @@
         if (!linePoints.has(onLine[2])) linePoints.set(onLine[2], new Set());
         linePoints.get(onLine[2]).add(onLine[1]);
       }
-      const perpendicular = /^perpendicular\\(([^,()]+),([^,()]+)\\)$/.exec(fact);
+      const perpendicular = /^perpendicular\(([^,()]+),([^,()]+)\)$/.exec(fact);
       if (perpendicular && perpendicular[1] !== perpendicular[2]) {
         perpendicularPairs.push({ fact, first: perpendicular[1], second: perpendicular[2] });
       }
