@@ -1,10 +1,13 @@
 const assert = require("node:assert/strict");
 const problem = require("../data/problem-examples/shizuoka-2025-proof-7-1.json");
 const Adapter = require("../js/problem-data-engine.js");
+const GeometryRelations = require("../js/geometry-relations.js");
 const Rules = require("../js/proof-rules.js");
 
+// The adapter's relation pass is registered on the global namespace by this module.
+void GeometryRelations;
+
 // Exercise the actual 2025 Shizuoka entrance-exam data through conversion and proof.
-// Run first so this integration check mirrors the established adapter regression test.
 const result = Adapter.run(problem, Rules);
 const converted = Adapter.convert(problem);
 
