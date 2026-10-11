@@ -129,7 +129,7 @@
     <section class="engine-lab" aria-labelledby="engine-lab-title">
       <p class="section-kicker">INFERENCE ENGINE · EXPERIMENT</p>
       <h2 id="engine-lab-title">推論エンジンを実行する</h2>
-      <p class="engine-intro">登録済みのお試し問題を推論エンジンに渡し、目標の証明に関係する推論ステップだけを表示します。証明に不要と判定された入力条件や、目標につながらない推論ステップは表示しません。図はまだ表示しません。</p>
+      <p class="engine-intro">登録済みのお試し問題を推論エンジンに渡し、目標から根拠をさかのぼって依存関係を調べます。仮定だけで導ける事実はステップとして数えず、目標に必要な推論ステップだけを表示します。入力条件の検査はこれとは別に行います。図はまだ表示しません。</p>
       <div class="engine-prompt">
         <strong>問題：</strong>
         <p id="engine-problem-text">問題を読み込んでいます…</p>
@@ -192,32 +192,45 @@
         .replace(/sameRay\(([^,()]+),([^,()]+),([^,()]+)\)/g, "$2 と $3 は頂点 $1 から同じ向き")
         .replace(/=/g, " = ");
 
-      // Follow the engine's recorded premise provenance backwards from the goal.
-      const getGoalRelevantSteps = (steps, goal) => {
+      // Trace dependencies backwards from the goal. A step is retained only
+      // when the goal depends on it; given facts never become displayed steps.
+      // If provenance is incomplete, resolve each premise against initial facts
+      // and earlier conclusions rather than treating every unknown as a dependency.
+      const getGoalRelevantSteps = (steps, goal, initialFacts) => {
         if (!goal || !Array.isArray(steps) || !steps.length) return steps || [];
+        const given = new Set(Array.isArray(initialFacts) ? initialFacts : []);
         const byStepNumber = new Map(steps.map((step, index) => [step.index, index]));
         const needed = new Set();
+        const resolvePremise = (fact, beforeIndex) => {
+          if (!fact || given.has(fact)) return;
+          for (let candidate = beforeIndex - 1; candidate >= 0; candidate--) {
+            if (steps[candidate] && steps[candidate].conclusion === fact) {
+              visitStep(candidate);
+              return;
+            }
+          }
+        };
         const visitStep = (index) => {
           if (index == null || needed.has(index) || !steps[index]) return;
           needed.add(index);
           const step = steps[index];
           const sources = Array.isArray(step.premiseSources) ? step.premiseSources : [];
-          const sourceStepIndexes = sources
-            .filter((source) => source && source.type === "step")
-            .map((source) => byStepNumber.get(source.index))
-            .filter((sourceIndex) => sourceIndex != null);
-          if (sourceStepIndexes.length) {
-            sourceStepIndexes.forEach(visitStep);
-          } else if (!sources.length) {
-            // Fallback for older rules without provenance metadata.
-            (Array.isArray(step.premises) ? step.premises : []).forEach((fact) => {
-              for (let candidate = index - 1; candidate >= 0; candidate--) {
-                if (steps[candidate].conclusion === fact) {
-                  visitStep(candidate);
-                  break;
-                }
+          if (sources.length) {
+            sources.forEach((source) => {
+              if (!source || !source.fact) return;
+              if (source.type === "step") {
+                const sourceIndex = byStepNumber.get(source.index);
+                if (sourceIndex != null) visitStep(sourceIndex);
+                else resolvePremise(source.fact, index);
+              } else if (source.type === "unknown") {
+                resolvePremise(source.fact, index);
               }
+              // "given" and other explicit non-step sources add no proof step.
             });
+          } else {
+            // Compatibility path for rules that do not record premise provenance.
+            (Array.isArray(step.premises) ? step.premises : [])
+              .forEach((fact) => resolvePremise(fact, index));
           }
         };
         let goalIndex = -1;
@@ -273,7 +286,7 @@
           const proof = result.proof;
           const allSteps = proof && Array.isArray(proof.steps) ? proof.steps : [];
           const succeeded = result.success === true;
-          const steps = succeeded ? getGoalRelevantSteps(allSteps, result.converted && result.converted.goal) : allSteps;
+          const steps = succeeded ? getGoalRelevantSteps(allSteps, result.converted && result.converted.goal, result.converted && result.converted.facts) : allSteps;
           setStatus(succeeded
             ? "証明できました！ 登録済みの推論ルールで目標を導出しました。"
             : "証明できませんでした。命題が偽とは限らず、現在の条件変換や推論ルールでは導出できないという意味です。",
