@@ -27,36 +27,12 @@
       <p id="problem-source" class="muted">静岡県 公立高校入学者選抜学力検査・2025年度 7(1)</p>
       <h3 id="problem-title">円周角・二等辺三角形・相似</h3>
       <p id="problem-prompt">問題文を読み込んでいます…</p>
-      <div class="goal-box"><span class="goal-label">証明すること</span><strong>△AFE ∽ △BGP</strong></div>
+      <div class="goal-box"><span class="goal-label">証明すること</span><strong id="proof-goal">問題データを読み込んでいます…</strong></div>
       <div class="exam-note">ここに表示するのは、登録済みの条件と推論ルールから得た証明エンジンの実行結果です。入試問題自体の条件は問題文・原図に基づきます。</div>
     </div>
     <section class="proof-section">
-      <div class="proof-heading"><h3>証明の大筋</h3><span class="step-count">相似条件：2組の角</span></div>
-      <p class="section-intro">まず答案で使う数学的な流れをまとめ、その下でエンジン内部の推論ログを確認できます。</p>
-      <ol class="proof-outline">
-        <li><span class="step-number">1</span><div><strong>平行線から1組目の角</strong><p>EF ∥ BC より、∠AFE = ∠ABC。</p></div></li>
-        <li><span class="step-number">2</span><div><strong>二等辺三角形の底角</strong><p>CA = CD、BA = BG から、それぞれの二等辺三角形の底角の等しさを使う。</p></div></li>
-        <li><span class="step-number">3</span><div><strong>補角の関係からもう1組の角</strong><p>円周角と一直線上の角の関係を使い、等しい角の補角が等しいことから ∠ABC = ∠BGP を導く。</p></div></li>
-        <li><span class="step-number">4</span><div><strong>2組の角がそれぞれ等しい</strong><p>平行線と円周角の関係から ∠AEF = ∠GPB。よって、2組の角がそれぞれ等しいので △AFE ∽ △BGP。</p></div></li>
-      </ol>
-      <details class="trace-details">
-        <summary>証明エンジンの全推論ログを開く <span id="step-count" class="step-count">計算中…</span></summary>
-        <p class="section-intro">内部の中間関係も含む詳細ログです。通常の答案では省略するステップも表示されます。</p>
-        <ol id="proof-steps" class="proof-steps"><li>証明エンジンを実行しています…</li></ol>
-      </details>
+      <div class="proof-heading"><h3>推論エンジンが導いた証明</h3><span id="step-count" class="step-count">計算中…</span></div>
+      <p class="section-intro">下の各ステップは、登録された問題条件を推論エンジンに渡して得られた実行結果です。結論と適用ルールを確認し、「根拠を確認」から各ステップの前提を開けます。</p>
+      <ol id="proof-steps" class="proof-steps"><li>証明エンジンを実行しています…</li></ol>
       <p id="validation-note" class="validation-note" aria-live="polite">推論結果を確認しています。</p>
     </section>
-  </section>
-  <section class="roadmap">
-    <p class="section-kicker">HOW TO READ</p><h2>読み方のポイント</h2>
-    <div class="roadmap-grid">
-      <article class="roadmap-card"><span class="roadmap-icon">1</span><div><h3>結論を見る</h3><p>カード上部に、その段階で導かれた角・辺の関係が表示されます。</p></div></article>
-      <article class="roadmap-card"><span class="roadmap-icon">2</span><div><h3>理由を確認</h3><p>「根拠を確認」を開くと、推論ルールと前提が見られます。</p></div></article>
-      <article class="roadmap-card"><span class="roadmap-icon">3</span><div><h3>最後の相似</h3><p>2組の角の等しさを使い、相似条件で目標を導きます。</p></div></article>
-    </div>
-    <p class="diagram-caption">注：推論エンジンの内部ステップには、通常の答案では省略する中間関係も含まれます。これは採点用の完成答案ではなく、推論過程を確認する開発中の表示です。</p>
-  </section>
-  <footer><a href="./">← メイン画面に戻る</a><a href="https://github.com/syari3/proof">GitHubリポジトリ</a></footer>
-</main>
-</body>
-</html>
