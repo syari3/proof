@@ -271,6 +271,14 @@
           "C",
           "B"
         ]
+      },
+      {
+        "type": "same-ray",
+        "vertex": "B",
+        "points": [
+          "D",
+          "G"
+        ]
       }
     ],
     "dynamicConditions": [
