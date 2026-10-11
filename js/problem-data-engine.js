@@ -155,7 +155,7 @@
     // side-lines are distinct. This uses explicit line incidence, not visual guesses.
     const linesByPoint = new Map();
     for (const fact of facts) {
-      const match = /^onLine\\(([A-Z]),([^,()]+)\\)$/.exec(fact);
+      const match = /^onLine\(([A-Z]),([^,()]+)\)$/.exec(fact);
       if (!match) continue;
       if (!linesByPoint.has(match[1])) linesByPoint.set(match[1], new Set());
       linesByPoint.get(match[1]).add(match[2]);
