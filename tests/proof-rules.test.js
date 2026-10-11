@@ -713,7 +713,6 @@ const supplementaryAngleProof = rules.prove(
   ],
   "angle(ABC)=angle(BGP)"
 );
-console.log("SUPPLEMENTARY_ANGLE_DEBUG", JSON.stringify({success: supplementaryAngleProof.success, reason: supplementaryAngleProof.reason, facts: supplementaryAngleProof.facts, steps: supplementaryAngleProof.steps.map((step) => ({ruleId: step.ruleId, conclusion: step.conclusion}))}));
 assert.equal(supplementaryAngleProof.success, true, "等しい補角から残りの角の等しさを導く");
 assert.ok(supplementaryAngleProof.steps.some((step) => step.ruleId === "circle.opposite-segment-supplementary-angles"));
 assert.ok(supplementaryAngleProof.steps.some((step) => step.ruleId === "angle.linear-pair-supplementary"));
