@@ -24,10 +24,14 @@ assert.equal(solution.status, "coordinate-solution-found");
 const realization = {points:{...fixed,...solution.points}};
 const checked = Checker.validate(problem, realization);
 assert.equal(checked.valid, true, JSON.stringify(checked.errors, null, 2));
-// Important: the checker must say that unsupported facts remain unverified.
-assert.equal(checked.status, "coordinate-witness-partial");
-assert.ok(checked.pending.some(item => item.code === "unsupported-angle-relation"));
-assert.ok(checked.pending.some(item => item.code === "unsupported-constraint"));
+// The currently implemented coordinate constraints should all be evaluated for this dataset.
+assert.equal(checked.status, "coordinate-witness-consistent", JSON.stringify(checked.pending, null, 2));
+assert.equal(checked.pending.length, 0);
+const angleChecks = checked.checked.filter(item => item.path.startsWith("geometry.constraints") &&
+  (item.path.endsWith("[11]") || item.path.endsWith("[12]")));
+assert.equal(angleChecks.length, 2);
+assert.ok(angleChecks.every(item => item.ok), JSON.stringify(angleChecks, null, 2));
+assert.ok(checked.checked.some(item => item.path === "geometry.dynamicConditions[1]" && item.ok));
 
 // Bad placement 1: put P at an arbitrary point away from the circle/selected arc.
 const badP = Checker.validate(problem, {points:{
