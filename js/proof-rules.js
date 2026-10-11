@@ -1651,7 +1651,7 @@
           }
         }
 
-        const triangleSumCancellation = /^(side|angle)\\(/.test(goal)
+        const triangleSumCancellation = /^(side|angle)\(/.test(goal)
           ? triangleAngleSumCancellationCandidates(known)
               .find((rule) => rule.conclusion === goal || sameAngleEquality(rule.conclusion, goal) || !known.includes(rule.conclusion))
           : null;
