@@ -1066,6 +1066,30 @@
           if (step.conclusion === goal) return { success: true, goal, facts: known, steps, reason: "proved" };
         }
 
+        // Use the equal-apex isosceles theorem during forward chaining too,
+        // not only in derive(). Recompute after each newly inferred angle equality.
+        const equalApexCandidates = equalApexIsoscelesBaseAngleCandidates(known);
+        const equalApex = equalApexCandidates.find((rule) => sameAngleEquality(rule.conclusion, goal) && !known.some((fact) => sameAngleEquality(fact, rule.conclusion))) ||
+          equalApexCandidates.find((rule) => !known.some((fact) => sameAngleEquality(fact, rule.conclusion)));
+        if (equalApex) {
+          const conclusion = sameAngleEquality(equalApex.conclusion, goal) ? goal : equalApex.conclusion;
+          const step = {
+            index: steps.length + 1,
+            ruleId: equalApex.id,
+            ruleName: equalApex.name,
+            premises: [...equalApex.premises],
+            premiseSources: equalApex.premises.map((premise) => ({ fact: premise, ...(sourceByFact.get(premise) || { type: "unknown" }) })),
+            conclusion,
+            explanation: equalApex.explain,
+            category: equalApex.category
+          };
+          known.push(step.conclusion);
+          sourceByFact.set(step.conclusion, { type: "step", index: step.index });
+          steps.push(step);
+          changed = true;
+          if (step.conclusion === goal) return { success: true, goal, facts: known, steps, reason: "proved" };
+        }
+
         const equalSideCandidates = equalAnglesImplyEqualSidesCandidates(known);
         const equalSides = equalSideCandidates.find((rule) => sameSideEquality(rule.conclusion, goal) && !known.includes(goal)) ||
           equalSideCandidates.find((rule) => !known.includes(rule.conclusion));
