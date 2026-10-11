@@ -107,9 +107,14 @@ assert.deepEqual(GeometryRelations.derive([]), []);
 
 const sampleFile = require("../data/problem-examples/shizuoka-2025-proof-7-1.json");
 const sampleResult = Adapter.run(sampleFile, Rules);
-assert.equal(sampleResult.status, "not-proved-with-current-rules");
-assert.ok(sampleResult.converted.unsupported.length > 0);
-assert.equal(sampleResult.success, false);
+assert.equal(sampleResult.status, "proved", "2025年度の手書き証明に対応する条件を与えると相似まで導ける");
+assert.equal(sampleResult.success, true);
+assert.ok(sampleResult.proof.steps.some((step) => step.ruleId === "angle.addition"),
+  "手書き証明の角の加法を使う");
+assert.ok(sampleResult.proof.steps.some((step) => step.ruleId === "angle.addition-cancellation"),
+  "等しい和から共通する角を消去する");
+assert.ok(sampleResult.proof.steps.some((step) => step.ruleId === "triangle.similarity-aa"),
+  "最後に2組の角から相似を導く");
 
  // Explicit circle incidence, parallel-through-point construction, and the
  // selected moving-point equality must reach the inference facts.
