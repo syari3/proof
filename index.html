@@ -129,7 +129,7 @@
     <section class="engine-lab" aria-labelledby="engine-lab-title">
       <p class="section-kicker">INFERENCE ENGINE · EXPERIMENT</p>
       <h2 id="engine-lab-title">推論エンジンを実行する</h2>
-      <p class="engine-intro">静岡県公立高校入試・2025年度 7(1) の問題を推論エンジンに渡します。まず元の推論ログを作り、目標から根拠をさかのぼって必要なステップだけに絞ります。仮定だけで導ける事実はステップとして数えません。入力条件の検査はこれとは別に行います。図はまだ表示しません。</p>
+      <p class="engine-intro">角の加法と等式の代入を確かめる例題を推論エンジンに渡します。角を分けて表し、等しい全体から等しい部分を取り除いて、△ABD∽△AEFまで導けるか試します。目標から根拠をさかのぼって必要なステップだけを表示します。図はまだ表示しません。</p>
       <div class="engine-prompt">
         <strong>問題：</strong>
         <p id="engine-problem-text">問題を読み込んでいます…</p>
@@ -251,7 +251,7 @@
       };
 
       try {
-        const response = await fetch("./data/problem-examples/shizuoka-2025-proof-7-1.json");
+        const response = await fetch("./data/problem-examples/angle-addition-substitution-similarity.json");
         if (!response.ok) throw new Error("問題データを読み込めませんでした（HTTP " + response.status + "）。");
         problem = await response.json();
         promptNode.textContent = problem.prompt || "問題文がありません。";
