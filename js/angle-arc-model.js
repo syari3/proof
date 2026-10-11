@@ -113,11 +113,23 @@
         const v={x:l2[1].x-l2[0].x,y:l2[1].y-l2[0].y};
         const determinant=u.x*v.y-u.y*v.x;
         const parallel=Math.abs(determinant)<=tolerance*Math.max(1,Math.hypot(u.x,u.y)*Math.hypot(v.x,v.y));
-        const anglesEqual=near(first,second,tolerance) || near(first,Math.PI-second,tolerance);
-        const ok=parallel && anglesEqual;
-        checked.push({path,ok,firstAngleRadians:first,secondAngleRadians:second,parallel});
+        const onLine = (lineId, pointId) => {
+          const l=lineById(lineId), q=point(pointId);
+          if (!l || !q) return false;
+          const cr=(l[1].x-l[0].x)*(q.y-l[0].y)-(l[1].y-l[0].y)*(q.x-l[0].x);
+          return Math.abs(cr)<=tolerance*Math.max(1,Math.hypot(l[1].x-l[0].x,l[1].y-l[0].y)*dist(l[0],q));
+        };
+        const [angle1,angle2]=c.angles;
+        const incidence =
+          onLine(c.transversal,angle1[0]) && onLine(c.transversal,angle1[1]) &&
+          onLine(c.lines[0],angle1[1]) && onLine(c.lines[0],angle1[2]) &&
+          onLine(c.transversal,angle2[0]) && onLine(c.transversal,angle2[1]) &&
+          onLine(c.lines[1],angle2[1]) && onLine(c.lines[1],angle2[2]);
+        const anglesEqual=near(first,second,tolerance);
+        const ok=parallel && incidence && anglesEqual;
+        checked.push({path,ok,firstAngleRadians:first,secondAngleRadians:second,parallel,incidence});
         if (!ok) fail("angle-relation-mismatch",path,
-          "指定された角の大きさが対応する関係と一致しないか、2直線が平行ではありません。",
+          "指定された角の頂点・辺が直線の交差関係に合わないか、角の大きさが一致しません。",
           first-second);
       } else if (c.type === "inscribed-angle") {
         if (!Array.isArray(c.angle) || c.angle.length !== 3 || !Array.isArray(c.arc) || c.arc.length !== 2) {
