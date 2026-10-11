@@ -50,7 +50,15 @@ const badFixed = Checker.validate(problem, {points:{
 assert.equal(badFixed.valid, false);
 assert.ok(badFixed.errors.some(item => item.code === "constraint-not-satisfied"));
 
-// Bad placement 3: E must lie inside angle FAG, not outside its boundary rays.
+// Bad placement 3: an angle endpoint moved off its defining transversal must be rejected.
+const badAngles = Checker.validate(problem, {points:{
+  ...realization.points,
+  F:{x:0.1,y:0.9}
+}});
+assert.equal(badAngles.valid, false);
+assert.ok(badAngles.errors.some(item => item.code === "angle-relation-mismatch"));
+
+// Bad placement 4: E must lie inside angle FAG, not outside its boundary rays.
 const badInterior = Checker.validate(problem, {points:{
   ...realization.points,
   E:{x:0.25,y:1.5}
