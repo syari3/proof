@@ -822,7 +822,7 @@
     const linePoints = new Map();
     const perpendicularPairs = [];
     for (const fact of known) {
-      const onLine = /^onLine\\(([A-Z]),([A-Za-z][A-Za-z0-9-]*)\\)$/.exec(fact);
+      const onLine = /^onLine\(([A-Z]),([A-Za-z][A-Za-z0-9-]*)\)$/.exec(fact);
       if (onLine) {
         if (!linePoints.has(onLine[2])) linePoints.set(onLine[2], new Set());
         linePoints.get(onLine[2]).add(onLine[1]);
