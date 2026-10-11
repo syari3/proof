@@ -77,7 +77,10 @@
     constraints.forEach((c,i) => {
       const path = "geometry.constraints["+i+"]";
       if (!c || typeof c !== "object") return;
-      if (c.type === "inscribed-angle") {
+      if (c.type === "corresponding-angles" || c.type === "alternate-interior-angles") {
+        defer("unsupported-angle-relation", path,
+          "同位角・錯角の座標判定は未実装のため、この条件は未検証です。");
+      } else if (c.type === "inscribed-angle") {
         if (!Array.isArray(c.angle) || c.angle.length !== 3 || !Array.isArray(c.arc) || c.arc.length !== 2) {
           defer("malformed-inscribed-angle",path,"円周角と弧の端点を指定してください."); return;
         }
