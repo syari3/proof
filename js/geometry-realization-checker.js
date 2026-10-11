@@ -62,8 +62,9 @@
 
     (problem.geometry.objects||[]).forEach((o,i)=>{
       const path="geometry.objects["+i+"]";
-      if (o.type==="line" && !line(o.id)) fail("degenerate-line",path,"直線を定義する点の座標が一致しています。");
-      else if (o.type==="parallel-through-point") {
+      if (o.type==="line") {
+        if (!line(o.id)) fail("degenerate-line",path,"直線を定義する点の座標が一致しています。");
+      } else if (o.type==="parallel-through-point") {
         const l=line(o.id), base=line(o.parallelTo);
         if (!l||!base) fail("invalid-parallel-line",path,"平行線または基準直線を座標から定義できません。");
         else {
