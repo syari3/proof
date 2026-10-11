@@ -77,7 +77,61 @@
     constraints.forEach((c,i) => {
       const path = "geometry.constraints["+i+"]";
       if (!c || typeof c !== "object") return;
-      if (c.type === "inscribed-angle") {
+      if (c.type === "corresponding-angles" || c.type === "alternate-interior-angles") {
+        if (!Array.isArray(c.angles) || c.angles.length !== 2 ||
+            c.angles.some(a => !Array.isArray(a) || a.length !== 3) ||
+            !Array.isArray(c.lines) || c.lines.length !== 2 ||
+            !c.transversal) {
+          defer("malformed-angle-relation", path, "2つの角、横切る直線、平行関係を指定してください。");
+          return;
+        }
+        const [first, second] = c.angles.map(ids => {
+          const [a,v,b] = ids.map(point);
+          return a && v && b ? minorAngle(a,v,b) : null;
+        });
+        const lineById = id => {
+          const o = objects.get(id);
+          if (!o) return null;
+          if (o.type === "line" && Array.isArray(o.through) && o.through.length >= 2) {
+            const a=point(o.through[0]), b=point(o.through[1]);
+            return a && b && dist(a,b)>tolerance ? [a,b] : null;
+          }
+          if (o.type === "parallel-through-point" && Array.isArray(o.through) && o.through.length) {
+            const base=objects.get(o.parallelTo);
+            if (!base || base.type !== "line" || !Array.isArray(base.through) || base.through.length<2) return null;
+            const a=point(o.through[0]), b=point(base.through[0]), d=point(base.through[1]);
+            return a && b && d && dist(b,d)>tolerance ? [a,{x:a.x+d.x-b.x,y:a.y+d.y-b.y}] : null;
+          }
+          return null;
+        };
+        const l1=lineById(c.lines[0]), l2=lineById(c.lines[1]);
+        if (first === null || second === null || !l1 || !l2) {
+          defer("angle-relation-undetermined", path, "角または直線を座標から解決できません。");
+          return;
+        }
+        const u={x:l1[1].x-l1[0].x,y:l1[1].y-l1[0].y};
+        const v={x:l2[1].x-l2[0].x,y:l2[1].y-l2[0].y};
+        const determinant=u.x*v.y-u.y*v.x;
+        const parallel=Math.abs(determinant)<=tolerance*Math.max(1,Math.hypot(u.x,u.y)*Math.hypot(v.x,v.y));
+        const onLine = (lineId, pointId) => {
+          const l=lineById(lineId), q=point(pointId);
+          if (!l || !q) return false;
+          const cr=(l[1].x-l[0].x)*(q.y-l[0].y)-(l[1].y-l[0].y)*(q.x-l[0].x);
+          return Math.abs(cr)<=tolerance*Math.max(1,Math.hypot(l[1].x-l[0].x,l[1].y-l[0].y)*dist(l[0],q));
+        };
+        const [angle1,angle2]=c.angles;
+        const incidence =
+          onLine(c.transversal,angle1[0]) && onLine(c.transversal,angle1[1]) &&
+          onLine(c.lines[0],angle1[1]) && onLine(c.lines[0],angle1[2]) &&
+          onLine(c.transversal,angle2[0]) && onLine(c.transversal,angle2[1]) &&
+          onLine(c.lines[1],angle2[1]) && onLine(c.lines[1],angle2[2]);
+        const anglesEqual=near(first,second,tolerance);
+        const ok=parallel && incidence && anglesEqual;
+        checked.push({path,ok,firstAngleRadians:first,secondAngleRadians:second,parallel,incidence});
+        if (!ok) fail("angle-relation-mismatch",path,
+          "指定された角の頂点・辺が直線の交差関係に合わないか、角の大きさが一致しません。",
+          first-second);
+      } else if (c.type === "inscribed-angle") {
         if (!Array.isArray(c.angle) || c.angle.length !== 3 || !Array.isArray(c.arc) || c.arc.length !== 2) {
           defer("malformed-inscribed-angle",path,"円周角と弧の端点を指定してください."); return;
         }
