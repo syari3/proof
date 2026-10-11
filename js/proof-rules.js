@@ -333,7 +333,9 @@
       ...diameterInscribedAngleCandidates(facts),
       ...circleCandidates(facts),
       ...sameSegmentAngleCandidates(facts),
-      ...oppositeSegmentAngleCandidates(facts),
+      // Disabled by design: avoid automatically using supplementary angles
+      // from inscribed angles on opposite sides of the same chord.
+      // ...oppositeSegmentAngleCandidates(facts),
       ...linearPairSupplementCandidates(facts, ""),
       ...supplementaryAngleCancellationCandidates(facts, ""),
       ...sameRayAngleCandidates(facts),
@@ -1524,6 +1526,9 @@
           steps.push(step); changed = true;
           if (step.conclusion === goal) return { success: true, goal, facts: known, steps, reason: 'proved' };
         }
+        // Disabled by design: do not add the opposite-segment inscribed-angle
+        // supplementary rule to proof steps automatically.
+        /*
         const oppositeSegmentCandidatesNow = oppositeSegmentAngleCandidates(known);
         const oppositeSegment = oppositeSegmentCandidatesNow.find((rule) => !known.includes(rule.conclusion));
         if (oppositeSegment) {
@@ -1538,6 +1543,7 @@
           if (step.conclusion === goal) return { success: true, goal, facts: known, steps, reason: "proved" };
         }
 
+        */
         const linearPairCandidatesNow = linearPairSupplementCandidates(known, goal);
         const linearPair = linearPairCandidatesNow.find((rule) => !known.includes(rule.conclusion));
         if (linearPair) {
