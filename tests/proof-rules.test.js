@@ -13,6 +13,16 @@ const cases = [
     expected: null
   },
   {
+    name: "頂角が等しい二等辺三角形どうしでは4つの底角が等しい",
+    facts: ["triangle(CAD)", "side(CA)=side(CD)", "triangle(ABG)", "side(BA)=side(BG)", "angle(ACD)=angle(ABG)"],
+    expected: "angle(BAG)=angle(CAD)"
+  },
+  {
+    name: "頂角の等しさがない場合、異なる二等辺三角形の底角を等しいとしない",
+    facts: ["triangle(CAD)", "side(CA)=side(CD)", "triangle(ABG)", "side(BA)=side(BG)"],
+    expected: null
+  },
+  {
     name: "平行線の錯角には、平行条件と交差関係が必要",
     facts: ["parallel(l,m)", "intersects(t,l)", "intersects(t,m)", "alternateAngles(angle1,angle2,t,l,m)"],
     expected: "angle1=angle2"
