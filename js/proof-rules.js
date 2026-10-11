@@ -263,7 +263,7 @@
 
   function supplementaryAngleCancellationCandidates(known, goal) {
     const sums = known.map((fact) => {
-      const match = /^(angle\([A-Z]{3}\)\+angle\([A-Z]{3}\))=180$/.exec(fact);
+      const match = /^(angle\([A-Z]{3}\)\+angle\([A-Z]{3}\)\+angle\([A-Z]{3}\))=180$/.exec(fact);
       return match ? { fact, parts: match[1].split("+") } : null;
     }).filter(Boolean);
     const results = [];
