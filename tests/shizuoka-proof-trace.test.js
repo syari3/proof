@@ -1,5 +1,6 @@
 const fs = require("node:fs");
 const path = require("node:path");
+require("../js/geometry-relations.js");
 const Adapter = require("../js/problem-data-engine.js");
 const Rules = require("../js/proof-rules.js");
 
