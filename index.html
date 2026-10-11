@@ -272,7 +272,7 @@
               provenance.className = "engine-premises";
               provenance.textContent = "根拠の由来： " + step.premiseSources.map((source) => {
                 const origin = source.type === "step" ? "ステップ " + source.index
-                  : source.type === "given" ? "入力された条件"
+                  : source.type === "given" ? "推論エンジンに渡した初期事実"
                   : source.type === "unknown" ? "由来不明"
                   : (source.type || "由来不明");
                 return readableFact(source.fact) + " ← " + origin;
