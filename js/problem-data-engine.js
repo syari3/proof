@@ -61,9 +61,11 @@
         add("onCircle(" + constraint.point + ")");
       } else if (constraint.type === "same-segment" && Array.isArray(constraint.chord) && constraint.chord.length === 2 && Array.isArray(constraint.vertices) && constraint.vertices.length === 2) {
         add("sameSegment(" + constraint.chord.slice().sort().join("") + "," + constraint.vertices[0] + "," + constraint.vertices[1] + ")");
+      } else if (constraint.type === "opposite-segment" && Array.isArray(constraint.chord) && constraint.chord.length === 2 && Array.isArray(constraint.vertices) && constraint.vertices.length === 2) {
+        add("oppositeSegment(" + constraint.chord.slice().sort().join("") + "," + constraint.vertices[0] + "," + constraint.vertices[1] + ")");
       } else if (constraint.type === "opposite-rays" || constraint.type === "between" ||
           constraint.type === "parallel-lines" || constraint.type === "corresponding-angles" ||
-          constraint.type === "alternate-interior-angles" || constraint.type === "inscribed-angle" ||
+          constraint.type === "alternate-interior-angles" || constraint.type === "opposite-segment" || constraint.type === "inscribed-angle" ||
           constraint.type === "equal-arcs") {
         // Converted in the relevant relation pass below; keep these typed constraints supported.
       } else if (constraint.type !== "point-on-circle") {
