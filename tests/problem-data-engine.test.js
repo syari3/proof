@@ -107,7 +107,6 @@ assert.deepEqual(GeometryRelations.derive([]), []);
 
 const sampleFile = require("../data/problem-examples/shizuoka-2025-proof-7-1.json");
 const sampleResult = Adapter.run(sampleFile, Rules);
-if (!sampleResult.success) console.log("DEBUG_SAMPLE_RESULT", JSON.stringify({ facts: sampleResult.converted.facts, goal: sampleResult.converted.goal, steps: sampleResult.proof.steps, unsupported: sampleResult.converted.unsupported }, null, 2));
 assert.equal(sampleResult.status, "proved", "2025年度の手書き証明に対応する条件を与えると相似まで導ける");
 assert.equal(sampleResult.success, true);
 assert.ok(sampleResult.proof.steps.some((step) => step.ruleId === "angle.addition"),
