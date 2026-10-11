@@ -17,10 +17,11 @@ assert.equal(problem.goal.type, "triangle-similarity");
 assert.ok(converted.facts.includes("side(AB)=side(BG)"));
 assert.ok(converted.facts.includes("parallel(line-EF,line-BC)"));
 
-assert.equal(result.success, true, "現行ルールで目標の相似を証明できる");
-assert.equal(result.status, "proved");
-assert.equal(result.proof.steps.at(-1).ruleId, "triangle.similarity-aa");
-assert.ok(result.proof.steps.some((step) => step.ruleId === "angle.addition"));
+// This exam proof currently relies on the opposite-segment supplementary-angle
+// inference, which is intentionally disabled. Keep the example data available,
+// but do not claim the proof engine can prove it under the active rules.
+assert.equal(result.success, false, "無効化した円周角の補角ルールに依存するため未証明となる");
+assert.equal(result.status, "not-proved-with-current-rules");
 
 // Proof success is not the same as full geometric validation. Preserve the
 // unsupported moving-arc condition so callers can see the remaining review work.
@@ -37,5 +38,5 @@ assert.equal(
 );
 assert.ok(problem.validation.openQuestions.length > 0);
 
-console.log("✓ 静岡県2025年度の実データを変換し、推論エンジンで相似を証明");
+console.log("✓ 静岡県2025年度の実データを変換し、無効化したルールへの依存を検出");
 console.log("✓ 動点の弧・存在条件が未検証であることを保持");
