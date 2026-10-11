@@ -1,6 +1,24 @@
 const assert = require("node:assert/strict");
 const rules = require("../js/proof-rules.js");
 
+const perpendicularFacts = [
+  "perpendicular(line-AC,line-DE)",
+  "onLine(A,line-AC)", "onLine(C,line-AC)", "onLine(F,line-AC)",
+  "onLine(D,line-DE)", "onLine(E,line-DE)", "onLine(F,line-DE)"
+];
+const rightAngles = rules.derive(perpendicularFacts).map((item) => item.conclusion);
+for (const angle of ["angle(AFD)=90", "angle(AFE)=90", "angle(CFD)=90", "angle(CFE)=90"]) {
+  assert.ok(rightAngles.includes(angle), "垂直な2直線の交点Fにできる4つの直角: " + angle);
+}
+assert.equal(rightAngles.filter((fact) => fact.endsWith("=90")).length, 4,
+  "指定した2直線上の4つの角だけを直角として導く");
+console.log("✓ 垂直条件から交点の4つの直角を導く");
+
+const perpendicularProof = rules.prove(perpendicularFacts, "angle(AFD)=90");
+assert.equal(perpendicularProof.success, true, "垂直から直角を証明する");
+assert.equal(perpendicularProof.steps[0].ruleId, "geometry.perpendicular-lines-right-angle");
+console.log("✓ 証明探索は垂直から直角を導く");
+
 const cases = [
   {
     name: "二等辺三角形の底角は、三角形と等しい辺が与えられたとき導く",

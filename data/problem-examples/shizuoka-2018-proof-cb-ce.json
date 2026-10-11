@@ -1,0 +1,207 @@
+{
+  "format": "proof-problem",
+  "version": 1,
+  "id": "shizuoka-2018-proof-cb-ce",
+  "source": {
+    "region": "静岡県",
+    "exam": "公立高校入学者選抜学力検査",
+    "year": 2018,
+    "questionNumber": "図形の証明（分析表に問題番号の記載なし）",
+    "materials": [
+      "10年間問題.pdf p.4",
+      "data.xlsx / Sheet1"
+    ],
+    "transcriptionStatus": "reconstructed-from-analysis-sheet-not-original-exam-prompt",
+    "notes": "添付資料の2018年分析表と手書きの証明方針から構造化。原問題の全文ではない。B,D,Eの共線関係と弦BCに対するA,Eの位置関係は、記録された証明の角の対応に基づくため原図との再照合が必要。"
+  },
+  "title": "円周角と二等辺三角形（2018年度・分析表から再構成）",
+  "prompt": "【分析表からの再構成問題】A、B、C、Eは同一円周上にあり、Dは線分AC上にある。また、B、D、Eは一直線上にあり、AB=AC、BC=BDである。このとき、CB=CEであることを証明しなさい。※原問題の文面をそのまま転記したものではありません。",
+  "geometry": {
+    "objects": [
+      {
+        "id": "circle-O",
+        "type": "circle",
+        "center": "O"
+      },
+      {
+        "id": "line-AB",
+        "type": "line",
+        "through": [
+          "A",
+          "B"
+        ]
+      },
+      {
+        "id": "line-AC",
+        "type": "line",
+        "through": [
+          "A",
+          "C",
+          "D"
+        ]
+      },
+      {
+        "id": "line-BC",
+        "type": "line",
+        "through": [
+          "B",
+          "C"
+        ]
+      },
+      {
+        "id": "line-BD",
+        "type": "line",
+        "through": [
+          "B",
+          "D",
+          "E"
+        ]
+      },
+      {
+        "id": "line-CE",
+        "type": "line",
+        "through": [
+          "C",
+          "E"
+        ]
+      }
+    ],
+    "points": [
+      {
+        "id": "O",
+        "role": "circle-center"
+      },
+      {
+        "id": "A",
+        "role": "given-point"
+      },
+      {
+        "id": "B",
+        "role": "given-point"
+      },
+      {
+        "id": "C",
+        "role": "given-point"
+      },
+      {
+        "id": "D",
+        "role": "constructed-point"
+      },
+      {
+        "id": "E",
+        "role": "constructed-point"
+      }
+    ],
+    "constructions": [],
+    "constraints": [
+      {
+        "type": "point-on-circle",
+        "point": "A",
+        "circle": "circle-O"
+      },
+      {
+        "type": "point-on-circle",
+        "point": "B",
+        "circle": "circle-O"
+      },
+      {
+        "type": "point-on-circle",
+        "point": "C",
+        "circle": "circle-O"
+      },
+      {
+        "type": "point-on-circle",
+        "point": "E",
+        "circle": "circle-O"
+      },
+      {
+        "type": "equal-segments",
+        "segments": [
+          [
+            "A",
+            "B"
+          ],
+          [
+            "A",
+            "C"
+          ]
+        ]
+      },
+      {
+        "type": "equal-segments",
+        "segments": [
+          [
+            "B",
+            "C"
+          ],
+          [
+            "B",
+            "D"
+          ]
+        ]
+      },
+      {
+        "type": "between",
+        "points": [
+          "A",
+          "D",
+          "C"
+        ]
+      },
+      {
+        "type": "same-ray",
+        "vertex": "B",
+        "points": [
+          "D",
+          "E"
+        ]
+      },
+      {
+        "type": "same-segment",
+        "chord": [
+          "B",
+          "C"
+        ],
+        "vertices": [
+          "A",
+          "E"
+        ]
+      }
+    ],
+    "dynamicConditions": []
+  },
+  "goal": {
+    "type": "segment-equality",
+    "segments": [
+      [
+        "C",
+        "B"
+      ],
+      [
+        "C",
+        "E"
+      ]
+    ]
+  },
+  "proofPlan": {
+    "status": "candidate-only",
+    "targetMethod": "二等辺三角形・三角形の内角の和・同じ弦に対する円周角",
+    "recordedProperties": [
+      "円周角",
+      "二等辺三角形の底角",
+      "三角形の内角の和",
+      "三段論法"
+    ],
+    "warning": "資料に記録された解法方針であり、エンジン実行結果と数学的妥当性の確認は別に扱う。"
+  },
+  "validation": {
+    "status": "angle-sum-cancellation-added-awaiting-ci-verification",
+    "structuralChecks": "passed by adapter execution; unsupported conditions list is empty",
+    "mathematicalChecks": "a general three-angle-sum cancellation rule has been added; confirm its end-to-end result with CI before marking this case proved",
+    "openQuestions": [
+      "原問題の本文・図と、Dが線分AC上にあることを再照合する。",
+      "B,D,Eが同じ半直線上にあること、およびA,Eが弦BCに対して同じ側にあることを原図で確認する。",
+      "三項の内角和どうしを比較し、2組の等しい角を消去する一般ルールを追加した。CIでエンドツーエンドの証明が成功することを確認する。"
+    ]
+  }
+}

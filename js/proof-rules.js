@@ -330,6 +330,7 @@
       ...triangleAngleSumCandidates(facts),
       ...equalRadiusCandidates(facts),
       ...parallelAngleCandidates(facts),
+      ...perpendicularAngleCandidates(facts),
       ...diameterInscribedAngleCandidates(facts),
       ...circleCandidates(facts),
       ...sameSegmentAngleCandidates(facts),
@@ -815,6 +816,46 @@
     return results;
   }
 
+  // Perpendicular lines create four right angles at each explicitly known intersection.
+  // We only use points explicitly incident to each line; no collinearity or point order is guessed.
+  function perpendicularAngleCandidates(known) {
+    const linePoints = new Map();
+    const perpendicularPairs = [];
+    for (const fact of known) {
+      const onLine = /^onLine\(([A-Z]),([A-Za-z][A-Za-z0-9-]*)\)$/.exec(fact);
+      if (onLine) {
+        if (!linePoints.has(onLine[2])) linePoints.set(onLine[2], new Set());
+        linePoints.get(onLine[2]).add(onLine[1]);
+      }
+      const perpendicular = /^perpendicular\(([^,()]+),([^,()]+)\)$/.exec(fact);
+      if (perpendicular && perpendicular[1] !== perpendicular[2]) {
+        perpendicularPairs.push({ fact, first: perpendicular[1], second: perpendicular[2] });
+      }
+    }
+    const results = [];
+    for (const pair of perpendicularPairs) {
+      const firstPoints = linePoints.get(pair.first) || new Set();
+      const secondPoints = linePoints.get(pair.second) || new Set();
+      for (const vertex of firstPoints) {
+        if (!secondPoints.has(vertex)) continue;
+        for (const first of firstPoints) for (const last of secondPoints) {
+          if (first === vertex || last === vertex || first === last) continue;
+          const angle = "angle(" + first + vertex + last + ")";
+          results.push({
+            id: "geometry.perpendicular-lines-right-angle",
+            name: "垂直な2直線がつくる直角",
+            premises: [pair.fact, "onLine(" + vertex + "," + pair.first + ")", "onLine(" + vertex + "," + pair.second + ")",
+              "onLine(" + first + "," + pair.first + ")", "onLine(" + last + "," + pair.second + ")"],
+            conclusion: angle + "=90",
+            explain: "垂直な2直線が交わる点には、4つの直角ができる。",
+            category: "angle"
+          });
+        }
+      }
+    }
+    return results;
+  }
+
   // Points explicitly marked on circles with the same center have equal radii.
   function equalRadiusCandidates(known) {
     const points = known.map((fact) => {
@@ -1038,6 +1079,24 @@
     first = canonicalTerm(first);
     second = canonicalTerm(second);
     if (first === second) return true;
+
+    // A point on the same ray from an angle's vertex is interchangeable
+    // with the other point when comparing angle measures. This lets the
+    // angle-sum cancellation rule use facts such as sameRay(C,A,D) directly,
+    // without depending on the proof search happening to emit that equality
+    // as a separate intermediate step first.
+    const firstAngle = parseAngle(first);
+    const secondAngle = parseAngle(second);
+    if (firstAngle && secondAngle && firstAngle.vertex === secondAngle.vertex) {
+      const sameRayFacts = known.map((fact) => /^sameRay\\(([A-Z]),([A-Z]),([A-Z])\\)$/.exec(fact)).filter(Boolean);
+      const raysMatch = (a, b, vertex) => a === b || sameRayFacts.some((ray) =>
+        ray[1] === vertex && ((ray[2] === a && ray[3] === b) || (ray[2] === b && ray[3] === a)));
+      if ((raysMatch(firstAngle.first, secondAngle.first, firstAngle.vertex) &&
+           raysMatch(firstAngle.last, secondAngle.last, firstAngle.vertex)) ||
+          (raysMatch(firstAngle.first, secondAngle.last, firstAngle.vertex) &&
+           raysMatch(firstAngle.last, secondAngle.first, firstAngle.vertex))) return true;
+    }
+
     const graph = new Map();
     for (const fact of known) {
       const equality = parseEquality(fact);
@@ -1048,6 +1107,31 @@
       if (!graph.has(right)) graph.set(right, new Set());
       graph.get(left).add(right);
       graph.get(right).add(left);
+    }
+
+    // Add same-ray angle equivalences to the graph, so they can participate
+    // in transitive chains alongside explicitly derived angle equalities.
+    const angleTerms = new Set();
+    for (const fact of known) {
+      for (const match of fact.matchAll(/angle\\([A-Z]{3}\\)/g)) angleTerms.add(canonicalTerm(match[0]));
+    }
+    for (const term of [first, second]) {
+      if (parseAngle(term)) angleTerms.add(canonicalTerm(term));
+    }
+    const angles = [...angleTerms].map(parseAngle).filter(Boolean);
+    const sameRayFacts = known.map((fact) => /^sameRay\\(([A-Z]),([A-Z]),([A-Z])\\)$/.exec(fact)).filter(Boolean);
+    const raysMatch = (a, b, vertex) => a === b || sameRayFacts.some((ray) =>
+      ray[1] === vertex && ((ray[2] === a && ray[3] === b) || (ray[2] === b && ray[3] === a)));
+    for (let i = 0; i < angles.length; i++) for (let j = i + 1; j < angles.length; j++) {
+      const a = angles[i], b = angles[j];
+      if (a.vertex !== b.vertex) continue;
+      if ((raysMatch(a.first, b.first, a.vertex) && raysMatch(a.last, b.last, a.vertex)) ||
+          (raysMatch(a.first, b.last, a.vertex) && raysMatch(a.last, b.first, a.vertex))) {
+        if (!graph.has(a.text)) graph.set(a.text, new Set());
+        if (!graph.has(b.text)) graph.set(b.text, new Set());
+        graph.get(a.text).add(b.text);
+        graph.get(b.text).add(a.text);
+      }
     }
     const visited = new Set([first]);
     const queue = [first];
@@ -1103,6 +1187,51 @@
     return results;
   }
 
+  // Compare triangle angle-sum equations and cancel two pairs of equal angles.
+  // This handles three-term sums without expanding them into ad-hoc substitutions.
+  function triangleAngleSumCancellationCandidates(known) {
+    const sums = known.map((fact) => {
+      const match = /^(angle\([A-Z]{3}\)\+angle\([A-Z]{3}\)\+angle\([A-Z]{3}\))=180$/.exec(fact);
+      return match ? { fact, parts: match[1].split("+") } : null;
+    }).filter(Boolean);
+    const results = [];
+    const seen = new Set();
+    for (let i = 0; i < sums.length; i++) for (let j = i + 1; j < sums.length; j++) {
+      const a = sums[i], b = sums[j];
+      // Try every pairing of two terms; retain the unpaired terms as equal.
+      for (let ai = 0; ai < 3; ai++) for (let aj = ai + 1; aj < 3; aj++) {
+        for (let bi = 0; bi < 3; bi++) for (let bj = 0; bj < 3; bj++) {
+          if (bi === bj) continue;
+          if (!termsEquivalent(a.parts[ai], b.parts[bi], known) ||
+              !termsEquivalent(a.parts[aj], b.parts[bj], known)) continue;
+          const ak = [0, 1, 2].find((k) => k !== ai && k !== aj);
+          const bk = [0, 1, 2].find((k) => k !== bi && k !== bj);
+          const left = canonicalTerm(a.parts[ak]);
+          const right = canonicalTerm(b.parts[bk]);
+          if (left === right || termsEquivalent(left, right, known)) continue;
+          const conclusion = [left, right].sort().join("=");
+          const reverse = right + "=" + left;
+          if (seen.has(conclusion) || seen.has(reverse) || known.includes(conclusion) || known.includes(reverse)) continue;
+          seen.add(conclusion);
+          const equalityPremises = known.filter((fact) => {
+            const eq = parseEquality(fact);
+            return eq && [a.parts[ai], a.parts[aj], b.parts[bi], b.parts[bj]].some((term) =>
+              canonicalTerm(eq.left) === canonicalTerm(term) || canonicalTerm(eq.right) === canonicalTerm(term));
+          });
+          results.push({
+            id: "angle.triangle-sum-cancellation",
+            name: "三角形の内角の和から等しい角を消去",
+            premises: [...new Set([a.fact, b.fact, ...equalityPremises])],
+            conclusion,
+            explain: "和がともに180°で、2組の角がそれぞれ等しいので、残りの角も等しい。",
+            category: "angle"
+          });
+        }
+      }
+    }
+    return results;
+  }
+
   // Forward-chain from the supplied facts, recording every inference.
   // This is a bounded rule engine, not a complete geometry prover.
   function prove(facts, goal, maxSteps = 100) {
@@ -1147,6 +1276,32 @@
 
         if (rule.conclusion === goal) {
           return { success: true, goal, facts: known, steps, reason: "proved" };
+        }
+      }
+
+      if (steps.length < maxSteps) {
+        const perpendicularAngle = perpendicularAngleCandidates(known).find((rule) => !known.includes(rule.conclusion));
+        if (perpendicularAngle) {
+          const step = {
+            index: steps.length + 1,
+            ruleId: perpendicularAngle.id,
+            ruleName: perpendicularAngle.name,
+            premises: [...perpendicularAngle.premises],
+            premiseSources: perpendicularAngle.premises.map((premise) => ({
+              fact: premise,
+              ...(sourceByFact.get(premise) || { type: "unknown" })
+            })),
+            conclusion: perpendicularAngle.conclusion,
+            explanation: perpendicularAngle.explain,
+            category: perpendicularAngle.category
+          };
+          known.push(step.conclusion);
+          sourceByFact.set(step.conclusion, { type: "step", index: step.index });
+          steps.push(step);
+          changed = true;
+          if (step.conclusion === goal) {
+            return { success: true, goal, facts: known, steps, reason: "proved" };
+          }
         }
       }
 
@@ -1604,6 +1759,26 @@
           if (step.conclusion === goal) {
             return { success: true, goal, facts: known, steps, reason: "proved" };
           }
+        }
+
+        const triangleSumCancellation = /^(side|angle)\(/.test(goal)
+          ? triangleAngleSumCancellationCandidates(known)
+              .find((rule) => rule.conclusion === goal || sameAngleEquality(rule.conclusion, goal) || !known.includes(rule.conclusion))
+          : null;
+        if (triangleSumCancellation) {
+          const step = {
+            index: steps.length + 1,
+            ruleId: triangleSumCancellation.id,
+            ruleName: triangleSumCancellation.name,
+            premises: [...triangleSumCancellation.premises],
+            premiseSources: triangleSumCancellation.premises.map((premise) => ({ fact: premise, ...(sourceByFact.get(premise) || { type: "unknown" }) })),
+            conclusion: sameAngleEquality(triangleSumCancellation.conclusion, goal) ? goal : triangleSumCancellation.conclusion,
+            explanation: triangleSumCancellation.explain,
+            category: triangleSumCancellation.category
+          };
+          known.push(step.conclusion); sourceByFact.set(step.conclusion, { type: "step", index: step.index });
+          steps.push(step); changed = true;
+          if (step.conclusion === goal || sameAngleEquality(step.conclusion, goal)) return { success: true, goal, facts: known, steps, reason: "proved" };
         }
 
         const algebraCandidates = additionAlgebraCandidates(known);

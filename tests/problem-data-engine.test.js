@@ -171,3 +171,22 @@ assert.ok(angleSplitConverted.facts.includes("rayInsideAngle(A,B,E,G)"));
 const angleSplitProof = Rules.prove(angleSplitConverted.facts, "angle(BAG)=angle(BAE)+angle(EAG)");
 assert.equal(angleSplitProof.success, true, "明示された内角の半直線から角の加法を導く");
 assert.equal(angleSplitProof.steps.at(-1).ruleId, "angle.addition");
+
+
+// Shizuoka 2019 reconstructed candidate: structural constraints must be supported,
+// but this test intentionally does not assert a proof until the angle chain is verified.
+const shizuoka2019 = require("../data/problem-examples/shizuoka-2019-proof-dac-gec.json");
+const shizuoka2019Converted = Adapter.convert(shizuoka2019);
+assert.ok(shizuoka2019Converted.facts.includes("diameter(BC)"));
+assert.equal(shizuoka2019Converted.facts.includes("diameter(BC,circle-O)"), false);
+const diameterAngleProof = Rules.prove(shizuoka2019Converted.facts, "angle(BAC)=90");
+assert.equal(diameterAngleProof.success, true, "変換した直径条件が円周角90度の定理で実際に使える");
+assert.equal(diameterAngleProof.steps.at(-1).ruleId, "circle.diameter-inscribed-angle");
+assert.ok(shizuoka2019Converted.facts.includes("perpendicular(line-AC,line-DE)"));
+assert.ok(shizuoka2019Converted.facts.includes("onLine(F,line-AC)"));
+assert.ok(shizuoka2019Converted.facts.includes("onLine(F,line-DE)"));
+assert.ok(shizuoka2019Converted.facts.includes("onLine(G,line-BC)"));
+assert.ok(shizuoka2019Converted.facts.includes("onLine(G,line-DE)"));
+assert.equal(shizuoka2019Converted.unsupported.some((item) =>
+  ["diameter", "perpendicular-lines", "intersection"].includes(item.type)), false,
+  "直径・垂直・交点の条件型を変換できる");

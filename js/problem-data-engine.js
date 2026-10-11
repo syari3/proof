@@ -59,16 +59,38 @@
         add("rayInsideAngle(" + constraint.vertex + "," + constraint.points.join(",") + ")");
       } else if (constraint.type === "point-on-circle" && constraint.point && constraint.circle) {
         add("onCircle(" + constraint.point + ")");
+      } else if (constraint.type === "diameter" && constraint.circle && Array.isArray(constraint.endpoints) && constraint.endpoints.length === 2) {
+        const endpoints = constraint.endpoints.slice().sort();
+        // The inference engine uses diameter(BC) as its canonical fact. Keep the
+        // circle ID in the input schema, but do not append it to this legacy fact.
+        add("diameter(" + endpoints.join("") + ")");
+      } else if (constraint.type === "perpendicular-lines" && Array.isArray(constraint.lines) && constraint.lines.length === 2) {
+        const lines = constraint.lines.slice().sort();
+        add("perpendicular(" + lines.join(",") + ")");
+      } else if (constraint.type === "intersection" && constraint.point && Array.isArray(constraint.lines) && constraint.lines.length === 2) {
+        for (const lineId of constraint.lines) add("onLine(" + constraint.point + "," + lineId + ")");
+        add("intersects(" + constraint.lines.slice().sort().join(",") + ")");
       } else if (constraint.type === "same-segment" && Array.isArray(constraint.chord) && constraint.chord.length === 2 && Array.isArray(constraint.vertices) && constraint.vertices.length === 2) {
         add("sameSegment(" + constraint.chord.slice().sort().join("") + "," + constraint.vertices[0] + "," + constraint.vertices[1] + ")");
       } else if (constraint.type === "opposite-segment" && Array.isArray(constraint.chord) && constraint.chord.length === 2 && Array.isArray(constraint.vertices) && constraint.vertices.length === 2) {
         add("oppositeSegment(" + constraint.chord.slice().sort().join("") + "," + constraint.vertices[0] + "," + constraint.vertices[1] + ")");
-      } else if (constraint.type === "opposite-rays" || constraint.type === "between" ||
+      } else if (constraint.type === "between" && Array.isArray(constraint.points) &&
+          constraint.points.length === 3 && constraint.points.every((point) => typeof point === "string" && /^[A-Z]$/.test(point))) {
+        // between(A,D,C) means D lies between A and C: from A, D and C
+        // share a ray, and from C, A and D share a ray. At D the rays are
+        // opposite, so deliberately do not add sameRay facts at that vertex.
+        const [first, middle, last] = constraint.points;
+        if (new Set([first, middle, last]).size === 3) {
+          add("sameRay(" + first + "," + middle + "," + last + ")");
+          add("sameRay(" + last + "," + first + "," + middle + ")");
+        }
+      } else if (constraint.type === "opposite-rays" ||
           constraint.type === "parallel-lines" || constraint.type === "corresponding-angles" ||
           constraint.type === "alternate-interior-angles" || constraint.type === "opposite-segment" || constraint.type === "inscribed-angle" ||
           constraint.type === "equal-arcs") {
         // Converted in the relevant relation pass below; keep these typed constraints supported.
-      } else if (constraint.type !== "point-on-circle") {
+      } else if (constraint.type !== "point-on-circle" && constraint.type !== "diameter" &&
+          constraint.type !== "perpendicular-lines" && constraint.type !== "intersection") {
         unsupported.push({ location: "geometry.constraints", type: constraint.type, reason: "この条件型はまだ安全に事実へ変換できません。" });
       }
     }
