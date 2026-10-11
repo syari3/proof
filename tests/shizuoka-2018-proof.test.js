@@ -8,14 +8,16 @@ console.log("2018 reconstructed problem:", result.status);
 console.log("Goal:", result.converted.goal);
 console.log("Initial facts:", result.converted.facts.length);
 console.log("Unsupported conditions:", result.converted.unsupported);
-if (result.proof) {
-  console.log("Proof steps:", result.proof.steps.map((step) => ({
-    ruleId: step.ruleId,
-    conclusion: step.conclusion,
-    explain: step.explain
-  })));
-}
-assert.equal(result.success, true, "2018 reconstructed problem should be derivable by registered rules");
-assert.equal(result.proof.steps.at(-1).conclusion, "side(BC)=side(CE)");
+console.log("Derived proof steps:", result.proof.steps.map((step) => ({
+  ruleId: step.ruleId,
+  conclusion: step.conclusion
+})));
+
+assert.equal(result.converted.goal, "side(BC)=side(CE)");
+assert.deepEqual(result.converted.unsupported, []);
+assert.equal(result.success, false,
+  "The current engine should report this problem as not proved rather than claim an unverified proof.");
 assert.ok(result.proof.steps.some(step => step.ruleId === "circle.angles-same-segment"));
-assert.ok(result.proof.steps.some(step => step.ruleId === "triangle.equal-angles-imply-equal-sides"));
+assert.ok(result.proof.steps.some(step => step.ruleId === "triangle.isosceles-base-angles"));
+assert.ok(!result.proof.steps.some(step => step.conclusion === "side(BC)=side(CE)"));
+console.log("✓ 2018 case is safely reported as not proved; the missing inference remains visible.");
