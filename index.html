@@ -129,7 +129,7 @@
     <section class="engine-lab" aria-labelledby="engine-lab-title">
       <p class="section-kicker">INFERENCE ENGINE · EXPERIMENT</p>
       <h2 id="engine-lab-title">推論エンジンを実行する</h2>
-      <p class="engine-intro">登録済みのお試し問題を推論エンジンに渡し、エンジンが生成したステップを省略せずにすべて表示します。図はまだ表示しません。</p>
+      <p class="engine-intro">登録済みのお試し問題を推論エンジンに渡し、目標の証明に関係する推論ステップだけを表示します。証明に不要と判定された入力条件や、目標につながらない推論ステップは表示しません。図はまだ表示しません。</p>
       <div class="engine-prompt">
         <strong>問題：</strong>
         <p id="engine-problem-text">問題を読み込んでいます…</p>
@@ -141,14 +141,14 @@
       </div>
       <div id="engine-status" class="engine-status" role="status" aria-live="polite">問題データを読み込んでいます。</div>
       <section aria-labelledby="engine-steps-title">
-        <h3 id="engine-steps-title">推論ステップ（すべて表示）</h3>
+        <h3 id="engine-steps-title">証明に必要な推論ステップ</h3>
         <ol id="engine-steps" class="engine-steps">
           <li class="engine-meta">まだ実行していません。</li>
         </ol>
       </section>
       <section class="engine-condition-report" aria-labelledby="engine-condition-title">
         <h3 id="engine-condition-title">条件は本当に必要？</h3>
-        <p class="engine-intro">証明できた場合、問題データの条件を1つずつ外して再実行します。外しても証明できる条件は、現在の推論ルールでは必須ではない可能性があります。</p>
+        <p class="engine-intro">証明できた場合、入力条件を1つずつ外して再実行し、外すと証明できなくなる条件だけを表示します。外しても証明できる条件は一覧から省きます。</p>
         <p id="engine-condition-summary" class="engine-meta">証明を実行すると条件チェックを表示します。</p>
         <ol id="engine-condition-list" class="engine-condition-list">
           <li class="engine-meta">未チェック</li>
@@ -192,6 +192,29 @@
         .replace(/sameRay\(([^,()]+),([^,()]+),([^,()]+)\)/g, "$2 と $3 は頂点 $1 から同じ向き")
         .replace(/=/g, " = ");
 
+      // Keep only the proof steps that lead backwards to the goal.
+      const getGoalRelevantSteps = (steps, goal) => {
+        if (!goal || !Array.isArray(steps) || !steps.length) return steps || [];
+        const byConclusion = new Map();
+        steps.forEach((step, index) => {
+          if (step && step.conclusion) {
+            if (!byConclusion.has(step.conclusion)) byConclusion.set(step.conclusion, []);
+            byConclusion.get(step.conclusion).push(index);
+          }
+        });
+        const needed = new Set();
+        const visitFact = (fact) => {
+          (byConclusion.get(fact) || []).forEach((index) => {
+            if (needed.has(index)) return;
+            needed.add(index);
+            const step = steps[index];
+            (Array.isArray(step.premises) ? step.premises : []).forEach(visitFact);
+          });
+        };
+        visitFact(goal);
+        return steps.filter((step, index) => needed.has(index));
+      };
+
       const setStatus = (message, state) => {
         statusNode.textContent = message;
         statusNode.dataset.state = state || "neutral";
@@ -229,13 +252,14 @@
           }
           const result = window.ProblemDataEngine.run(problem, window.ProofRules);
           const proof = result.proof;
-          const steps = proof && Array.isArray(proof.steps) ? proof.steps : [];
+          const allSteps = proof && Array.isArray(proof.steps) ? proof.steps : [];
           const succeeded = result.success === true;
+          const steps = succeeded ? getGoalRelevantSteps(allSteps, result.converted && result.converted.goal) : allSteps;
           setStatus(succeeded
             ? "証明できました！ 登録済みの推論ルールで目標を導出しました。"
             : "証明できませんでした。命題が偽とは限らず、現在の条件変換や推論ルールでは導出できないという意味です。",
             succeeded ? "success" : "failure");
-          summaryNode.textContent = (succeeded ? "証明成功" : "証明未成立") + " · " + steps.length + " ステップ";
+          summaryNode.textContent = (succeeded ? "証明成功" : "証明未成立") + " · " + steps.length + " / " + allSteps.length + " ステップを表示";
           if (steps.length === 0) {
             const item = document.createElement("li");
             item.className = "engine-meta";
@@ -285,23 +309,21 @@
 
           const analysis = result.conditionAnalysis;
           if (analysis && Array.isArray(analysis.candidates)) {
-            const required = analysis.candidates.filter((entry) => entry.status === "required-by-current-proof").length;
-            const optional = analysis.candidates.length - required;
-            conditionSummaryNode.textContent = analysis.testedCount + " 項目を個別に検査：証明に影響した項目 " + required + " 件、外しても証明できた項目 " + optional + " 件。";
-            if (!analysis.candidates.length) {
+            const requiredCandidates = analysis.candidates.filter((entry) => entry.status === "required-by-current-proof");
+            const optional = analysis.candidates.length - requiredCandidates.length;
+            conditionSummaryNode.textContent = "入力条件を " + analysis.testedCount + " 項目検査し、外すと証明できなくなる " + requiredCandidates.length + " 項目だけを表示しています（" + optional + " 項目は非表示）。";
+            if (!requiredCandidates.length) {
               const empty = document.createElement("li");
               empty.className = "engine-meta";
-              empty.textContent = "検査対象の入力条件はありませんでした。";
+              empty.textContent = "外すと証明できなくなる入力条件はありませんでした。";
               conditionListNode.append(empty);
             }
-            analysis.candidates.forEach((entry) => {
+            requiredCandidates.forEach((entry) => {
               const item = document.createElement("li");
               item.className = "engine-condition";
-              item.dataset.state = entry.status === "required-by-current-proof" ? "required" : "optional";
+              item.dataset.state = "required";
               const heading = document.createElement("strong");
-              heading.textContent = entry.status === "required-by-current-proof"
-                ? "この条件を外すと証明できない"
-                : "この条件を外しても証明できる";
+              heading.textContent = "この条件を外すと証明できない";
               const detail = document.createElement("p");
               detail.className = "engine-condition-detail";
               detail.textContent = entry.type + " · " + JSON.stringify(entry.item);
