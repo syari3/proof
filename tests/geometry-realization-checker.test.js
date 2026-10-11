@@ -52,5 +52,33 @@ const partialProblem={
 };
 const partial=Checker.validate(partialProblem,{points:{A:{x:0,y:0},B:{x:1,y:0},C:{x:0,y:1}}});
 assert.equal(partial.status,"coordinate-witness-partial");
-assert.ok(partial.pending.some(item=>item.code==="constraint-needs-angle-arc-model"));
+assert.ok(partial.pending.some(item=>item.code==="ambiguous-arc-choice"));
+
+const angleArcProblem = {
+  format:"proof-problem", version:1,
+  geometry:{
+    points:[{id:"O"},{id:"A"},{id:"B"},{id:"C"}],
+    objects:[{id:"circle-O",type:"circle",center:"O"}],
+    constructions:[],
+    constraints:[
+      ...["A","B","C"].map(point=>({type:"point-on-circle",point,circle:"circle-O"})),
+      {type:"inscribed-angle",circle:"circle-O",angle:["A","B","C"],arc:["A","C"],arcChoice:"minor"}
+    ]
+  },
+  goal:{type:"triangle-similarity",triangles:[["A","B","C"],["A","B","C"]]}
+};
+const angleArcWitness={points:{
+  O:{x:0,y:0}, A:{x:1,y:0}, B:{x:-1,y:0}, C:{x:0,y:1}
+}};
+const integrated=Checker.validate(angleArcProblem,angleArcWitness);
+assert.equal(integrated.status,"coordinate-witness-consistent");
+assert.equal(integrated.valid,true);
+assert.ok(integrated.checked.some(item=>item.path==="geometry.constraints[3]"));
+
+const wrongAngleArc = structuredClone(angleArcProblem);
+wrongAngleArc.geometry.constraints[3].arcChoice="major";
+const integratedMismatch=Checker.validate(wrongAngleArc,angleArcWitness);
+assert.equal(integratedMismatch.status,"coordinate-witness-invalid");
+assert.ok(integratedMismatch.errors.some(item=>item.code==="inscribed-angle-mismatch"));
+
 console.log("geometry-realization-checker tests passed");
