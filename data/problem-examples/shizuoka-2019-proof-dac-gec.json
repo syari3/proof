@@ -7,7 +7,10 @@
     "exam": "公立高校入学者選抜学力検査",
     "year": 2019,
     "questionNumber": "図形の証明（分析表による）",
-    "materials": ["10年間問題.pdf", "data.xlsx / Sheet1"],
+    "materials": [
+      "10年間問題.pdf",
+      "data.xlsx / Sheet1"
+    ],
     "transcriptionStatus": "reconstructed-from-analysis-sheet-not-original-exam-prompt",
     "notes": "分析表から構造化した候補。原問題の本文・図の完全な転記ではない。円周上の点、直径BC、ACとDEの垂直関係、F/Gの交点関係を原図と照合する必要がある。"
   },
@@ -15,52 +18,180 @@
   "prompt": "【分析表からの再構成問題】A、B、C、D、Eは同一円周上にあり、BCは直径である。直線DEとACは垂直に交わり、その交点をF、直線DEとBCの交点をGとする。このとき、△DAC∽△GECであることを証明しなさい。※原問題の文面をそのまま転記したものではありません。図の点の位置関係は原問題で再確認してください。",
   "geometry": {
     "objects": [
-      {"id": "circle-O", "type": "circle", "center": "O"},
-      {"id": "line-AC", "type": "line", "through": ["A", "C", "F"]},
-      {"id": "line-BC", "type": "line", "through": ["B", "C", "G"]},
-      {"id": "line-DE", "type": "line", "through": ["D", "E", "F", "G"]}
+      {
+        "id": "circle-O",
+        "type": "circle",
+        "center": "O"
+      },
+      {
+        "id": "line-AC",
+        "type": "line",
+        "through": [
+          "A",
+          "C",
+          "F"
+        ]
+      },
+      {
+        "id": "line-BC",
+        "type": "line",
+        "through": [
+          "B",
+          "C",
+          "G"
+        ]
+      },
+      {
+        "id": "line-DE",
+        "type": "line",
+        "through": [
+          "D",
+          "E",
+          "F",
+          "G"
+        ]
+      }
     ],
     "points": [
-      {"id": "A", "role": "given-point"},
-      {"id": "B", "role": "given-point"},
-      {"id": "C", "role": "given-point"},
-      {"id": "D", "role": "given-point"},
-      {"id": "E", "role": "given-point"},
-      {"id": "F", "role": "constructed-point"},
-      {"id": "G", "role": "constructed-point"}
+      {
+        "id": "A",
+        "role": "given-point"
+      },
+      {
+        "id": "B",
+        "role": "given-point"
+      },
+      {
+        "id": "C",
+        "role": "given-point"
+      },
+      {
+        "id": "D",
+        "role": "given-point"
+      },
+      {
+        "id": "E",
+        "role": "given-point"
+      },
+      {
+        "id": "F",
+        "role": "constructed-point"
+      },
+      {
+        "id": "G",
+        "role": "constructed-point"
+      }
     ],
     "constructions": [],
     "constraints": [
-      {"type": "point-on-circle", "point": "A", "circle": "circle-O"},
-      {"type": "point-on-circle", "point": "B", "circle": "circle-O"},
-      {"type": "point-on-circle", "point": "C", "circle": "circle-O"},
-      {"type": "point-on-circle", "point": "D", "circle": "circle-O"},
-      {"type": "point-on-circle", "point": "E", "circle": "circle-O"},
-      {"type": "diameter", "circle": "circle-O", "endpoints": ["B", "C"]},
-      {"type": "perpendicular-lines", "lines": ["line-AC", "line-DE"]},
-      {"type": "intersection", "point": "F", "lines": ["line-AC", "line-DE"]},
-      {"type": "intersection", "point": "G", "lines": ["line-BC", "line-DE"]},
-      {"type": "between", "points": ["D", "F", "E"]},
-      {"type": "between", "points": ["B", "G", "C"]}
+      {
+        "type": "point-on-circle",
+        "point": "A",
+        "circle": "circle-O"
+      },
+      {
+        "type": "point-on-circle",
+        "point": "B",
+        "circle": "circle-O"
+      },
+      {
+        "type": "point-on-circle",
+        "point": "C",
+        "circle": "circle-O"
+      },
+      {
+        "type": "point-on-circle",
+        "point": "D",
+        "circle": "circle-O"
+      },
+      {
+        "type": "point-on-circle",
+        "point": "E",
+        "circle": "circle-O"
+      },
+      {
+        "type": "diameter",
+        "circle": "circle-O",
+        "endpoints": [
+          "B",
+          "C"
+        ]
+      },
+      {
+        "type": "perpendicular-lines",
+        "lines": [
+          "line-AC",
+          "line-DE"
+        ]
+      },
+      {
+        "type": "intersection",
+        "point": "F",
+        "lines": [
+          "line-AC",
+          "line-DE"
+        ]
+      },
+      {
+        "type": "intersection",
+        "point": "G",
+        "lines": [
+          "line-BC",
+          "line-DE"
+        ]
+      },
+      {
+        "type": "between",
+        "points": [
+          "D",
+          "F",
+          "E"
+        ]
+      },
+      {
+        "type": "between",
+        "points": [
+          "B",
+          "G",
+          "C"
+        ]
+      }
     ],
     "dynamicConditions": []
   },
   "goal": {
     "type": "triangle-similarity",
-    "triangles": [["D", "A", "C"], ["G", "E", "C"]]
+    "triangles": [
+      [
+        "D",
+        "A",
+        "C"
+      ],
+      [
+        "G",
+        "E",
+        "C"
+      ]
+    ]
   },
   "proofPlan": {
     "status": "candidate-only",
     "targetMethod": "円周角・直径の円周角・垂直な直線がつくる角・2組の角",
-    "recordedProperties": ["円周角", "直径の円周角", "三角形の外角定理", "角の加法", "三段論法"],
-    "warning": "分析表に基づく候補。推論エンジンの対応ルールと原図との整合性を確認するまでは、証明済みとは扱わない。"
+    "recordedProperties": [
+      "円周角",
+      "直径の円周角",
+      "三角形の外角定理",
+      "角の加法",
+      "三段論法"
+    ],
+    "warning": "直径・垂直・交点の条件変換は実装済み。相似の結論までは未証明であり、原図との照合と追加ルールの検証が必要。"
   },
   "validation": {
-    "status": "pending-engine-support",
+    "status": "conditions-converted-proof-pending",
     "openQuestions": [
       "原問題の本文・図でBCが直径であること、ACとDEが垂直であること、点F/Gの位置関係を確認する。",
-      "adapterと推論エンジンに直径・垂直の条件型を安全に実装する。",
-      "△DACと△GECの対応する角を、前提条件からのみ導けることをテストする。"
+      "円周角・直径の円周角・垂直がつくる角の関係をつなぐ推論ルールを追加し、△DAC∽△GECまで到達できるか検証する。",
+      "同じ弦に対する円周角を使う際、AとEが弦DCに対して同じ側にあるかを原図で確認する。"
     ]
   }
 }
