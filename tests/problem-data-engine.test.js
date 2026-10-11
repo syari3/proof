@@ -182,7 +182,13 @@ assert.ok(angleAdditionResult.proof.steps.some((step) => step.ruleId === "angle.
   "2つの大きな角をそれぞれ角の加法で表す");
 assert.ok(angleAdditionResult.proof.steps.some((step) => step.ruleId === "angle.addition-cancellation"),
   "等しい全体から等しい部分を消去する");
-assert.ok(angleAdditionResult.proof.steps.some((step) => step.ruleId === "angle.addition-substitution"),
-  "等しい角を角の加法の式に代入する");
 assert.ok(angleAdditionResult.proof.steps.some((step) => step.ruleId === "geometry.same-ray-angle"),
   "同じ半直線上の点で角を表し直す");
+
+// Isolate the substitution rule: replace one equal angle inside an addition expression.
+const substitutionProbe = Rules.prove([
+  "angle(BAC)=angle(BAD)+angle(DAC)",
+  "angle(DAC)=angle(DAF)"
+], "angle(BAC)=angle(BAD)+angle(DAF)");
+assert.equal(substitutionProbe.success, true, "角の加法の式に等しい角を代入できる");
+assert.equal(substitutionProbe.steps.at(-1).ruleId, "angle.addition-substitution");
