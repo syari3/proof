@@ -1,0 +1,186 @@
+{
+  "format": "proof-problem",
+  "version": 1,
+  "id": "cyclic-parallel-trapezoid-angle-equality",
+  "title": "円に内接する台形と平行線・円周角",
+  "prompt": "円 O 上にこの順に 4 点 A、B、C、D があり、AB ∥ CD である。対角線 AC と BD の交点を E とする。∠BAE = ∠ABE であることを証明しなさい。",
+  "geometry": {
+    "objects": [
+      {
+        "id": "circle-O",
+        "type": "circle",
+        "center": "O"
+      },
+      {
+        "id": "line-AB",
+        "type": "line",
+        "through": [
+          "A",
+          "B"
+        ]
+      },
+      {
+        "id": "line-CD",
+        "type": "line",
+        "through": [
+          "C",
+          "D"
+        ]
+      },
+      {
+        "id": "line-AC",
+        "type": "line",
+        "through": [
+          "A",
+          "C"
+        ]
+      },
+      {
+        "id": "line-BD",
+        "type": "line",
+        "through": [
+          "B",
+          "D"
+        ]
+      }
+    ],
+    "points": [
+      {
+        "id": "O",
+        "role": "circle-center"
+      },
+      {
+        "id": "A",
+        "role": "given-point"
+      },
+      {
+        "id": "B",
+        "role": "given-point"
+      },
+      {
+        "id": "C",
+        "role": "given-point"
+      },
+      {
+        "id": "D",
+        "role": "given-point"
+      },
+      {
+        "id": "E",
+        "role": "constructed-point"
+      }
+    ],
+    "constructions": [
+      {
+        "point": "E",
+        "type": "intersection",
+        "of": [
+          "line-AC",
+          "line-BD"
+        ]
+      }
+    ],
+    "constraints": [
+      {
+        "type": "point-on-circle",
+        "point": "A",
+        "circle": "circle-O"
+      },
+      {
+        "type": "point-on-circle",
+        "point": "B",
+        "circle": "circle-O"
+      },
+      {
+        "type": "point-on-circle",
+        "point": "C",
+        "circle": "circle-O"
+      },
+      {
+        "type": "point-on-circle",
+        "point": "D",
+        "circle": "circle-O"
+      },
+      {
+        "type": "between",
+        "points": [
+          "A",
+          "E",
+          "C"
+        ]
+      },
+      {
+        "type": "between",
+        "points": [
+          "B",
+          "E",
+          "D"
+        ]
+      },
+      {
+        "type": "parallel-lines",
+        "lines": [
+          "line-AB",
+          "line-CD"
+        ]
+      },
+      {
+        "type": "alternate-interior-angles",
+        "angles": [
+          [
+            "B",
+            "A",
+            "E"
+          ],
+          [
+            "D",
+            "C",
+            "E"
+          ]
+        ],
+        "transversal": "line-AC",
+        "lines": [
+          "line-AB",
+          "line-CD"
+        ]
+      },
+      {
+        "type": "same-segment",
+        "chord": [
+          "A",
+          "D"
+        ],
+        "vertices": [
+          "B",
+          "C"
+        ]
+      }
+    ],
+    "dynamicConditions": []
+  },
+  "goal": {
+    "type": "angle-equality",
+    "angles": [
+      [
+        "B",
+        "A",
+        "E"
+      ],
+      [
+        "A",
+        "B",
+        "E"
+      ]
+    ]
+  },
+  "proofPlan": {
+    "status": "candidate-only",
+    "targetMethod": "parallel-angle + inscribed-angle + transitivity",
+    "candidateFacts": [
+      "AB ∥ CD より、∠BAE と ∠DCE は等しい。",
+      "同じ弦 AD に対する円周角より、∠DCE と ∠ABD は等しい。",
+      "E は BD 上にあるので、∠ABD と ∠ABE は同じ角である。"
+    ],
+    "warning": "proofPlan は推論の見通しであり、検証済みの証明ログではない。"
+  }
+}
