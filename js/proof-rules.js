@@ -1067,6 +1067,31 @@
       graph.get(left).add(right);
       graph.get(right).add(left);
     }
+
+    // Add same-ray angle equivalences to the graph, so they can participate
+    // in transitive chains alongside explicitly derived angle equalities.
+    const angleTerms = new Set();
+    for (const fact of known) {
+      for (const match of fact.matchAll(/angle\\([A-Z]{3}\\)/g)) angleTerms.add(canonicalTerm(match[0]));
+    }
+    for (const term of [first, second]) {
+      if (parseAngle(term)) angleTerms.add(canonicalTerm(term));
+    }
+    const angles = [...angleTerms].map(parseAngle).filter(Boolean);
+    const sameRayFacts = known.map((fact) => /^sameRay\\(([A-Z]),([A-Z]),([A-Z])\\)$/.exec(fact)).filter(Boolean);
+    const raysMatch = (a, b, vertex) => a === b || sameRayFacts.some((ray) =>
+      ray[1] === vertex && ((ray[2] === a && ray[3] === b) || (ray[2] === b && ray[3] === a)));
+    for (let i = 0; i < angles.length; i++) for (let j = i + 1; j < angles.length; j++) {
+      const a = angles[i], b = angles[j];
+      if (a.vertex !== b.vertex) continue;
+      if ((raysMatch(a.first, b.first, a.vertex) && raysMatch(a.last, b.last, a.vertex)) ||
+          (raysMatch(a.first, b.last, a.vertex) && raysMatch(a.last, b.first, a.vertex))) {
+        if (!graph.has(a.text)) graph.set(a.text, new Set());
+        if (!graph.has(b.text)) graph.set(b.text, new Set());
+        graph.get(a.text).add(b.text);
+        graph.get(b.text).add(a.text);
+      }
+    }
     const visited = new Set([first]);
     const queue = [first];
     while (queue.length) {
