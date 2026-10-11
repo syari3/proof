@@ -51,6 +51,12 @@
         add("side(" + canonicalSegment(a[0], a[1]) + ")=side(" + canonicalSegment(b[0], b[1]) + ")");
       } else if (constraint.type === "same-ray" && constraint.vertex && constraint.points && constraint.points.length === 2) {
         add("sameRay(" + constraint.vertex + "," + constraint.points[0] + "," + constraint.points[1] + ")");
+      } else if (constraint.type === "ray-inside-angle" && constraint.vertex &&
+          Array.isArray(constraint.points) && constraint.points.length === 3 &&
+          constraint.points.every((point) => typeof point === "string" && /^[A-Z]$/.test(point))) {
+        // points are [first side ray, interior ray, second side ray].
+        // The interior relation is explicit input; never infer it from collinearity alone.
+        add("rayInsideAngle(" + constraint.vertex + "," + constraint.points.join(",") + ")");
       } else if (constraint.type === "point-on-circle" && constraint.point && constraint.circle) {
         add("onCircle(" + constraint.point + ")");
       } else if (constraint.type === "same-segment" && Array.isArray(constraint.chord) && constraint.chord.length === 2 && Array.isArray(constraint.vertices) && constraint.vertices.length === 2) {
