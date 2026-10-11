@@ -75,26 +75,6 @@
     "constructions": [],
     "constraints": [
       {
-        "type": "point-on-circle",
-        "point": "A",
-        "circle": "circle-O"
-      },
-      {
-        "type": "point-on-circle",
-        "point": "B",
-        "circle": "circle-O"
-      },
-      {
-        "type": "point-on-circle",
-        "point": "C",
-        "circle": "circle-O"
-      },
-      {
-        "type": "point-on-circle",
-        "point": "D",
-        "circle": "circle-O"
-      },
-      {
         "type": "between",
         "points": [
           "A",
@@ -108,13 +88,6 @@
           "B",
           "E",
           "D"
-        ]
-      },
-      {
-        "type": "parallel-lines",
-        "lines": [
-          "line-AB",
-          "line-CD"
         ]
       },
       {
