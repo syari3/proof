@@ -87,8 +87,10 @@
         } else object.through.forEach((id, j) => pointKnown(id, path + ".through[" + j + "]"));
         if (object.parallelTo) {
           const target = objectById.get(object.parallelTo);
-          if (!objectKnown(object.parallelTo, path + ".parallelTo")) continue;
-          if (!target || !LINE_TYPES.has(target.type)) issue("parallel-target-not-line", path + ".parallelTo", "平行先は直線オブジェクトである必要があります。");
+          if (objectKnown(object.parallelTo, path + ".parallelTo") &&
+              (!target || !LINE_TYPES.has(target.type))) {
+            issue("parallel-target-not-line", path + ".parallelTo", "平行先は直線オブジェクトである必要があります。");
+          }
         } else issue("missing-parallel-target", path + ".parallelTo", "平行先の直線が必要です。");
       } else {
         issue("unsupported-object-type", path + ".type", "未対応の図形オブジェクト型です: " + String(object.type));
