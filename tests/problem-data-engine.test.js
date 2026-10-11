@@ -190,3 +190,12 @@ assert.ok(shizuoka2019Converted.facts.includes("onLine(G,line-DE)"));
 assert.equal(shizuoka2019Converted.unsupported.some((item) =>
   ["diameter", "perpendicular-lines", "intersection"].includes(item.type)), false,
   "直径・垂直・交点の条件型を変換できる");
+
+
+// The PDF solution starts with the same-chord angle pair. Keep the positional
+// assumptions explicit rather than inferring them from collinearity alone.
+assert.ok(shizuoka2019Converted.facts.includes("sameSegment(CD,A,E)"));
+assert.ok(shizuoka2019Converted.facts.includes("sameRay(E,D,G)"));
+const firstSimilarityAngle = Rules.prove(shizuoka2019Converted.facts, "angle(DAC)=angle(GEC)");
+assert.equal(firstSimilarityAngle.success, true,
+  "同じ弦DCの円周角とEからの同じ半直線を使って、相似の1組目の角を導く");
