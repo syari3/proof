@@ -115,7 +115,7 @@
     if (!Array.isArray(pointIds) || !points || !center || pointIds.some(id => !points[id])) return null;
     return pointIds.map(id => ({id,angle:polar(points[id],center)})).sort((a,b)=>a.angle-b.angle).map(x=>x.id);
   }
-  const api = Object.freeze({validate, angle, minorAngle, polar, cyclicOrder, arcSweep});
+  const api = Object.freeze({validate, angle, minorAngle, polar, cyclicOrder});
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   root.AngleArcModel = api;
 })(typeof globalThis !== "undefined" ? globalThis : this);
