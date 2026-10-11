@@ -195,13 +195,13 @@
     "warning": "資料に記録された解法方針であり、エンジン実行結果と数学的妥当性の確認は別に扱う。"
   },
   "validation": {
-    "status": "not-proved-with-current-rules",
+    "status": "angle-sum-cancellation-added-awaiting-ci-verification",
     "structuralChecks": "passed by adapter execution; unsupported conditions list is empty",
-    "mathematicalChecks": "engine derived several relevant angle facts but did not complete the angle-algebra chain needed to prove CB=CE",
+    "mathematicalChecks": "a general three-angle-sum cancellation rule has been added; confirm its end-to-end result with CI before marking this case proved",
     "openQuestions": [
       "原問題の本文・図と、Dが線分AC上にあることを再照合する。",
       "B,D,Eが同じ半直線上にあること、およびA,Eが弦BCに対して同じ側にあることを原図で確認する。",
-      "推論エンジンは三角形の内角の和から「同じ角を2回含む式」を整理し、等しい角を代入して角の等しさを導く一般的な代数処理に未対応の可能性がある。"
+      "三項の内角和どうしを比較し、2組の等しい角を消去する一般ルールを追加した。CIでエンドツーエンドの証明が成功することを確認する。"
     ]
   }
 }
