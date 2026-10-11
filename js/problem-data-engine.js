@@ -220,27 +220,78 @@
     };
   }
 
+  // Remove one explicitly supplied input item at a time and rerun the proof.
+  // This tests necessity relative to the current encoded problem and rule set,
+  // not mathematical necessity in every possible proof.
+  function analyzeConditionNecessity(problem, proofRules, maxSteps = 100) {
+    const collections = [
+      ["geometry.constraints", problem.geometry && problem.geometry.constraints],
+      ["geometry.dynamicConditions", problem.geometry && problem.geometry.dynamicConditions],
+      ["geometry.objects", problem.geometry && problem.geometry.objects],
+      ["geometry.constructions", problem.geometry && problem.geometry.constructions],
+      ["geometry.triangles", problem.geometry && problem.geometry.triangles],
+      ["proofFacts", problem.proofFacts]
+    ];
+    const candidates = [];
+    for (const [path, items] of collections) {
+      if (!Array.isArray(items)) continue;
+      items.forEach((item, index) => {
+        const clone = JSON.parse(JSON.stringify(problem));
+        const target = path === "proofFacts" ? clone : path.split(".").reduce((node, key) => node && node[key], clone);
+        target[path === "proofFacts" ? "proofFacts" : path.split(".").pop()].splice(index, 1);
+        const convertedWithoutItem = convert(clone);
+        const proofWithoutItem = convertedWithoutItem.goal
+          ? proofRules.prove(convertedWithoutItem.facts, convertedWithoutItem.goal, maxSteps)
+          : { success: false, reason: "unsupported-goal" };
+        candidates.push({
+          id: path + "[" + index + "]",
+          source: path,
+          index,
+          type: item && item.type ? item.type : (path === "proofFacts" ? "proofFacts" : "未分類"),
+          item,
+          status: proofWithoutItem.success ? "not-required-by-current-proof" : "required-by-current-proof",
+          proofStillSucceeds: Boolean(proofWithoutItem.success),
+          reason: proofWithoutItem.success
+            ? "この項目を1つだけ外しても、現在のルールで証明できました。"
+            : "この項目を1つだけ外すと、現在のルールでは証明できませんでした。",
+          proofReason: proofWithoutItem.reason || null
+        });
+      });
+    }
+    return {
+      method: "single-item-removal",
+      baselineProved: true,
+      testedCount: candidates.length,
+      candidates,
+      note: "各項目を1つずつ外して再実行する検査です。「必要」は現在の問題データと推論ルールに対する必要性であり、数学的に唯一の証明経路だと保証するものではありません。"
+    };
+  }
+
   function run(problem, proofRules, maxSteps = 100) {
     if (!proofRules || typeof proofRules.prove !== "function") {
       throw new TypeError("ProofRules.prove が必要です。");
     }
     const converted = convert(problem);
     if (!converted.goal) {
-      return { success: false, status: "unsupported-goal", converted, proof: null };
+      return { success: false, status: "unsupported-goal", converted, proof: null, conditionAnalysis: null };
     }
     const proof = proofRules.prove(converted.facts, converted.goal, maxSteps);
+    const conditionAnalysis = proof.success
+      ? analyzeConditionNecessity(problem, proofRules, maxSteps)
+      : null;
     return {
       success: proof.success,
       status: proof.success ? "proved" : "not-proved-with-current-rules",
       converted,
       proof,
+      conditionAnalysis,
       warning: proof.success
-        ? "登録済みルールで目標を導出しました。問題条件そのものの幾何学的整合性は別途検証が必要です。"
+        ? "登録済みルールで目標を導出しました。条件チェックは各入力項目を1つずつ外して再実行しています。問題条件そのものの幾何学的整合性は別途検証が必要です。"
         : "証明できないことは、命題が偽という意味ではありません。条件変換または推論ルールが不足している可能性があります。"
     };
   }
 
-  const api = Object.freeze({ convert, run, canonicalAngle, canonicalSegment });
+  const api = Object.freeze({ convert, run, analyzeConditionNecessity, canonicalAngle, canonicalSegment });
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   root.ProblemDataEngine = api;
 })(typeof globalThis !== "undefined" ? globalThis : this);
