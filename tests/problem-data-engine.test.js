@@ -107,17 +107,12 @@ assert.deepEqual(GeometryRelations.derive([]), []);
 
 const sampleFile = require("../data/problem-examples/shizuoka-2025-proof-7-1.json");
 const sampleResult = Adapter.run(sampleFile, Rules);
-assert.equal(sampleResult.status, "proved",
-  "補角の関係と円周角から目標の相似を導く");
-assert.equal(sampleResult.success, true);
-assert.equal(sampleResult.proof.steps.at(-1).ruleId, "triangle.similarity-aa",
-  "最後にAA相似を適用する");
-assert.ok(sampleResult.proof.steps.some((step) => step.ruleId === "angle.addition"),
-  "角の加法ルールを途中で利用する");
-assert.ok(sampleResult.proof.steps.some((step) => step.ruleId === "angle.supplementary-cancellation"),
-  "等しい補角から必要な角の等しさを導く");
-assert.ok(sampleResult.proof.steps.some((step) => step.ruleId === "geometry.same-ray-angle"),
-  "同じ半直線による角の表記を利用する");
+// This sample proof depends on the opposite-segment inscribed-angle sum rule,
+// which is intentionally disabled. Keep the limitation explicit instead of
+// letting the old expectation make CI fail or silently re-enable that rule.
+assert.equal(sampleResult.status, "not-proved-with-current-rules",
+  "無効化した反対側の円周角の補角ルールに依存する問題は未証明として扱う");
+assert.equal(sampleResult.success, false);
 
  // Explicit circle incidence, parallel-through-point construction, and the
  // selected moving-point equality must reach the inference facts.
