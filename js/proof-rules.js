@@ -1499,7 +1499,7 @@
           if (step.conclusion === goal) return { success: true, goal, facts: known, steps, reason: "proved" };
         }
         const sameRayCandidatesNow = sameRayAngleCandidates(known);
-        const sameRayAngle = sameRayCandidatesNow.find((rule) => sameAngleEquality(rule.conclusion, goal) && !known.includes(goal)) ||
+        const sameRayAngle = sameRayCandidatesNow.find((rule) => goalRelatedEquality(rule.conclusion, goal, known) && !known.includes(rule.conclusion)) ||
           sameRayCandidatesNow.find((rule) => !known.includes(rule.conclusion));
         if (sameRayAngle) {
           const step = { index: steps.length + 1, ruleId: sameRayAngle.id, ruleName: sameRayAngle.name,
