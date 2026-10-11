@@ -4,6 +4,8 @@
 (function (root) {
   "use strict";
   const DEFAULT_TOLERANCE = 1e-7;
+  const AngleArcModel = typeof module !== "undefined" && module.exports
+    ? require("./angle-arc-model.js") : root.AngleArcModel;
 
   function validate(problem, realization, options) {
     const tolerance = options && Number.isFinite(options.tolerance) && options.tolerance > 0
@@ -142,10 +144,25 @@
           check(path,c.type==="same-segment"?product>tolerance*tolerance:product< -tolerance*tolerance,"点が弦の同じ側／反対側にありません。",product);break;
         }
         case "corresponding-angles": case "alternate-interior-angles": case "inscribed-angle": case "equal-arcs":
-          defer("constraint-needs-angle-arc-model",path,"角・弧の向きや弧の選択を扱うモデルが未実装です。");break;
+          // Evaluated by AngleArcModel below when available.
+          break;
         default: defer("unsupported-constraint",path,"未対応の条件型: "+String(c.type));
       }
     });
+
+    const angleArcConstraints = (problem.geometry.constraints || []).filter(c =>
+      c && ["corresponding-angles","alternate-interior-angles","inscribed-angle","equal-arcs"].includes(c.type));
+    if (angleArcConstraints.length) {
+      if (AngleArcModel && typeof AngleArcModel.validate === "function") {
+        const angleArc = AngleArcModel.validate(problem, realization, {tolerance});
+        errors.push(...angleArc.errors);
+        pending.push(...angleArc.pending);
+        checked.push(...angleArc.checked);
+      } else {
+        angleArcConstraints.forEach((c, i) => defer("constraint-needs-angle-arc-model",
+          "geometry.constraints["+i+"]", "角・弧の検査モデルを読み込めません。"));
+      }
+    }
 
     if(problem.goal&&problem.goal.type==="triangle-similarity"&&Array.isArray(problem.goal.triangles)) {
       problem.goal.triangles.forEach((tri,i)=>{
