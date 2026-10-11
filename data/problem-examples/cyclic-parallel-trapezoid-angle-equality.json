@@ -145,14 +145,27 @@
         ]
       },
       {
-        "type": "same-segment",
-        "chord": [
+        "type": "inscribed-angle",
+        "angle": [
           "A",
+          "B",
           "D"
         ],
-        "vertices": [
-          "B",
-          "C"
+        "arc": [
+          "A",
+          "D"
+        ]
+      },
+      {
+        "type": "inscribed-angle",
+        "angle": [
+          "D",
+          "C",
+          "A"
+        ],
+        "arc": [
+          "D",
+          "A"
         ]
       }
     ],
@@ -178,8 +191,8 @@
     "targetMethod": "parallel-angle + inscribed-angle + transitivity",
     "candidateFacts": [
       "AB ∥ CD より、∠BAE と ∠DCE は等しい。",
-      "同じ弦 AD に対する円周角より、∠DCE と ∠ABD は等しい。",
-      "E は BD 上にあるので、∠ABD と ∠ABE は同じ角である。"
+      "同じ弧 AD に対する円周角より、∠ABD と ∠DCA は等しい。",
+      "E は BD 上、AC 上にあるので、角を同じ半直線上の点で表し直せる。"
     ],
     "warning": "proofPlan は推論の見通しであり、検証済みの証明ログではない。"
   }
