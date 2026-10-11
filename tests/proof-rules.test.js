@@ -702,3 +702,24 @@ const sameRayAngleSubstitution = rules.prove(
 assert.equal(sameRayAngleSubstitution.success, true, "同じ半直線上の点による角の置き換え");
 const missingRay = rules.prove(["angle(APB)"], "angle(GPB)=angle(APB)");
 assert.equal(missingRay.success, false, "位置関係なしに角の辺を置き換えない");
+
+
+const supplementaryAngleProof = rules.prove(
+  [
+    "onCircle(A)", "onCircle(B)", "onCircle(C)", "onCircle(D)",
+    "oppositeSegment(AC,B,D)",
+    "oppositeRay(G,A,P)",
+    "angle(ADC)=angle(BGA)"
+  ],
+  "angle(ABC)=angle(BGP)"
+);
+assert.equal(supplementaryAngleProof.success, true, "等しい補角から残りの角の等しさを導く");
+assert.ok(supplementaryAngleProof.steps.some((step) => step.ruleId === "circle.opposite-segment-supplementary-angles"));
+assert.ok(supplementaryAngleProof.steps.some((step) => step.ruleId === "angle.linear-pair-supplementary"));
+assert.ok(supplementaryAngleProof.steps.some((step) => step.ruleId === "angle.supplementary-cancellation"));
+const missingOppositeSegment = rules.prove(
+  ["oppositeRay(G,A,P)", "angle(ADC)=angle(BGA)"],
+  "angle(ABC)=angle(BGP)"
+);
+assert.equal(missingOppositeSegment.success, false, "反対側の位置条件なしに円周角の補角関係を仮定しない");
+console.log("✓ 補角の等しさから角の等しさを導く");
