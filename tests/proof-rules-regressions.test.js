@@ -554,14 +554,13 @@ const supplementaryAngleProof = rules.prove(
   ],
   "angle(ABC)=angle(BGP)"
 );
-assert.equal(supplementaryAngleProof.success, true, "等しい補角から残りの角の等しさを導く");
-assert.ok(supplementaryAngleProof.steps.some((step) => step.ruleId === "circle.opposite-segment-supplementary-angles"));
-assert.ok(supplementaryAngleProof.steps.some((step) => step.ruleId === "angle.linear-pair-supplementary"));
-assert.ok(supplementaryAngleProof.steps.some((step) => step.ruleId === "angle.supplementary-cancellation"));
+// The opposite-segment supplementary-angle inference is intentionally disabled.
+assert.equal(supplementaryAngleProof.success, false, "無効化した円周角の補角ルールに依存する証明は成功扱いにしない");
+assert.equal(supplementaryAngleProof.steps.some((step) => step.ruleId === "circle.opposite-segment-supplementary-angles"), false);
 const missingOppositeSegment = rules.prove(
   ["oppositeRay(G,A,P)", "angle(ADC)=angle(BGA)"],
   "angle(ABC)=angle(BGP)"
 );
 assert.equal(missingOppositeSegment.success, false, "反対側の位置条件なしに円周角の補角関係を仮定しない");
-console.log("✓ 補角の等しさから角の等しさを導く");
+console.log("✓ 反対側の円周角の補角ルールを自動適用しない");
 
