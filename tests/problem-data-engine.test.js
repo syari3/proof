@@ -107,11 +107,17 @@ assert.deepEqual(GeometryRelations.derive([]), []);
 
 const sampleFile = require("../data/problem-examples/shizuoka-2025-proof-7-1.json");
 const sampleResult = Adapter.run(sampleFile, Rules);
-assert.equal(sampleResult.status, "not-proved-with-current-rules",
-  "診断中は未証明状態を明示する");
-assert.equal(sampleResult.success, false);
+assert.equal(sampleResult.status, "proved",
+  "補角の関係と円周角から目標の相似を導く");
+assert.equal(sampleResult.success, true);
+assert.equal(sampleResult.proof.steps.at(-1).ruleId, "triangle.similarity-aa",
+  "最後にAA相似を適用する");
 assert.ok(sampleResult.proof.steps.some((step) => step.ruleId === "angle.addition"),
   "角の加法ルールを途中で利用する");
+assert.ok(sampleResult.proof.steps.some((step) => step.ruleId === "angle.supplementary-cancellation"),
+  "等しい補角から必要な角の等しさを導く");
+assert.ok(sampleResult.proof.steps.some((step) => step.ruleId === "geometry.same-ray-angle"),
+  "同じ半直線による角の表記を利用する");
 
  // Explicit circle incidence, parallel-through-point construction, and the
  // selected moving-point equality must reach the inference facts.
