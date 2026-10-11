@@ -197,6 +197,13 @@ assert.equal(shizuoka2019Converted.unsupported.some((item) =>
 const shizuoka2019AngleConverted = Adapter.convert(shizuoka2019);
 assert.ok(shizuoka2019AngleConverted.facts.includes("sameSegment(CD,A,E)"));
 assert.ok(shizuoka2019AngleConverted.facts.includes("sameRay(E,D,G)"));
+assert.ok(shizuoka2019AngleConverted.facts.includes("sameSegment(AB,D,C)"));
+const shizuoka2019SecondAngle = Rules.prove(
+  shizuoka2019AngleConverted.facts,
+  "angle(ADB)=angle(ACB)"
+);
+assert.equal(shizuoka2019SecondAngle.success, true,
+  "同じ弦ABに対する円周角から2組目の角の等しさを導く");
 const shizuoka2019FirstAngle = Rules.prove(
   shizuoka2019AngleConverted.facts,
   "angle(DAC)=angle(GEC)"
