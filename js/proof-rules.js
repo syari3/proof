@@ -1565,8 +1565,8 @@
           };
           known.push(step.conclusion); sourceByFact.set(step.conclusion, { type: "step", index: step.index });
           steps.push(step); changed = true;
-          if (goalRelatedEquality(step.conclusion, goal, known)) {
-            // Keep the derived equality as an intermediate fact; AA similarity consumes it next.
+          if (step.conclusion === goal || (parseEquality(goal) && sameAngleEquality(step.conclusion, goal))) {
+            return { success: true, goal, facts: known, steps, reason: "proved" };
           }
         }
 
