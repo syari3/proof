@@ -12,6 +12,8 @@ console.log(JSON.stringify({
   status: result.status,
   goal: result.converted.goal,
   factCount: result.converted.facts.length,
+  rayFacts: result.converted.facts.filter((fact) => /^(sameRay|oppositeRay|oppositeSegment)\\(/.test(fact)),
+  supplementaryFacts: result.proof.facts.filter((fact) => fact.includes("+") && fact.endsWith("=180")),
   unsupported: result.converted.unsupported,
   targetRelatedFacts: result.proof.facts.filter((fact) =>
     /angle\((AFE|ABC|AEF|ACB|BPG|APB|GPB|BAG|AGB|ABG|CBD|DBG)\)|similar\(AFE,BGP\)/.test(fact)
