@@ -9,7 +9,7 @@ const samples = {
       { statement: "∠ABC = ∠BCA", explanation: "二等辺三角形では、等しい辺に対する底角は等しくなります。", reason: "二等辺三角形の底角" }
     ],
     diagram: "isosceles",
-    facts: ["side(AB)=side(AC)"],
+    facts: ["triangle(ABC)", "side(AB)=side(AC)"],
     expectedConclusion: "angle(ABC)=angle(BCA)"
   },
   parallel: {
@@ -48,7 +48,7 @@ const samples = {
       { statement: "∠BCA = ∠DEF", explanation: "問題文で与えられた条件です。", reason: "仮定" }
     ],
     diagram: "isosceles",
-    facts: ["side(AB)=side(AC)", "angle(BCA)=angle(DEF)"],
+    facts: ["triangle(ABC)", "side(AB)=side(AC)", "angle(BCA)=angle(DEF)"],
     expectedConclusion: "angle(ABC)=angle(DEF)"
   },
   similarity: {

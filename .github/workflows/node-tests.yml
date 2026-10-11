@@ -1,0 +1,20 @@
+name: Node.js tests
+on:
+  push:
+    branches: [main, theorem-catalog-foundation]
+  pull_request:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Run test files
+        run: |
+          set -e
+          for test_file in tests/*.test.js; do
+            echo "==> $test_file"
+            node "$test_file"
+          done

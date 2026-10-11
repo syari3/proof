@@ -92,3 +92,21 @@ footer a:hover { text-decoration: underline; }
   .roadmap-card { padding: 13px; }
 }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition-duration: .01ms !important; scroll-behavior: auto !important; } }
+
+/* Real-exam proof walkthrough */
+.section-intro { margin: 8px 0 0; color: var(--muted); font-size: 13px; }
+.exam-note { margin-top: 16px; padding: 12px 14px; border-radius: 10px; background: #f7f8fc; color: #626d81; font-size: 12px; }
+.proof-step-content { min-width: 0; flex: 1; }
+.proof-step-content details { margin-top: 10px; color: var(--muted); font-size: 12px; }
+.proof-step-content summary { cursor: pointer; color: var(--blue-dark); font-weight: 700; }
+.premise-list { margin: 8px 0 0; padding-left: 20px; }
+.premise-list li { display: list-item; border: 0; padding: 3px 0; }
+.validation-warning { background: #fff5e8; color: #8a4b10; }
+
+.proof-outline { list-style: none; padding: 0; margin: 18px 0 22px; display: grid; gap: 12px; }
+.proof-outline li { display: flex; align-items: flex-start; gap: 12px; padding: 15px; border: 1px solid var(--line); border-radius: 12px; background: #fff; }
+.proof-outline strong { font-size: 14px; }
+.proof-outline p { margin: 4px 0 0; color: var(--muted); font-size: 13px; }
+.trace-details { border-top: 1px solid var(--line); padding-top: 16px; }
+.trace-details > summary { cursor: pointer; color: var(--blue-dark); font-weight: 750; }
+.trace-details .section-intro { margin-bottom: 12px; }
