@@ -375,6 +375,7 @@
   // particular chain of angle names.
   function findTransitiveEquality(known, goal) {
     const equalities = known.map((fact) => ({ fact, equality: parseEquality(fact) })).filter((item) => item.equality);
+    let fallback = null;
     for (let i = 0; i < equalities.length; i++) {
       for (let j = i + 1; j < equalities.length; j++) {
         const first = equalities[i], second = equalities[j];
@@ -390,13 +391,16 @@
           if (goal === reverse && !known.includes(reverse)) {
             return { premises: [first.fact, second.fact], conclusion: reverse };
           }
-          if (!known.includes(conclusion) && !known.includes(reverse)) {
-            return { premises: [first.fact, second.fact], conclusion };
-          }
+          if (known.includes(conclusion) || known.includes(reverse)) continue;
+          const candidate = { premises: [first.fact, second.fact], conclusion };
+          // When the goal is a similarity, prefer equalities that establish one
+          // of its corresponding angle pairs over unrelated transitive facts.
+          if (goalRelatedEquality(conclusion, goal, known)) return candidate;
+          if (!fallback) fallback = candidate;
         }
       }
     }
-    return null;
+    return fallback;
   }
   function sameAngleExpression(first, second) {
     const a = parseAngle(first), b = parseAngle(second);
