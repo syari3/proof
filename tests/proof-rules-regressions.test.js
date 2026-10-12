@@ -441,6 +441,19 @@ assert.ok(wholeAngleAdditionSubstitution.steps.some((step) =>
 ));
 console.log("✓ 角の加法の左辺への代入");
 
+const reversedNotationWholeAngleSubstitution = rules.prove(
+  ["rayInsideAngle(A,F,E,G)", "angle(GAF)=angle(BAG)"],
+  "angle(BAG)=angle(FAE)+angle(EAG)"
+);
+assert.equal(reversedNotationWholeAngleSubstitution.success, true,
+  "角の両端の表記順が逆でも、同じ角として左辺への代入に使える");
+assert.ok(reversedNotationWholeAngleSubstitution.steps.some((step) =>
+  step.ruleId === "angle.addition-substitution" &&
+  step.conclusion === "angle(BAG)=angle(FAE)+angle(EAG)"
+));
+console.log("✓ 角の表記順をまたぐ加法代入");
+
+
 const derivedWholeAngleSubstitution = rules.derive([
   "rayInsideAngle(A,F,E,G)",
   "angle(FAG)=angle(FAE)+angle(EAG)",
