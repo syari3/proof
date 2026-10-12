@@ -136,6 +136,12 @@
         <p class="engine-meta"><strong>証明すること：</strong> <span id="engine-goal">—</span></p>
       </div>
       <div class="engine-toolbar">
+        <label for="engine-problem-select">年度
+          <select id="engine-problem-select">
+            <option value="2025" selected>2025年度（第7問(1)・相似）</option>
+            <option value="2024">2024年度（第7問(1)・PA＝PC）</option>
+          </select>
+        </label>
         <button id="engine-run" class="engine-run-button" type="button">推論エンジンを実行</button>
         <span id="engine-summary" class="engine-meta" aria-live="polite">実行前</span>
       </div>
@@ -173,6 +179,7 @@
   <script>
     document.addEventListener("DOMContentLoaded", async () => {
       const runButton = document.getElementById("engine-run");
+      const problemSelect = document.getElementById("engine-problem-select");
       const promptNode = document.getElementById("engine-problem-text");
       const goalNode = document.getElementById("engine-goal");
       const summaryNode = document.getElementById("engine-summary");
@@ -250,24 +257,60 @@
         statusNode.dataset.state = state || "neutral";
       };
 
-      try {
-        const response = await fetch("./data/problem-examples/shizuoka-2025-proof-7-1.json");
-        if (!response.ok) throw new Error("問題データを読み込めませんでした（HTTP " + response.status + "）。");
-        problem = await response.json();
-        promptNode.textContent = problem.prompt || "問題文がありません。";
-        if (problem.goal && problem.goal.type === "triangle-similarity" && Array.isArray(problem.goal.triangles)) {
-          goalNode.textContent = "△" + problem.goal.triangles[0].join("") + " ∽ △" + problem.goal.triangles[1].join("");
-        } else if (problem.goal && problem.goal.type === "angle-equality" && Array.isArray(problem.goal.angles)) {
-          goalNode.textContent = problem.goal.angles.map((angle) => "∠" + angle.join("")).join(" = ");
-        } else {
-          goalNode.textContent = problem.title || "目標データを確認してください";
-        }
-        setStatus("問題を読み込みました。ボタンを押すと推論エンジンを実行します。");
-      } catch (error) {
-        setStatus(error.message || "問題データの読み込みに失敗しました。", "failure");
+      const resetRunOutput = () => {
+        summaryNode.textContent = "実行前";
+        stepsNode.replaceChildren();
+        const initialStep = document.createElement("li");
+        initialStep.className = "engine-meta";
+        initialStep.textContent = "まだ実行していません。";
+        stepsNode.append(initialStep);
+        notesNode.replaceChildren();
+        notesNode.hidden = true;
+        conditionListNode.replaceChildren();
+        const initialCondition = document.createElement("li");
+        initialCondition.className = "engine-meta";
+        initialCondition.textContent = "未チェック";
+        conditionListNode.append(initialCondition);
+        conditionSummaryNode.textContent = "証明を実行すると条件チェックを表示します。";
+      };
+
+      const loadProblem = async () => {
         runButton.disabled = true;
-        return;
-      }
+        problem = null;
+        resetRunOutput();
+        setStatus("問題データを読み込んでいます。");
+        const year = problemSelect.value;
+        const path = year === "2024"
+          ? "./data/problem-examples/shizuoka-2024-proof-7-1.json"
+          : "./data/problem-examples/shizuoka-2025-proof-7-1.json";
+        try {
+          const response = await fetch(path);
+          if (!response.ok) throw new Error("問題データを読み込めませんでした（HTTP " + response.status + "）。");
+          const loadedProblem = await response.json();
+          // Ignore a slower response if the user changed the year while loading.
+          if (problemSelect.value !== year) return;
+          problem = loadedProblem;
+          promptNode.textContent = problem.prompt || "問題文がありません。";
+          if (problem.goal && problem.goal.type === "triangle-similarity" && Array.isArray(problem.goal.triangles)) {
+            goalNode.textContent = "△" + problem.goal.triangles[0].join("") + " ∽ △" + problem.goal.triangles[1].join("");
+          } else if (problem.goal && problem.goal.type === "angle-equality" && Array.isArray(problem.goal.angles)) {
+            goalNode.textContent = problem.goal.angles.map((angle) => "∠" + angle.join("")).join(" = ");
+          } else if (problem.goal && problem.goal.type === "segment-equality" && Array.isArray(problem.goal.segments)) {
+            goalNode.textContent = problem.goal.segments.map((segment) => segment.join("")).join(" = ");
+          } else {
+            goalNode.textContent = problem.title || "目標データを確認してください";
+          }
+          setStatus(year + "年度の問題を読み込みました。ボタンを押すと推論エンジンを実行します。");
+          runButton.disabled = false;
+        } catch (error) {
+          if (problemSelect.value !== year) return;
+          setStatus(error.message || "問題データの読み込みに失敗しました。", "failure");
+          runButton.disabled = true;
+        }
+      };
+
+      problemSelect.addEventListener("change", loadProblem);
+      await loadProblem();
 
       runButton.addEventListener("click", () => {
         runButton.disabled = true;
