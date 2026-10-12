@@ -210,7 +210,7 @@
         if (!resolved) {
           const resolve = (ends) => Array.isArray(ends) && ends.length === 2
             ? (problem.geometry.objects || []).filter((o) => o.type === "line" && o.id &&
-                Array.isArray(o.through) && ends.every((p) => o.through.includes(p)).map((o) => o.id)
+                Array.isArray(o.through) && ends.every((p) => o.through.includes(p))).map((o) => o.id)
             : [];
           const ids = Array.isArray(item.lines) ? item.lines.map(resolve) : [];
           if (ids.length === 2 && ids.every((list) => list.length === 1) && ids[0][0] !== ids[1][0]) {
