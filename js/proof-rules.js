@@ -1211,7 +1211,7 @@
 
   // Forward-chain from the supplied facts, recording every inference.
   // This is a bounded rule engine, not a complete geometry prover.
-  function prove(facts, goal, maxSteps = 100) {
+  function prove(facts, goal, maxSteps = 200) {
     if (!Array.isArray(facts) || !facts.every((fact) => typeof fact === "string")) {
       throw new TypeError("facts は文字列の配列で指定してください。");
     }
@@ -1776,7 +1776,7 @@
   const api = Object.freeze({
     list: () => rules.map((rule) => ({ ...rule, premises: [...rule.premises] })),
     derive: (facts) => derive(facts).map(applyCatalogMetadata),
-    prove: (facts, goal, maxSteps = 100) => {
+    prove: (facts, goal, maxSteps = 200) => {
       const result = prove(facts, goal, maxSteps);
       return {
         ...result,
