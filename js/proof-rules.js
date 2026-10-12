@@ -977,37 +977,42 @@
 
   // Substitute equal angles/segments into a previously derived addition equality.
   // Supported forms are measure = measure + measure; no numerical algebra is assumed.
+  // Substitute equal angles/segments into any term of an addition equality:
+  // the whole on the left, or either addend on the right.
+  // This supports both angle addition and segment addition without mixing types.
   function additionSubstitutionCandidates(known) {
     const results = [];
-    const additionPattern = /^(angle\([A-Z]{3}\)|side\([A-Z]{2}\))=(angle\([A-Z]{3}\)|side\([A-Z]{2}\))\+(angle\([A-Z]{3}\)|side\([A-Z]{2}\))$/;
+    const seen = new Set();
+    const additionPattern = /^(angle\\([A-Z]{3}\\)|side\\([A-Z]{2}\\))=(angle\\([A-Z]{3}\\)|side\\([A-Z]{2}\\))\\+(angle\\([A-Z]{3}\\)|side\\([A-Z]{2}\\))$/;
     const equalities = known.map((fact) => ({ fact, equality: parseEquality(fact) }))
       .filter((item) => item.equality);
     for (const fact of known) {
       const match = additionPattern.exec(fact);
       if (!match) continue;
       const [, whole, first, second] = match;
-      const parts = [first, second];
+      const terms = [whole, first, second];
       for (const equality of equalities) {
         const left = equality.equality.left;
         const right = equality.equality.right;
-        const alternatives = [[left, right], [right, left]];
-        for (let index = 0; index < parts.length; index++) {
-          for (const [from, to] of alternatives) {
-            if (parts[index] !== from) continue;
-            const replaced = [...parts];
+        for (const [from, to] of [[left, right], [right, left]]) {
+          // Use the equality only where the exact term occurs. Repeated proof
+          // rounds can apply chained equalities one step at a time.
+          for (let index = 0; index < terms.length; index++) {
+            if (terms[index] !== from) continue;
+            const replaced = [...terms];
             replaced[index] = to;
-            // Angles cannot be substituted for lengths, and vice versa.
-            if (whole.startsWith("angle(") !== replaced.every((part) => part.startsWith("angle("))) continue;
-            if (whole.startsWith("side(") !== replaced.every((part) => part.startsWith("side("))) continue;
-            const conclusion = whole + "=" + replaced[0] + "+" + replaced[1];
-            if (known.includes(conclusion)) continue;
+            const kind = replaced[0].startsWith("angle(") ? "angle" : "side";
+            if (replaced.some((term) => (term.startsWith("angle(") ? "angle" : "side") !== kind)) continue;
+            const conclusion = replaced[0] + "=" + replaced[1] + "+" + replaced[2];
+            if (known.includes(conclusion) || seen.has(conclusion)) continue;
+            seen.add(conclusion);
             results.push({
-              id: whole.startsWith("angle(") ? "angle.addition-substitution" : "segment.addition-substitution",
-              name: whole.startsWith("angle(") ? "角の加法への等式の代入" : "線分の加法への等式の代入",
+              id: kind === "angle" ? "angle.addition-substitution" : "segment.addition-substitution",
+              name: kind === "angle" ? "角の加法への等式の代入" : "線分の加法への等式の代入",
               premises: [fact, equality.fact],
               conclusion,
-              explain: "すでに等しいと分かっている角（線分）を、加法の式に代入する。",
-              category: whole.startsWith("angle(") ? "angle" : "segment"
+              explain: "等しい角（線分）は、加法の式の左辺・右辺のどの項にも代入できる。",
+              category: kind
             });
           }
         }
