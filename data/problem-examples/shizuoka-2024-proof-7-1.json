@@ -34,7 +34,7 @@
         ]
       },
       {
-        "id": "line-BE",
+        "id": "line-BD",
         "type": "line",
         "through": [
           "B",
@@ -110,7 +110,7 @@
         "type": "intersection",
         "of": [
           "line-AC",
-          "line-BE"
+          "line-BD"
         ]
       },
       {
@@ -118,7 +118,7 @@
         "type": "circle-line-intersection",
         "of": [
           "circle-O",
-          "line-BE"
+          "line-BD"
         ],
         "role": "other-intersection-after-B"
       },
@@ -127,7 +127,7 @@
         "type": "intersection",
         "of": [
           "line-CP",
-          "line-BE"
+          "line-BD"
         ]
       }
     ],
