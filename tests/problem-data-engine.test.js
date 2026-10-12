@@ -106,7 +106,7 @@ assert.equal(verticalResult.proof.steps.at(-1).ruleId, "angle.vertical-angles");
 // The exterior-angle theorem must be used by prove(), not only exposed by derive().
 const exteriorAngleProof = Rules.prove(
   ["triangle(ABC)", "extends(B,C,D)"],
-  "angle(ACD)=angle(CAB)+angle(ABC)"
+  "angle(ACD)=angle(BAC)+angle(ABC)"
 );
 assert.equal(exteriorAngleProof.success, true, "三角形の外角は隣り合わない2つの内角の和");
 assert.equal(exteriorAngleProof.steps.at(-1).ruleId, "triangle.exterior-angle");
