@@ -320,6 +320,14 @@ assert.equal(shizuoka2026Converted.unsupported.some((item) =>
   item.location === "goal" && item.type === "triangle-congruence"), false,
   "三角形の合同目標は未対応警告にしない");
 
+// End-to-end regression: the actual 2026 Shizuoka item should prove, not merely convert its goal.
+// This exercises the stated moving-point angle condition through ASA matching.
+const shizuoka2026Proof = Adapter.run(shizuoka2026, Rules, 200, { analyzeConditions: false });
+assert.equal(shizuoka2026Proof.success, true,
+  "2026年度静岡県の合同問題を推論エンジンで証明できる");
+assert.ok(shizuoka2026Proof.proof.steps.some((step) => step.ruleId === "triangle.congruence-asa"),
+  "2026年度の問題でASA合同条件を使う");
+
 // Parallel endpoint pairs must resolve to the declared line IDs. Do not emit
 // malformed facts such as parallel(A,C,B,D) from JavaScript array coercion.
 assert.ok(shizuoka2026Converted.facts.includes("parallel(line-AC,line-BD)"),
