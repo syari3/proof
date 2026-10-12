@@ -267,3 +267,15 @@ assert.equal(shizuoka2026Converted.unsupported.some((item) =>
 assert.equal(shizuoka2026Converted.unsupported.some((item) =>
   item.location === "goal" && item.type === "triangle-congruence"), false,
   "三角形の合同目標は未対応警告にしない");
+
+// Parallel endpoint pairs must resolve to the declared line IDs. Do not emit
+// malformed facts such as parallel(A,C,B,D) from JavaScript array coercion.
+assert.ok(shizuoka2026Converted.facts.includes("parallel(line-AC,line-BD)"),
+  "平行条件の端点ペアを直線オブジェクトIDへ変換する");
+assert.equal(shizuoka2026Converted.facts.includes("parallel(A,C,B,D)"), false,
+  "点の配列を直線名として誤変換しない");
+assert.ok(shizuoka2026Converted.facts.includes("intersects(line-DC,line-AC)"),
+  "共通する点Cから直線DCとACの交わりを認識する");
+assert.ok(shizuoka2026Converted.facts.includes("intersects(line-DC,line-BD)"),
+  "共通する点Dから直線DCとBDの交わりを認識する");
+
