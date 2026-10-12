@@ -298,6 +298,23 @@
       if (pairLines.every(Boolean) && new Set(pairLines).size === 3) add('triangle(' + [a, b, c].join('') + ')');
     }
 
+    // Explicit orderedThrough lists are an input contract for the order of points
+    // along a line. Generate every between(A,B,C) relation whose middle point
+    // lies between the endpoints in that order. This unlocks segment addition
+    // without requiring redundant hand-authored between constraints.
+    for (const object of (problem.geometry.objects || [])) {
+      if (object.type !== "line" || !Array.isArray(object.orderedThrough)) continue;
+      const ordered = object.orderedThrough;
+      if (new Set(ordered).size !== ordered.length) continue;
+      for (let i = 0; i < ordered.length; i++) {
+        for (let j = i + 1; j < ordered.length; j++) {
+          for (let k = j + 1; k < ordered.length; k++) {
+            add("between(" + ordered[i] + "," + ordered[j] + "," + ordered[k] + ")");
+          }
+        }
+      }
+    }
+
     // Derive ray relations only from explicit point-order constraints.
     // An intersection alone does not establish which points are on opposite sides.
     const relationFacts = root.GeometryRelations && typeof root.GeometryRelations.derive === "function"

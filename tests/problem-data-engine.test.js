@@ -151,6 +151,30 @@ assert.equal(sampleResult.proof.steps.some((step) => step.ruleId === "circle.opp
  assert.equal(parallelAngleProof.steps.at(-1).ruleId, "parallel.corresponding-angles");
  assert.equal(convertedExam.unsupported.some((x) => x.location === "geometry.dynamicConditions" && x.type === "equal-segments"), false);
 
+// orderedThrough is sufficient to generate all point-between relations on a line,
+// so segment addition does not depend on manually repeating each between fact.
+const orderedLineProblem = {
+  format: "proof-problem",
+  version: 1,
+  id: "ordered-line-auto-segment-addition",
+  geometry: {
+    points: ["A", "F", "E", "B"].map((id) => ({ id })),
+    objects: [{ id: "line-AB", type: "line", through: ["A", "F", "E", "B"], orderedThrough: ["A", "F", "E", "B"] }],
+    constraints: [],
+    constructions: [],
+    dynamicConditions: []
+  },
+  goal: { type: "segment-equality", segments: [["A", "B"], ["A", "F"]] }
+};
+const orderedLineConverted = Adapter.convert(orderedLineProblem);
+assert.ok(orderedLineConverted.facts.includes("between(A,F,E)"));
+assert.ok(orderedLineConverted.facts.includes("between(A,E,B)"));
+assert.ok(orderedLineConverted.facts.includes("between(F,E,B)"));
+assert.ok(orderedLineConverted.facts.includes("between(A,F,B)"));
+const autoSegmentAddition = Rules.prove(orderedLineConverted.facts, "side(AB)=side(AF)+side(FB)");
+assert.equal(autoSegmentAddition.success, true, "orderedThrough から線分の加法を自動生成する");
+assert.equal(autoSegmentAddition.steps.at(-1).ruleId, "segment.addition");
+
 console.log("problem-data-engine adapter checks passed");
 
 const convertedSameSegment = Adapter.convert(sampleFile);
