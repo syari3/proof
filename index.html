@@ -41,7 +41,7 @@
     @media (max-width: 560px) { .engine-step { grid-template-columns: 30px minmax(0, 1fr); gap: 8px; padding: 12px; } .engine-step-number { width: 28px; height: 28px; } }
   </style>
   <script src="./js/theorem-catalog.js?v=20261010-1" defer></script>
-  <script src="./js/proof-rules.js?v=20261012-3" defer></script>
+  <script src="./js/proof-rules.js?v=20261012-4" defer></script>
   <script src="./js/geometry-relations.js?v=20261010-1" defer></script>
   <script src="./js/problem-data-engine.js?v=20261011-2" defer></script>
   <script src="./js/problem-generator.js?v=20261010-7" defer></script>
@@ -377,19 +377,32 @@
           if (result.conditionAnalysis) {
             renderConditionAnalysis(result.conditionAnalysis);
           } else if (succeeded) {
-            conditionSummaryNode.textContent = "証明結果を表示しました。条件の必要性を追加でチェックしています…";
-            setTimeout(() => {
-              try {
-                const analysis = window.ProblemDataEngine.analyzeConditionNecessity(problem, window.ProofRules);
-                renderConditionAnalysis(analysis);
-              } catch (analysisError) {
-                conditionSummaryNode.textContent = "証明は表示できましたが、条件チェックに失敗しました。";
-                const item = document.createElement("li");
-                item.className = "engine-meta";
-                item.textContent = analysisError.message || "条件チェック中にエラーが発生しました。";
-                conditionListNode.replaceChildren(item);
-              }
-            }, 0);
+            conditionSummaryNode.textContent = "証明結果を先に表示しました。条件の必要性チェックは必要なときに実行できます。";
+            const item = document.createElement("li");
+            item.className = "engine-meta";
+            item.textContent = "条件チェックは入力条件を1つずつ外して証明を再実行するため、時間がかかる場合があります。";
+            const checkButton = document.createElement("button");
+            checkButton.type = "button";
+            checkButton.textContent = "入力条件の必要性をチェック";
+            checkButton.addEventListener("click", () => {
+              checkButton.disabled = true;
+              checkButton.textContent = "条件をチェックしています…";
+              conditionSummaryNode.textContent = "条件の必要性をチェックしています…";
+              setTimeout(() => {
+                try {
+                  const analysis = window.ProblemDataEngine.analyzeConditionNecessity(problem, window.ProofRules);
+                  renderConditionAnalysis(analysis);
+                } catch (analysisError) {
+                  conditionSummaryNode.textContent = "証明は表示できましたが、条件チェックに失敗しました。";
+                  const errorItem = document.createElement("li");
+                  errorItem.className = "engine-meta";
+                  errorItem.textContent = analysisError.message || "条件チェック中にエラーが発生しました。";
+                  conditionListNode.replaceChildren(errorItem);
+                }
+              }, 0);
+            });
+            item.append(document.createElement("br"), checkButton);
+            conditionListNode.append(item);
           } else {
             renderConditionAnalysis(null);
           }
