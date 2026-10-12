@@ -1219,7 +1219,11 @@
       return { success: true, goal, facts: known, steps, reason: "goal-is-given" };
     }
     const goalEquality = parseEquality(goal);
-    if (goalEquality && termsEquivalent(goalEquality.left, goalEquality.right, known)) {
+    // Implicit equivalence is specifically for alternate notation of the same
+    // angle (for example, endpoints on the same ray), not a general reflexivity
+    // shortcut for segment equalities.
+    if (goalEquality && goalEquality.left.startsWith("angle(") &&
+        termsEquivalent(goalEquality.left, goalEquality.right, known)) {
       return { success: true, goal, facts: known, steps, reason: "implicit-angle-equivalence" };
     }
 
