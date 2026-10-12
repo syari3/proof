@@ -41,7 +41,7 @@
     @media (max-width: 560px) { .engine-step { grid-template-columns: 30px minmax(0, 1fr); gap: 8px; padding: 12px; } .engine-step-number { width: 28px; height: 28px; } }
   </style>
   <script src="./js/theorem-catalog.js?v=20261010-1" defer></script>
-  <script src="./js/proof-rules.js?v=20261012-2" defer></script>
+  <script src="./js/proof-rules.js?v=20261012-3" defer></script>
   <script src="./js/geometry-relations.js?v=20261010-1" defer></script>
   <script src="./js/problem-data-engine.js?v=20261011-2" defer></script>
   <script src="./js/problem-generator.js?v=20261010-7" defer></script>
@@ -282,7 +282,7 @@
           if (!window.ProblemDataEngine || !window.ProofRules) {
             throw new Error("推論エンジンのスクリプトが読み込まれていません。");
           }
-          const result = window.ProblemDataEngine.run(problem, window.ProofRules);
+          const result = window.ProblemDataEngine.run(problem, window.ProofRules, 100, { analyzeConditions: false });
           const proof = result.proof;
           const allSteps = proof && Array.isArray(proof.steps) ? proof.steps : [];
           const succeeded = result.success === true;
@@ -339,38 +339,59 @@
             stepsNode.append(item);
           });
 
-          const analysis = result.conditionAnalysis;
-          if (analysis && Array.isArray(analysis.candidates)) {
-            const requiredCandidates = analysis.candidates.filter((entry) => entry.status === "required-by-current-proof");
-            const optional = analysis.candidates.length - requiredCandidates.length;
-            conditionSummaryNode.textContent = "入力条件を " + analysis.testedCount + " 項目検査し、外すと証明できなくなる " + requiredCandidates.length + " 項目だけを表示しています（" + optional + " 項目は非表示）。";
-            if (!requiredCandidates.length) {
+          const renderConditionAnalysis = (analysis) => {
+            conditionListNode.replaceChildren();
+            if (analysis && Array.isArray(analysis.candidates)) {
+              const requiredCandidates = analysis.candidates.filter((entry) => entry.status === "required-by-current-proof");
+              const optional = analysis.candidates.length - requiredCandidates.length;
+              conditionSummaryNode.textContent = "入力条件を " + analysis.testedCount + " 項目検査し、外すと証明できなくなる " + requiredCandidates.length + " 項目だけを表示しています（" + optional + " 項目は非表示）。";
+              if (!requiredCandidates.length) {
+                const empty = document.createElement("li");
+                empty.className = "engine-meta";
+                empty.textContent = "外すと証明できなくなる入力条件はありませんでした。";
+                conditionListNode.append(empty);
+              }
+              requiredCandidates.forEach((entry) => {
+                const item = document.createElement("li");
+                item.className = "engine-condition";
+                item.dataset.state = "required";
+                const heading = document.createElement("strong");
+                heading.textContent = "この条件を外すと証明できない";
+                const detail = document.createElement("p");
+                detail.className = "engine-condition-detail";
+                detail.textContent = entry.type + " · " + JSON.stringify(entry.item);
+                const source = document.createElement("p");
+                source.className = "engine-condition-source";
+                source.textContent = entry.source + " の " + (entry.index + 1) + " 番目：" + entry.reason;
+                item.append(heading, detail, source);
+                conditionListNode.append(item);
+              });
+            } else {
+              conditionSummaryNode.textContent = "証明が成立した場合にのみ条件チェックを行います。";
               const empty = document.createElement("li");
               empty.className = "engine-meta";
-              empty.textContent = "外すと証明できなくなる入力条件はありませんでした。";
+              empty.textContent = "条件チェックはありません。";
               conditionListNode.append(empty);
             }
-            requiredCandidates.forEach((entry) => {
-              const item = document.createElement("li");
-              item.className = "engine-condition";
-              item.dataset.state = "required";
-              const heading = document.createElement("strong");
-              heading.textContent = "この条件を外すと証明できない";
-              const detail = document.createElement("p");
-              detail.className = "engine-condition-detail";
-              detail.textContent = entry.type + " · " + JSON.stringify(entry.item);
-              const source = document.createElement("p");
-              source.className = "engine-condition-source";
-              source.textContent = entry.source + " の " + (entry.index + 1) + " 番目：" + entry.reason;
-              item.append(heading, detail, source);
-              conditionListNode.append(item);
-            });
+          };
+          if (result.conditionAnalysis) {
+            renderConditionAnalysis(result.conditionAnalysis);
+          } else if (succeeded) {
+            conditionSummaryNode.textContent = "証明結果を表示しました。条件の必要性を追加でチェックしています…";
+            setTimeout(() => {
+              try {
+                const analysis = window.ProblemDataEngine.analyzeConditionNecessity(problem, window.ProofRules);
+                renderConditionAnalysis(analysis);
+              } catch (analysisError) {
+                conditionSummaryNode.textContent = "証明は表示できましたが、条件チェックに失敗しました。";
+                const item = document.createElement("li");
+                item.className = "engine-meta";
+                item.textContent = analysisError.message || "条件チェック中にエラーが発生しました。";
+                conditionListNode.replaceChildren(item);
+              }
+            }, 0);
           } else {
-            conditionSummaryNode.textContent = "証明が成立した場合にのみ条件チェックを行います。";
-            const empty = document.createElement("li");
-            empty.className = "engine-meta";
-            empty.textContent = "条件チェックはありません。";
-            conditionListNode.append(empty);
+            renderConditionAnalysis(null);
           }
           const notes = [];
           if (result.warning) notes.push(result.warning);
