@@ -699,3 +699,36 @@ const straightLineAngleAddition = rules.prove(
 assert.equal(straightLineAngleAddition.success, true,
   "一直線上の点による角の言い換えを角の加法への代入につなげる");
 console.log("✓ 一直線上の角の言い換えから角の加法へ");
+
+
+// Congruence conditions must accept equivalent angle names when points lie on
+// the same ray. In this example, P and F share ray CP because between(P,F,C).
+const sameRayAsaCongruence = rules.prove(
+  [
+    "triangle(AFC)", "triangle(DBC)",
+    "between(P,F,C)",
+    "side(AC)=side(CD)",
+    "angle(ACP)=angle(BCD)",
+    "angle(CAF)=angle(CDB)"
+  ],
+  "congruent(AFC,DBC)"
+);
+assert.equal(sameRayAsaCongruence.success, true,
+  "ASA合同条件は、同じ半直線上の点P/Fで表記が異なる角も同じ角として扱う");
+assert.ok(sameRayAsaCongruence.steps.some((step) => step.ruleId === "triangle.congruence-asa"),
+  "同じ半直線の角を含む合同はASAルールで導出する");
+
+const sameRaySasCongruence = rules.prove(
+  [
+    "triangle(AFC)", "triangle(DBC)",
+    "between(P,F,C)",
+    "side(AC)=side(CD)", "side(CF)=side(CB)",
+    "angle(ACP)=angle(BCD)"
+  ],
+  "congruent(AFC,DBC)"
+);
+assert.equal(sameRaySasCongruence.success, true,
+  "SAS合同条件も、同じ半直線上の点で表記が異なる角を認識する");
+assert.ok(sameRaySasCongruence.steps.some((step) => step.ruleId === "triangle.congruence-sas"),
+  "同じ半直線の角を含む合同はSASルールで導出する");
+console.log("✓ 合同条件は同じ半直線で表記の異なる角を認識する");
