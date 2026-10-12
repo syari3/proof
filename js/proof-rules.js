@@ -355,7 +355,6 @@
       // ...oppositeSegmentAngleCandidates(facts),
       ...linearPairSupplementCandidates(facts, ""),
       ...supplementaryAngleCancellationCandidates(facts, ""),
-      ...sameRayAngleCandidates(facts),
       ...verticalAngleCandidates(facts),
       ...exteriorAngleCandidates(facts),
       ...angleAdditionCandidates(facts),
@@ -1061,16 +1060,57 @@
     return term;
   }
 
+  // Normalize angle ray labels from explicit sameRay / between facts.
+  // This is an internal equivalence check: it adds neither a fact nor a proof step.
+  function canonicalTermWithSameRays(term, known) {
+    const angle = parseAngle(term);
+    if (!angle) return canonicalTerm(term);
+    const graph = new Map();
+    function connect(vertex, first, second) {
+      const a = vertex + ":" + first, b = vertex + ":" + second;
+      if (!graph.has(a)) graph.set(a, new Set());
+      if (!graph.has(b)) graph.set(b, new Set());
+      graph.get(a).add(b);
+      graph.get(b).add(a);
+    }
+    for (const fact of known) {
+      let m = /^sameRay\(([A-Z]),([A-Z]),([A-Z])\)$/.exec(fact);
+      if (m) { connect(m[1], m[2], m[3]); continue; }
+      m = /^between\(([A-Z]),([A-Z]),([A-Z])\)$/.exec(fact);
+      if (m) {
+        const [, a, b, c] = m;
+        connect(a, b, c);
+        connect(c, b, a);
+      }
+    }
+    function representative(vertex, point) {
+      const start = vertex + ":" + point;
+      const seen = new Set([start]), queue = [start], labels = [point];
+      while (queue.length) {
+        const current = queue.shift();
+        for (const next of graph.get(current) || []) {
+          if (seen.has(next)) continue;
+          seen.add(next);
+          queue.push(next);
+          labels.push(next.split(":")[1]);
+        }
+      }
+      return labels.sort()[0];
+    }
+    const ends = [representative(angle.vertex, angle.first), representative(angle.vertex, angle.last)].sort();
+    return "angle(" + ends[0] + angle.vertex + ends[1] + ")";
+  }
+
   function termsEquivalent(first, second, known) {
-    first = canonicalTerm(first);
-    second = canonicalTerm(second);
+    first = canonicalTermWithSameRays(first, known);
+    second = canonicalTermWithSameRays(second, known);
     if (first === second) return true;
     const graph = new Map();
     for (const fact of known) {
       const equality = parseEquality(fact);
       if (!equality) continue;
-      const left = canonicalTerm(equality.left);
-      const right = canonicalTerm(equality.right);
+      const left = canonicalTermWithSameRays(equality.left, known);
+      const right = canonicalTermWithSameRays(equality.right, known);
       if (!graph.has(left)) graph.set(left, new Set());
       if (!graph.has(right)) graph.set(right, new Set());
       graph.get(left).add(right);
@@ -1132,7 +1172,7 @@
 
   // Forward-chain from the supplied facts, recording every inference.
   // This is a bounded rule engine, not a complete geometry prover.
-  function prove(facts, goal, maxSteps = 250) {
+  function prove(facts, goal, maxSteps = 100) {
     if (!Array.isArray(facts) || !facts.every((fact) => typeof fact === "string")) {
       throw new TypeError("facts は文字列の配列で指定してください。");
     }
@@ -1475,31 +1515,8 @@
         }
       }
 
-      if (steps.length < maxSteps) {
-        const sameAngle = findSameAngleNotation(known, goal);
-        if (sameAngle) {
-          const step = {
-            index: steps.length + 1,
-            ruleId: "same-angle-ray-notation",
-            ruleName: "同じ半直線による角の表記",
-            premises: sameAngle.premises,
-            premiseSources: sameAngle.premises.map((premise) => ({
-              fact: premise,
-              ...(sourceByFact.get(premise) || { type: "given" })
-            })),
-            conclusion: sameAngle.conclusion,
-            explanation: "頂点が同じで、角をつくる2本の半直線がそれぞれ同じなので、同じ角を表している。",
-            category: "angle"
-          };
-          known.push(step.conclusion);
-          sourceByFact.set(step.conclusion, { type: "step", index: step.index });
-          steps.push(step);
-          changed = true;
-          if (step.conclusion === goal) {
-            return { success: true, goal, facts: known, steps, reason: "proved" };
-          }
-        }
-      }
+      // Same-ray angle notation is handled internally by termsEquivalent,
+      // so it does not consume a visible inference step.
 
       if (steps.length < maxSteps) {
         const parallelCandidates = parallelAngleCandidates(known);
@@ -1524,19 +1541,6 @@
           known.push(step.conclusion); sourceByFact.set(step.conclusion, { type: "step", index: step.index });
           steps.push(step); changed = true;
           if (step.conclusion === goal) return { success: true, goal, facts: known, steps, reason: "proved" };
-        }
-        const sameRayCandidatesNow = sameRayAngleCandidates(known, goal);
-        const sameRayAngle = sameRayCandidatesNow.find((rule) => goalRelatedEquality(rule.conclusion, goal, known) && !known.includes(rule.conclusion)) ||
-          sameRayCandidatesNow.find((rule) => !known.includes(rule.conclusion));
-        if (sameRayAngle) {
-          const step = { index: steps.length + 1, ruleId: sameRayAngle.id, ruleName: sameRayAngle.name,
-            premises: [...sameRayAngle.premises],
-            premiseSources: sameRayAngle.premises.map((p) => ({ fact: p, ...(sourceByFact.get(p) || { type: 'unknown' }) })),
-            conclusion: sameAngleEquality(sameRayAngle.conclusion, goal) ? goal : sameRayAngle.conclusion,
-            explanation: sameRayAngle.explain, category: 'angle' };
-          known.push(step.conclusion); sourceByFact.set(step.conclusion, { type: 'step', index: step.index });
-          steps.push(step); changed = true;
-          if (step.conclusion === goal) return { success: true, goal, facts: known, steps, reason: 'proved' };
         }
         const sameSegmentCandidatesNow = sameSegmentAngleCandidates(known);
         const sameSegmentAngle = sameSegmentCandidatesNow.find((rule) => sameAngleEquality(rule.conclusion, goal) && !known.includes(goal)) ||
@@ -1725,7 +1729,7 @@
   const api = Object.freeze({
     list: () => rules.map((rule) => ({ ...rule, premises: [...rule.premises] })),
     derive: (facts) => derive(facts).map(applyCatalogMetadata),
-    prove: (facts, goal, maxSteps = 250) => {
+    prove: (facts, goal, maxSteps = 100) => {
       const result = prove(facts, goal, maxSteps);
       return {
         ...result,
