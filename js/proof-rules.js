@@ -266,7 +266,7 @@
   }
 
   function goalRelatedEquality(conclusion, goal, known) {
-    if (conclusion === goal || sameAngleEquality(conclusion, goal)) return true;
+    if (conclusion === goal || sameAngleEquality(conclusion, goal, known)) return true;
     const equality = parseEquality(conclusion);
     if (!equality) return false;
     return angleTermsForSimilarityGoal(goal).some((candidate) => {
@@ -422,17 +422,17 @@
     }
     return fallback;
   }
-  function sameAngleExpression(first, second) {
+  function sameAngleExpression(first, second, known = []) {
     const a = parseAngle(first), b = parseAngle(second);
     return !!a && !!b && a.vertex === b.vertex &&
-      ((a.first === b.first && a.last === b.last) || (a.first === b.last && a.last === b.first));
+      termsEquivalent(first, second, known);
   }
 
-  function sameAngleEquality(first, second) {
+  function sameAngleEquality(first, second, known = []) {
     const a = parseEquality(first), b = parseEquality(second);
     if (!a || !b) return false;
-    return (sameAngleExpression(a.left, b.left) && sameAngleExpression(a.right, b.right)) ||
-      (sameAngleExpression(a.left, b.right) && sameAngleExpression(a.right, b.left));
+    return (sameAngleExpression(a.left, b.left, known) && sameAngleExpression(a.right, b.right, known)) ||
+      (sameAngleExpression(a.left, b.right, known) && sameAngleExpression(a.right, b.left, known));
   }
 
   function sameSideExpression(first, second) {
@@ -1290,13 +1290,13 @@
         }
 
         const isoscelesCandidates = isoscelesBaseAngleCandidates(known);
-        const isosceles = isoscelesCandidates.find((rule) => sameAngleEquality(rule.conclusion, goal)) || isoscelesCandidates.find((rule) => !known.includes(rule.conclusion));
+        const isosceles = isoscelesCandidates.find((rule) => sameAngleEquality(rule.conclusion, goal, known)) || isoscelesCandidates.find((rule) => !known.includes(rule.conclusion));
         if (isosceles) {
           const step = {
             index: steps.length + 1, ruleId: isosceles.id, ruleName: isosceles.name,
             premises: [...isosceles.premises],
             premiseSources: isosceles.premises.map((premise) => ({ fact: premise, ...(sourceByFact.get(premise) || { type: "unknown" }) })),
-            conclusion: sameAngleEquality(isosceles.conclusion, goal) ? goal : isosceles.conclusion, explanation: isosceles.explain, category: isosceles.category
+            conclusion: sameAngleEquality(isosceles.conclusion, goal, known) ? goal : isosceles.conclusion, explanation: isosceles.explain, category: isosceles.category
           };
           known.push(step.conclusion);
           sourceByFact.set(step.conclusion, { type: "step", index: step.index });
@@ -1307,8 +1307,8 @@
         // Use the equal-apex isosceles theorem during forward chaining too,
         // not only in derive(). Recompute after each newly inferred angle equality.
         const equalApexCandidates = equalApexIsoscelesBaseAngleCandidates(known);
-        const equalApex = equalApexCandidates.find((rule) => sameAngleEquality(rule.conclusion, goal) && !known.some((fact) => sameAngleEquality(fact, rule.conclusion))) ||
-          equalApexCandidates.find((rule) => !known.some((fact) => sameAngleEquality(fact, rule.conclusion)));
+        const equalApex = equalApexCandidates.find((rule) => sameAngleEquality(rule.conclusion, goal, known) && !known.some((fact) => sameAngleEquality(fact, rule.conclusion, known))) ||
+          equalApexCandidates.find((rule) => !known.some((fact) => sameAngleEquality(fact, rule.conclusion, known)));
         if (equalApex) {
           const conclusion = sameAngleEquality(equalApex.conclusion, goal) ? goal : equalApex.conclusion;
           const step = {
@@ -1543,7 +1543,7 @@
 
       if (steps.length < maxSteps) {
         const parallelCandidates = parallelAngleCandidates(known);
-        const parallelAngle = parallelCandidates.find((rule) => sameAngleEquality(rule.conclusion, goal) && !known.includes(rule.conclusion)) ||
+        const parallelAngle = parallelCandidates.find((rule) => sameAngleEquality(rule.conclusion, goal, known) && !known.includes(rule.conclusion)) ||
           parallelCandidates.find((rule) => !known.includes(rule.conclusion));
         if (parallelAngle) {
           const conclusion = sameAngleEquality(parallelAngle.conclusion, goal) ? goal : parallelAngle.conclusion;
@@ -1566,13 +1566,13 @@
           if (step.conclusion === goal) return { success: true, goal, facts: known, steps, reason: "proved" };
         }
         const sameSegmentCandidatesNow = sameSegmentAngleCandidates(known);
-        const sameSegmentAngle = sameSegmentCandidatesNow.find((rule) => sameAngleEquality(rule.conclusion, goal) && !known.includes(goal)) ||
+        const sameSegmentAngle = sameSegmentCandidatesNow.find((rule) => sameAngleEquality(rule.conclusion, goal, known) && !known.includes(goal)) ||
           sameSegmentCandidatesNow.find((rule) => !known.includes(rule.conclusion));
         if (sameSegmentAngle) {
           const step = { index: steps.length + 1, ruleId: sameSegmentAngle.id, ruleName: sameSegmentAngle.name,
             premises: [...sameSegmentAngle.premises],
             premiseSources: sameSegmentAngle.premises.map((p) => ({ fact: p, ...(sourceByFact.get(p) || { type: 'unknown' }) })),
-            conclusion: sameAngleEquality(sameSegmentAngle.conclusion, goal) ? goal : sameSegmentAngle.conclusion,
+            conclusion: sameAngleEquality(sameSegmentAngle.conclusion, goal, known) ? goal : sameSegmentAngle.conclusion,
             explanation: sameSegmentAngle.explain, category: 'circle' };
           known.push(step.conclusion); sourceByFact.set(step.conclusion, { type: 'step', index: step.index });
           steps.push(step); changed = true;
@@ -1623,7 +1623,7 @@
           };
           known.push(step.conclusion); sourceByFact.set(step.conclusion, { type: "step", index: step.index });
           steps.push(step); changed = true;
-          if (step.conclusion === goal || (parseEquality(goal) && sameAngleEquality(step.conclusion, goal))) {
+          if (step.conclusion === goal || (parseEquality(goal) && sameAngleEquality(step.conclusion, goal, known))) {
             return { success: true, goal, facts: known, steps, reason: "proved" };
           }
         }
