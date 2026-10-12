@@ -441,6 +441,17 @@ assert.ok(wholeAngleAdditionSubstitution.steps.some((step) =>
 ));
 console.log("✓ 角の加法の左辺への代入");
 
+const derivedWholeAngleSubstitution = rules.derive([
+  "rayInsideAngle(A,F,E,G)",
+  "angle(FAG)=angle(FAE)+angle(EAG)",
+  "angle(BAG)=angle(FAG)"
+]);
+assert.ok(derivedWholeAngleSubstitution.some((rule) =>
+  rule.ruleId === "angle.addition-substitution" &&
+  rule.conclusion === "angle(BAG)=angle(FAE)+angle(EAG)"
+), "deriveでも角の加法の左辺への代入候補を提示する");
+
+
 
 const chainedAngleAdditionSubstitution = rules.prove(
   ["rayInsideAngle(O,A,B,C)", "angle(AOB)=angle(XOY)", "angle(XOY)=angle(MON)"],
