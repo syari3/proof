@@ -223,7 +223,7 @@
   // Remove one explicitly supplied input item at a time and rerun the proof.
   // This tests necessity relative to the current encoded problem and rule set,
   // not mathematical necessity in every possible proof.
-  function analyzeConditionNecessity(problem, proofRules, maxSteps = 100) {
+  function analyzeConditionNecessity(problem, proofRules, maxSteps = 250) {
     const collections = [
       ["geometry.constraints", problem.geometry && problem.geometry.constraints],
       ["geometry.dynamicConditions", problem.geometry && problem.geometry.dynamicConditions],
@@ -269,7 +269,7 @@
     };
   }
 
-  function run(problem, proofRules, maxSteps = 100) {
+  function run(problem, proofRules, maxSteps = 250) {
     if (!proofRules || typeof proofRules.prove !== "function") {
       throw new TypeError("ProofRules.prove が必要です。");
     }
