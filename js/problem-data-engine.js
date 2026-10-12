@@ -218,8 +218,8 @@
             const lineObjects = (problem.geometry.objects || []).filter((o) => o.type === "line" && o.id && Array.isArray(o.through));
             for (const transversal of lineObjects) {
               if ([ids[0][0], ids[1][0]].includes(transversal.id)) continue;
-              const crosses = ids.map((id) => transversal.through.some((p) =>
-                lineObjects.some((o) => o.id === id && o.through.includes(p))));
+              const crosses = ids.map((list) => transversal.through.some((p) =>
+                lineObjects.some((o) => o.id === list[0] && o.through.includes(p))));
               if (crosses.every(Boolean)) for (const list of ids) add("intersects(" + transversal.id + "," + list[0] + ")");
             }
           } else {
