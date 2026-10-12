@@ -279,3 +279,36 @@ assert.ok(shizuoka2026Converted.facts.includes("intersects(line-DC,line-AC)"),
 assert.ok(shizuoka2026Converted.facts.includes("intersects(line-DC,line-BD)"),
   "共通する点Dから直線DCとBDの交わりを認識する");
 
+
+
+// Automatic parallel-angle generation is opt-in to orderedThrough. One
+// transversal creates multiple positional pairs; unordered incidence alone
+// must never cause the engine to guess a ray direction.
+const orderedParallelProbe = {
+  format: "proof-problem", version: 1, id: "auto-parallel-angle-pairs",
+  geometry: {
+    points: ["A","E","C","B","F","D","G","H"].map((id) => ({ id })),
+    objects: [
+      { id: "parallel-1", type: "line", through: ["A","E","C"], orderedThrough: ["A","E","C"] },
+      { id: "parallel-2", type: "line", through: ["B","F","D"], orderedThrough: ["B","F","D"] },
+      { id: "transversal", type: "line", through: ["G","E","F","H"], orderedThrough: ["G","E","F","H"] }
+    ],
+    constraints: [{ type: "parallel-lines", lines: [["A","C"],["B","D"]] }],
+    constructions: [], dynamicConditions: []
+  },
+  goal: { type: "angle-equality", angles: [["A","E","G"],["B","F","G"]] }
+};
+const autoParallel = Adapter.convert(orderedParallelProbe);
+assert.ok(autoParallel.facts.filter((fact) => fact.startsWith("correspondingAngles(")).length >= 2,
+  "複数の同位角候補を生成する");
+assert.ok(autoParallel.facts.some((fact) => fact.startsWith("alternateAngles(")),
+  "錯角候補も生成する");
+assert.ok(autoParallel.facts.includes("parallel(parallel-1,parallel-2)"));
+assert.ok(autoParallel.facts.includes("intersects(transversal,parallel-1)"));
+assert.ok(autoParallel.facts.includes("intersects(transversal,parallel-2)"));
+const incidenceOnlyProbe = JSON.parse(JSON.stringify(orderedParallelProbe));
+incidenceOnlyProbe.geometry.objects.forEach((line) => { delete line.orderedThrough; });
+const noOrderFacts = Adapter.convert(incidenceOnlyProbe).facts;
+assert.equal(noOrderFacts.some((fact) => fact.startsWith("correspondingAngles(") ||
+  fact.startsWith("alternateAngles(")), false,
+  "点の順序が未指定なら角の位置関係を推測しない");
