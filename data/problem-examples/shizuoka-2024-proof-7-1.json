@@ -1,0 +1,291 @@
+{
+  "format": "proof-problem",
+  "version": 1,
+  "id": "shizuoka-2024-proof-7-1",
+  "source": {
+    "region": "静岡県",
+    "exam": "公立高校入学者選抜学力検査",
+    "year": 2024,
+    "questionNumber": "7 (1)",
+    "materials": [
+      "10年間問題.pdf（15ページ）",
+      "10年間問題.pdf（16ページの分析メモ）",
+      "data.xlsx / Sheet1"
+    ],
+    "transcriptionStatus": "transcribed-from-scanned-page",
+    "notes": "問題文はPDF 15ページ、条件・証明方針の整理は16ページの手書きメモを参照。公開前に図の点の位置と原本の表記を再確認する。"
+  },
+  "title": "円周角・二等辺三角形（2024年度）",
+  "prompt": "図のように、3点A、B、Cは円Oの円周上の点である。AC上にAB＝ADとなる点Dをとり、BDの延長と円Oとの交点をEとする。また、点PはAE上を動く点であり、CPとBEとの交点をFとする。ただし、点Pは点A、Eと重ならないものとする。点Pが∠EFC＝∠ABCとなるように動いたとき、PA＝PCであることを証明しなさい。",
+  "geometry": {
+    "objects": [
+      {
+        "id": "circle-O",
+        "type": "circle",
+        "center": "O"
+      },
+      {
+        "id": "line-AC",
+        "type": "line",
+        "through": [
+          "A",
+          "D",
+          "C"
+        ]
+      },
+      {
+        "id": "line-BE",
+        "type": "line",
+        "through": [
+          "B",
+          "F",
+          "D",
+          "E"
+        ]
+      },
+      {
+        "id": "line-AE",
+        "type": "line",
+        "through": [
+          "A",
+          "P",
+          "E"
+        ]
+      },
+      {
+        "id": "line-CP",
+        "type": "line",
+        "through": [
+          "C",
+          "F",
+          "P"
+        ]
+      },
+      {
+        "id": "line-AB",
+        "type": "line",
+        "through": [
+          "A",
+          "B"
+        ]
+      }
+    ],
+    "points": [
+      {
+        "id": "O",
+        "role": "circle-center"
+      },
+      {
+        "id": "A",
+        "role": "given-point"
+      },
+      {
+        "id": "B",
+        "role": "given-point"
+      },
+      {
+        "id": "C",
+        "role": "given-point"
+      },
+      {
+        "id": "D",
+        "role": "constructed-point"
+      },
+      {
+        "id": "E",
+        "role": "constructed-point"
+      },
+      {
+        "id": "F",
+        "role": "constructed-point"
+      },
+      {
+        "id": "P",
+        "role": "moving-point"
+      }
+    ],
+    "constructions": [
+      {
+        "point": "D",
+        "type": "intersection",
+        "of": [
+          "line-AC",
+          "line-BE"
+        ]
+      },
+      {
+        "point": "E",
+        "type": "circle-line-intersection",
+        "of": [
+          "circle-O",
+          "line-BE"
+        ],
+        "role": "other-intersection-after-B"
+      },
+      {
+        "point": "F",
+        "type": "intersection",
+        "of": [
+          "line-CP",
+          "line-BE"
+        ]
+      }
+    ],
+    "constraints": [
+      {
+        "type": "point-on-circle",
+        "point": "A",
+        "circle": "circle-O"
+      },
+      {
+        "type": "point-on-circle",
+        "point": "B",
+        "circle": "circle-O"
+      },
+      {
+        "type": "point-on-circle",
+        "point": "C",
+        "circle": "circle-O"
+      },
+      {
+        "type": "point-on-circle",
+        "point": "E",
+        "circle": "circle-O"
+      },
+      {
+        "type": "equal-segments",
+        "segments": [
+          [
+            "A",
+            "B"
+          ],
+          [
+            "A",
+            "D"
+          ]
+        ]
+      },
+      {
+        "type": "between",
+        "points": [
+          "A",
+          "D",
+          "C"
+        ]
+      },
+      {
+        "type": "between",
+        "points": [
+          "B",
+          "D",
+          "E"
+        ]
+      },
+      {
+        "type": "between",
+        "points": [
+          "E",
+          "F",
+          "D"
+        ]
+      },
+      {
+        "type": "between",
+        "points": [
+          "A",
+          "P",
+          "E"
+        ]
+      },
+      {
+        "type": "between",
+        "points": [
+          "P",
+          "F",
+          "C"
+        ]
+      },
+      {
+        "type": "ray-inside-angle",
+        "vertex": "B",
+        "points": [
+          "A",
+          "D",
+          "C"
+        ]
+      },
+      {
+        "type": "same-segment",
+        "chord": [
+          "E",
+          "C"
+        ],
+        "vertices": [
+          "B",
+          "A"
+        ]
+      }
+    ],
+    "dynamicConditions": [
+      {
+        "type": "angle-equality",
+        "angles": [
+          [
+            "E",
+            "F",
+            "C"
+          ],
+          [
+            "A",
+            "B",
+            "C"
+          ]
+        ],
+        "role": "select-position-of-moving-point",
+        "point": "P"
+      }
+    ]
+  },
+  "goal": {
+    "type": "segment-equality",
+    "segments": [
+      [
+        "P",
+        "A"
+      ],
+      [
+        "P",
+        "C"
+      ]
+    ]
+  },
+  "proofPlan": {
+    "status": "candidate-only",
+    "targetMethod": "equal-angles-imply-equal-sides",
+    "recordedProperties": [
+      "二等辺三角形の底角",
+      "対頂角",
+      "三角形の外角定理",
+      "角の加法",
+      "同じ弦に対する円周角",
+      "等しい角に対する辺"
+    ],
+    "sourceAnalysis": {
+      "fineGrainedSteps": 9,
+      "largeSteps": 3,
+      "targetCategory": "辺の等しさ",
+      "targetCondition": "△PACの2つの角が等しい"
+    },
+    "warning": "16ページの手書き分析メモに基づく候補方針。エンジンの実行結果だけでは、原図の点の位置や定理適用の妥当性を保証しない。"
+  },
+  "validation": {
+    "status": "proof-engine-validation-pending",
+    "structuralChecks": "transcribed-from-scanned-page",
+    "mathematicalChecks": "full geometry validation pending",
+    "openQuestions": [
+      "図の点の順序と、EがBDの延長と円Oとの交点であることを原本と照合する。",
+      "動点Pが∠EFC＝∠ABCを満たす位置をとれることは、別途幾何学的に確認する。",
+      "同じ弦ECに対する円周角の頂点A、Bが弦ECの同じ側にあることを原図と照合する。"
+    ]
+  }
+}
