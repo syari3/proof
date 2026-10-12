@@ -107,7 +107,7 @@ assert.equal(verticalResult.proof.steps.at(-1).ruleId, "angle.vertical-angles");
 assert.deepEqual(GeometryRelations.derive([]), []);
 
 const sampleFile = require("../data/problem-examples/shizuoka-2025-proof-7-1.json");
-const sampleResult = Adapter.run(sampleFile, Rules);
+const sampleResult = Adapter.run(sampleFile, Rules, 100, { analyzeConditions: false });
 // The example has another proof route using same-segment angles, parallel
 // corresponding angles, and the two isosceles-triangle angle equalities.
 // It must not depend on the intentionally disabled opposite-segment rule.
