@@ -108,7 +108,8 @@ assert.deepEqual(GeometryRelations.derive([]), []);
 
 const sampleFile = require("../data/problem-examples/shizuoka-2025-proof-7-1.json");
 const sampleResult = Adapter.run(sampleFile, Rules);
-// This sample proof depends on the opposite-segment inscribed-angle sum rule,
+console.log("DEBUG sample proof", sampleResult.proof && sampleResult.proof.reason, sampleResult.proof && sampleResult.proof.steps.map((step) => ({ ruleId: step.ruleId, conclusion: step.conclusion, premises: step.premises })));
+ // This sample proof depends on the opposite-segment inscribed-angle sum rule,
 // which is intentionally disabled. Keep the limitation explicit instead of
 // letting the old expectation make CI fail or silently re-enable that rule.
 assert.equal(sampleResult.status, "not-proved-with-current-rules",
