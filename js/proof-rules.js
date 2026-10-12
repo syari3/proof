@@ -149,17 +149,31 @@
 
   // Replace an angle ray endpoint only when the vertex-based same-ray fact
   // explicitly confirms that the two rays coincide.
-  function sameRayAngleCandidates(known) {
-    const rays = known.map((fact) => /^sameRay\(([A-Z]),([A-Z]),([A-Z])\)$/.exec(fact)).filter(Boolean)
-      .map((m) => ({ fact: m[0], vertex: m[1], first: m[2], second: m[3] }));
-    const angleLabels = new Set();
+  function sameRayAngleCandidates(known, goal = "") {
+    const rays = known.map((fact) => {
+      const m = /^sameRay\(([A-Z]),([A-Z]),([A-Z])\)$/.exec(fact);
+      return m ? { fact: m[0], vertex: m[1], first: m[2], second: m[3] } : null;
+    }).filter(Boolean);
+
+    // between(A,F,B) means F is between A and B, so AF and AB are the
+    // same ray from A. Unlike bare collinear(...), this also supplies order.
     for (const fact of known) {
+      const m = /^between\(([A-Z]),([A-Z]),([A-Z])\)$/.exec(fact);
+      if (!m) continue;
+      const [, a, b, c] = m;
+      if (new Set([a, b, c]).size !== 3) continue;
+      rays.push({ fact, vertex: a, first: b, second: c });
+    }
+
+    const angleLabels = new Set();
+    for (const fact of [...known, goal]) {
       for (const match of fact.matchAll(/angle\(([A-Z]{3})\)/g)) angleLabels.add(match[1]);
       const standalone = /^angle\(([A-Z]{3})\)$/.exec(fact);
       if (standalone) angleLabels.add(standalone[1]);
     }
     const angles = [...angleLabels].map((label) => ({ fact: "angle(" + label + ")", first: label[0], vertex: label[1], last: label[2] }));
     const results = [];
+    const seen = new Set();
     for (const angle of angles) for (const ray of rays) {
       if (angle.vertex !== ray.vertex) continue;
       for (const [from, to] of [[ray.first, ray.second], [ray.second, ray.first]]) {
@@ -168,11 +182,14 @@
         else if (c === from && a !== to) { c = to; changed = true; }
         if (!changed || a === c) continue;
         const replacement = 'angle(' + a + angle.vertex + c + ')';
+        const conclusion = [angle.fact, replacement].sort().join('=');
+        if (seen.has(conclusion)) continue;
+        seen.add(conclusion);
         results.push({
-          id: 'geometry.same-ray-angle', name: '同じ半直線を使った角の置き換え',
+          id: 'geometry.same-ray-angle', name: '一直線上の同じ半直線を使った角の置き換え',
           premises: [ray.fact],
-          conclusion: [angle.fact, replacement].sort().join('='),
-          explain: '同じ半直線上にある点で角を表し直しても、角の大きさは変わらない。',
+          conclusion,
+          explain: '一直線上で頂点から同じ向きに伸びる半直線上の点は、角の辺として互いに置き換えられる。',
           category: 'angle'
         });
       }
@@ -1508,7 +1525,7 @@
           steps.push(step); changed = true;
           if (step.conclusion === goal) return { success: true, goal, facts: known, steps, reason: "proved" };
         }
-        const sameRayCandidatesNow = sameRayAngleCandidates(known);
+        const sameRayCandidatesNow = sameRayAngleCandidates(known, goal);
         const sameRayAngle = sameRayCandidatesNow.find((rule) => goalRelatedEquality(rule.conclusion, goal, known) && !known.includes(rule.conclusion)) ||
           sameRayCandidatesNow.find((rule) => !known.includes(rule.conclusion));
         if (sameRayAngle) {
