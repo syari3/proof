@@ -139,50 +139,93 @@
       }
     }
 
+    // Auto-generate positional angle relations only when point order is explicit.
+    // `through` means incidence; `orderedThrough` is the opt-in order contract.
+    const parallelPairs = [];
+    for (const item of problem.geometry.constraints) {
+      if (item.type !== "parallel-lines" || !Array.isArray(item.lines) || item.lines.length !== 2) continue;
+      const resolve = (ends) => (problem.geometry.objects || []).filter((o) =>
+        o.type === "line" && o.id && Array.isArray(o.orderedThrough) &&
+        Array.isArray(ends) && ends.length === 2 && ends.every((p) => o.orderedThrough.includes(p))
+      );
+      const candidates = item.lines.map(resolve);
+      if (candidates.every((list) => list.length === 1)) {
+        parallelPairs.push({ first: candidates[0][0], second: candidates[1][0], endpoints: item.lines });
+      }
+    }
+    const pointIndex = (line, point) => line.orderedThrough.indexOf(point);
+    const raySide = (line, vertex, point) => {
+      const vi = pointIndex(line, vertex), pi = pointIndex(line, point);
+      return vi < 0 || pi < 0 || vi === pi ? 0 : (pi < vi ? -1 : 1);
+    };
+    for (const pair of parallelPairs) {
+      const first = pair.first, second = pair.second;
+      add("parallel(" + first.id + "," + second.id + ")");
+      const lines = (problem.geometry.objects || []).filter((o) =>
+        o.type === "line" && o.id && Array.isArray(o.orderedThrough)
+      );
+      for (const transversal of lines) {
+        if ([first.id, second.id].includes(transversal.id)) continue;
+        const xs1 = first.orderedThrough.filter((p) => transversal.orderedThrough.includes(p));
+        const xs2 = second.orderedThrough.filter((p) => transversal.orderedThrough.includes(p));
+        if (xs1.length !== 1 || xs2.length !== 1 || xs1[0] === xs2[0]) continue;
+        const [v1, v2] = [xs1[0], xs2[0]];
+        const v1Index = pointIndex(transversal, v1), v2Index = pointIndex(transversal, v2);
+        if (v1Index < 0 || v2Index < 0) continue;
+        add("intersects(" + transversal.id + "," + first.id + ")");
+        add("intersects(" + transversal.id + "," + second.id + ")");
+        const at = (parallelLine, vertex) => {
+          const tRays = transversal.orderedThrough.filter((p) => p !== vertex);
+          const pRays = parallelLine.orderedThrough.filter((p) => p !== vertex);
+          return tRays.flatMap((t) => pRays.map((q) => ({
+            angle: canonicalAngle(t, vertex, q),
+            tSide: raySide(transversal, vertex, t),
+            pSide: raySide(parallelLine, vertex, q)
+          }))).filter((x) => x.tSide && x.pSide);
+        };
+        const leftAngles = at(first, v1), rightAngles = at(second, v2);
+        const firstEnds = pair.endpoints[0], secondEnds = pair.endpoints[1];
+        const orientation1 = pointIndex(first, firstEnds[0]) < pointIndex(first, firstEnds[1]) ? 1 : -1;
+        const orientation2 = pointIndex(second, secondEnds[0]) < pointIndex(second, secondEnds[1]) ? 1 : -1;
+        const parallelOrientation = orientation1 === orientation2 ? 1 : -1;
+        const towardOther1 = v1Index < v2Index ? 1 : -1;
+        const towardOther2 = -towardOther1;
+        for (const a of leftAngles) for (const b of rightAngles) {
+          if (a.tSide === b.tSide && a.pSide === b.pSide * parallelOrientation) {
+            add("correspondingAngles(" + a.angle + "," + b.angle + "," + transversal.id + "," + first.id + "," + second.id + ")");
+          }
+          const aInterior = a.tSide === towardOther1 && a.pSide === (a.tSide > 0 ? -1 : 1);
+          const bInterior = b.tSide === towardOther2 && b.pSide === (b.tSide > 0 ? -1 : 1) * parallelOrientation;
+          if (aInterior && bInterior) {
+            add("alternateAngles(" + a.angle + "," + b.angle + "," + transversal.id + "," + first.id + "," + second.id + ")");
+          }
+        }
+      }
+    }
+
     // Convert only explicitly stated parallel-angle and circle-angle conditions.
     for (const item of problem.geometry.constraints) {
-      if (item.type === "parallel-lines" && Array.isArray(item.lines) && item.lines.length === 2 &&
-          item.lines.every((line) => Array.isArray(line) && line.length === 2)) {
-        // v1 data stores the endpoints of each parallel line, while the proof
-        // engine refers to declared line IDs. Resolve endpoints to line objects
-        // instead of coercing arrays into strings such as "A,C".
-        const resolveLineId = (endpoints) => {
-          const endpointSet = new Set(endpoints);
-          const candidates = (problem.geometry.objects || []).filter((object) =>
-            object.type === "line" && object.id && Array.isArray(object.through) &&
-            endpoints.every((point) => object.through.includes(point))
-          );
-          return candidates.length === 1 ? candidates[0].id : null;
-        };
-        const [firstLine, secondLine] = item.lines.map(resolveLineId);
-        if (firstLine && secondLine && firstLine !== secondLine) {
-          add("parallel(" + firstLine + "," + secondLine + ")");
-          // Intersections are safe to infer from explicit line incidence. This
-          // supplies the crossing-line premises needed by the parallel-angle
-          // rules; angle position itself is inferred only when separately encoded.
-          const lineObjects = (problem.geometry.objects || []).filter((object) =>
-            object.type === "line" && object.id && Array.isArray(object.through)
-          );
-          for (const transversal of lineObjects) {
-            if ([firstLine, secondLine].includes(transversal.id)) continue;
-            const crossesFirst = transversal.through.some((point) =>
-              (problem.geometry.objects || []).some((object) =>
-                object.id === firstLine && Array.isArray(object.through) && object.through.includes(point)
-              )
-            );
-            const crossesSecond = transversal.through.some((point) =>
-              (problem.geometry.objects || []).some((object) =>
-                object.id === secondLine && Array.isArray(object.through) && object.through.includes(point)
-              )
-            );
-            if (crossesFirst && crossesSecond) {
-              add("intersects(" + transversal.id + "," + firstLine + ")");
-              add("intersects(" + transversal.id + "," + secondLine + ")");
+      if (item.type === "parallel-lines") {
+        const resolved = parallelPairs.find((pair) => JSON.stringify(pair.endpoints) === JSON.stringify(item.lines));
+        if (!resolved) {
+          const resolve = (ends) => Array.isArray(ends) && ends.length === 2
+            ? (problem.geometry.objects || []).filter((o) => o.type === "line" && o.id &&
+                Array.isArray(o.through) && ends.every((p) => o.through.includes(p)).map((o) => o.id)
+            : [];
+          const ids = Array.isArray(item.lines) ? item.lines.map(resolve) : [];
+          if (ids.length === 2 && ids.every((list) => list.length === 1) && ids[0][0] !== ids[1][0]) {
+            add("parallel(" + ids[0][0] + "," + ids[1][0] + ")");
+            const lineObjects = (problem.geometry.objects || []).filter((o) => o.type === "line" && o.id && Array.isArray(o.through));
+            for (const transversal of lineObjects) {
+              if ([ids[0][0], ids[1][0]].includes(transversal.id)) continue;
+              const crosses = ids.map((id) => transversal.through.some((p) =>
+                lineObjects.some((o) => o.id === id && o.through.includes(p))));
+              if (crosses.every(Boolean)) for (const list of ids) add("intersects(" + transversal.id + "," + list[0] + ")");
             }
+          } else {
+            unsupported.push({ location: "geometry.constraints", type: item.type,
+              reason: "平行線の両端を、一意に対応する直線オブジェクトへ結び付けられません。" });
           }
-        } else {
-          unsupported.push({ location: "geometry.constraints", type: item.type,
-            reason: "平行線の両端を、一意に対応する直線オブジェクトへ結び付けられません。" });
         }
       }
       if ((item.type === "corresponding-angles" || item.type === "alternate-interior-angles") && item.angles && item.angles.length === 2 && item.transversal && item.lines && item.lines.length === 2) {
