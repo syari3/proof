@@ -147,9 +147,9 @@ const sameRayAngle = rules.prove(
   ["sameRay(B,A,D)"],
   "angle(ABC)=angle(DBC)"
 );
-assert.equal(sameRayAngle.success, true, "同じ半直線上の点による角の表記を同一視する");
-assert.equal(sameRayAngle.steps[0].ruleId, "same-angle-ray-notation");
-console.log("✓ 同じ半直線上の点による角の表記");
+assert.equal(sameRayAngle.success, true, "同じ半直線上の点による角の表記を内部で同一視する");
+assert.equal(sameRayAngle.steps.length, 0, "角の表記の言い換えは証明ステップを消費しない");
+console.log("✓ 同じ半直線上の角を内部で同一視（ステップなし）");
 
 const collinearNotEnough = rules.prove(
   ["collinear(A,B,D)"],
