@@ -94,6 +94,14 @@
         // of such a point as a separate geometric validation task.
         const [a, b] = condition.segments;
         add("side(" + canonicalSegment(a[0], a[1]) + ")=side(" + canonicalSegment(b[0], b[1]) + ")");
+      } else if (condition.role === "select-position-of-moving-point" &&
+          condition.type === "angle-equality" && Array.isArray(condition.angles) &&
+          condition.angles.length === 2 &&
+          condition.angles.every((angle) => Array.isArray(angle) && angle.length === 3)) {
+        // Treat the stated angle equality as a conditional premise for the selected
+        // position of the moving point. Existence of that position is validated separately.
+        const [a, b] = condition.angles;
+        add(canonicalAngle(a[0], a[1], a[2]) + "=" + canonicalAngle(b[0], b[1], b[2]));
       } else {
         unsupported.push({ location: "geometry.dynamicConditions", type: condition.type, reason: "動点の範囲・存在条件は別途検証が必要です。" });
       }
