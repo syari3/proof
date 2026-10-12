@@ -1189,6 +1189,10 @@
     if (known.includes(goal)) {
       return { success: true, goal, facts: known, steps, reason: "goal-is-given" };
     }
+    const goalEquality = parseEquality(goal);
+    if (goalEquality && termsEquivalent(goalEquality.left, goalEquality.right, known)) {
+      return { success: true, goal, facts: known, steps, reason: "implicit-angle-equivalence" };
+    }
 
     let changed = true;
     while (changed && steps.length < maxSteps) {
