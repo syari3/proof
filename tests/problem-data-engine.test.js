@@ -249,3 +249,21 @@ const equalAnglesAfterRayReplacement = Rules.prove(
 );
 assert.equal(equalAnglesAfterRayReplacement.success, true,
   "同じ半直線で言い換えた等角を△APCの等角として扱える");
+
+
+// 2026 Shizuoka: explicit line objects already encode these collinearities,
+// and triangle-congruence is a supported goal shape for conversion.
+const shizuoka2026 = require("../data/problem-examples/shizuoka-2026-proof-7-1.json");
+const shizuoka2026Converted = Adapter.convert(shizuoka2026);
+assert.equal(shizuoka2026Converted.goal, "congruent(AFC,DBC)",
+  "三角形の合同目標を推論エンジン形式へ変換する");
+assert.ok(shizuoka2026Converted.facts.includes("triangle(AFC)"),
+  "線オブジェクトから△AFCを認識する");
+assert.ok(shizuoka2026Converted.facts.includes("triangle(BCD)"),
+  "線オブジェクトから△DBCを認識する");
+assert.equal(shizuoka2026Converted.unsupported.some((item) =>
+  item.location === "geometry.constraints" && item.type === "collinear"), false,
+  "線オブジェクトで表現済みの共線条件は未対応警告にしない");
+assert.equal(shizuoka2026Converted.unsupported.some((item) =>
+  item.location === "goal" && item.type === "triangle-congruence"), false,
+  "三角形の合同目標は未対応警告にしない");
