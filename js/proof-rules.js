@@ -636,8 +636,11 @@
       [v[0],v[1],v[2]],[v[0],v[2],v[1]],[v[1],v[0],v[2]],
       [v[1],v[2],v[0]],[v[2],v[0],v[1]],[v[2],v[1],v[0]]
     ];
+    // Angle endpoints may name different points on the same ray. Use the
+    // same geometric equivalence as the rest of the prover, not label equality.
     const angleMatches = (angle, a, vertex, c) =>
-      angle[1] === vertex && [angle[0], angle[2]].sort().join("") === [a, c].sort().join("");
+      angle[1] === vertex &&
+      termsEquivalent("angle(" + angle + ")", "angle(" + a + vertex + c + ")", known);
     for (let i = 0; i < triangles.length; i++) for (let j = i + 1; j < triangles.length; j++) {
       const first = triangles[i], second = triangles[j];
       for (const mapped of permutations(second.vertices)) {
@@ -692,8 +695,11 @@
       [v[0],v[1],v[2]],[v[0],v[2],v[1]],[v[1],v[0],v[2]],
       [v[1],v[2],v[0]],[v[2],v[0],v[1]],[v[2],v[1],v[0]]
     ];
+    // Compare angle rays geometrically so a point on the same ray (for
+    // example P and F on ray CP) does not block an otherwise valid ASA match.
     const angleAt = (angle, vertex, other1, other2) =>
-      angle[1] === vertex && [angle[0],angle[2]].sort().join("") === [other1,other2].sort().join("");
+      angle[1] === vertex &&
+      termsEquivalent("angle(" + angle + ")", "angle(" + other1 + vertex + other2 + ")", known);
     for (let i = 0; i < triangles.length; i++) for (let j = i + 1; j < triangles.length; j++) {
       const first = triangles[i], second = triangles[j];
       for (const mapped of permutations(second.vertices)) {
