@@ -500,11 +500,11 @@
   // Two distinct corresponding angle pairs determine the third pair by angle sum.
   function triangleSimilarityAACandidates(known) {
     const triangles = known.map((fact) => {
-      const match = /^triangle\(([A-Z])([A-Z])([A-Z])\)$/.exec(fact);
+      const match = /^triangle\\(([A-Z])([A-Z])([A-Z])\\)$/.exec(fact);
       return match ? { fact, vertices: match.slice(1) } : null;
     }).filter(Boolean).filter((triangle) => new Set(triangle.vertices).size === 3);
     const anglePairs = known.map((fact) => {
-      const match = /^(angle\([A-Z]{1,3}\))=(angle\([A-Z]{1,3}\))$/.exec(fact);
+      const match = /^(angle\\([A-Z]{1,3}\\))=(angle\\([A-Z]{1,3}\\))$/.exec(fact);
       if (!match) return null;
       const parse = (term) => {
         const label = term.slice(6, -1);
@@ -513,6 +513,7 @@
       return { fact, firstAngle: parse(match[1]), secondAngle: parse(match[2]) };
     }).filter(Boolean);
     const results = [];
+    const seenConclusions = new Set();
     const angleAt = (triangle, vertex) => {
       const other = triangle.vertices.filter((point) => point !== vertex);
       return "angle(" + other[0] + vertex + other[1] + ")";
@@ -521,33 +522,50 @@
       (angle.points.length === 1 || termsEquivalent(angle.term, angleAt(triangle, angle.vertex), known));
     for (let i = 0; i < triangles.length; i++) for (let j = i + 1; j < triangles.length; j++) {
       const first = triangles[i], second = triangles[j];
-      for (const a of anglePairs) for (const b of anglePairs) {
-        if (a.fact === b.fact) continue;
-        for (const [aFirst, aSecond] of [[a.firstAngle, a.secondAngle], [a.secondAngle, a.firstAngle]]) {
-          if (!angleFits(aFirst, first) || !angleFits(aSecond, second)) continue;
-          for (const [bFirst, bSecond] of [[b.firstAngle, b.secondAngle], [b.secondAngle, b.firstAngle]]) {
-            if (!angleFits(bFirst, first) || !angleFits(bSecond, second)) continue;
-            if (aFirst.vertex === bFirst.vertex || aSecond.vertex === bSecond.vertex) continue;
-            const mapping = new Map([[aFirst.vertex, aSecond.vertex], [bFirst.vertex, bSecond.vertex]]);
-            if (new Set(mapping.values()).size !== 2) continue;
-            const remainingFirst = first.vertices.find((point) => !mapping.has(point));
-            const usedSecond = new Set(mapping.values());
-            const remainingSecond = second.vertices.find((point) => !usedSecond.has(point));
-            if (!remainingFirst || !remainingSecond) continue;
-            mapping.set(remainingFirst, remainingSecond);
-            const mapped = first.vertices.map((point) => mapping.get(point));
-            if (new Set(mapped).size !== 3) continue;
-            const conclusion = "similar(" + first.vertices.join("") + "," + mapped.join("") + ")";
-            if (results.some((rule) => rule.conclusion === conclusion)) continue;
-            results.push({
-              id: "triangle.similarity-aa",
-              name: "三角形の相似条件（2組の角）",
-              premises: [a.fact, b.fact, first.fact, second.fact],
-              conclusion,
-              explain: "2組の角がそれぞれ等しい2つの三角形は相似である。",
-              category: "similarity"
-            });
+      // Filter to angle equalities that can actually correspond to this triangle
+      // pair before combining pairs. Previously every pair of facts repeatedly
+      // rechecked both orientations, multiplying expensive equivalence lookups.
+      const matchedPairs = [];
+      for (const pair of anglePairs) {
+        for (const [firstAngle, secondAngle] of [
+          [pair.firstAngle, pair.secondAngle],
+          [pair.secondAngle, pair.firstAngle]
+        ]) {
+          if (angleFits(firstAngle, first) && angleFits(secondAngle, second)) {
+            matchedPairs.push({ fact: pair.fact, firstAngle, secondAngle });
           }
+        }
+      }
+      for (let aIndex = 0; aIndex < matchedPairs.length; aIndex++) {
+        const a = matchedPairs[aIndex];
+        for (let bIndex = aIndex + 1; bIndex < matchedPairs.length; bIndex++) {
+          const b = matchedPairs[bIndex];
+          if (a.fact === b.fact) continue;
+          if (a.firstAngle.vertex === b.firstAngle.vertex ||
+              a.secondAngle.vertex === b.secondAngle.vertex) continue;
+          const mapping = new Map([
+            [a.firstAngle.vertex, a.secondAngle.vertex],
+            [b.firstAngle.vertex, b.secondAngle.vertex]
+          ]);
+          if (new Set(mapping.values()).size !== 2) continue;
+          const remainingFirst = first.vertices.find((point) => !mapping.has(point));
+          const usedSecond = new Set(mapping.values());
+          const remainingSecond = second.vertices.find((point) => !usedSecond.has(point));
+          if (!remainingFirst || !remainingSecond) continue;
+          mapping.set(remainingFirst, remainingSecond);
+          const mapped = first.vertices.map((point) => mapping.get(point));
+          if (new Set(mapped).size !== 3) continue;
+          const conclusion = "similar(" + first.vertices.join("") + "," + mapped.join("") + ")";
+          if (seenConclusions.has(conclusion)) continue;
+          seenConclusions.add(conclusion);
+          results.push({
+            id: "triangle.similarity-aa",
+            name: "三角形の相似条件（2組の角）",
+            premises: [a.fact, b.fact, first.fact, second.fact],
+            conclusion,
+            explain: "2組の角がそれぞれ等しい2つの三角形は相似である。",
+            category: "similarity"
+          });
         }
       }
     }
