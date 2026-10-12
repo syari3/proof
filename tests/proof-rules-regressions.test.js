@@ -614,3 +614,30 @@ const missingOppositeSegment = rules.prove(
 assert.equal(missingOppositeSegment.success, false, "反対側の位置条件なしに円周角の補角関係を仮定しない");
 console.log("✓ 反対側の円周角の補角ルールを自動適用しない");
 
+
+
+// Ordered collinear points on the same ray can be substituted in angle names.
+// A-F-B means AF and AB point in the same direction from A; likewise AE and AC.
+const straightLineAngleRenaming = rules.prove(
+  ["between(A,F,B)", "between(A,E,C)"],
+  "angle(FAE)=angle(BAC)"
+);
+assert.equal(straightLineAngleRenaming.success, true,
+  "2本の直線上で同じ向きの半直線にある点を使い、∠FAEを∠BACに言い換えられる");
+assert.ok(straightLineAngleRenaming.steps.some((step) =>
+  step.ruleId === "geometry.same-ray-angle"
+), "角の言い換えが証明ステップに記録される");
+console.log("✓ 一直線上の点による角の言い換え");
+
+// The same renaming must also feed angle-addition substitution.
+const straightLineAngleAddition = rules.prove(
+  [
+    "between(A,F,B)", "between(A,E,C)",
+    "rayInsideAngle(A,F,E,G)",
+    "angle(BAG)=angle(FAG)"
+  ],
+  "angle(BAG)=angle(FAE)+angle(EAG)"
+);
+assert.equal(straightLineAngleAddition.success, true,
+  "一直線上の点による角の言い換えを角の加法への代入につなげる");
+console.log("✓ 一直線上の角の言い換えから角の加法へ");
