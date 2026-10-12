@@ -929,6 +929,8 @@
   }
 
   // In a triangle, equal interior angles face equal opposite sides.
+  // Match angle notation by ray equivalence against each angle of the triangle,
+  // so an equal angle written with another point on the same ray is still usable.
   function equalAnglesImplyEqualSidesCandidates(known) {
     const triangles = known.map((fact) => {
       const match = /^triangle\(([A-Z])([A-Z])([A-Z])\)$/.exec(fact);
@@ -939,17 +941,19 @@
     const results = [];
     for (const triangle of triangles) {
       if (new Set(triangle.vertices).size !== 3) continue;
+      const [a, b, c] = triangle.vertices;
+      const triangleAngles = [
+        { vertex: a, term: "angle(" + b + a + c + ")" },
+        { vertex: b, term: "angle(" + a + b + c + ")" },
+        { vertex: c, term: "angle(" + a + c + b + ")" }
+      ];
       for (const item of equalities) {
-        const left = parseAngle(item.equality.left);
-        const right = parseAngle(item.equality.right);
-        if (!left || !right) continue;
-        const leftVertices = [left.first, left.vertex, left.last];
-        const rightVertices = [right.first, right.vertex, right.last];
-        if (new Set(leftVertices).size !== 3 || new Set(rightVertices).size !== 3) continue;
-        if (!triangle.vertices.every((point) => leftVertices.includes(point) && rightVertices.includes(point))) continue;
-        if (left.vertex === right.vertex) continue;
-        const leftSide = "side(" + leftVertices.filter((point) => point !== left.vertex).sort().join("") + ")";
-        const rightSide = "side(" + rightVertices.filter((point) => point !== right.vertex).sort().join("") + ")";
+        const left = triangleAngles.find((angle) => sameAngleExpression(angle.term, item.equality.left, known));
+        const right = triangleAngles.find((angle) => sameAngleExpression(angle.term, item.equality.right, known));
+        if (!left || !right || left.vertex === right.vertex) continue;
+        const oppositeSide = (vertex) => "side(" + triangle.vertices.filter((point) => point !== vertex).sort().join("") + ")";
+        const leftSide = oppositeSide(left.vertex);
+        const rightSide = oppositeSide(right.vertex);
         if (leftSide === rightSide) continue;
         results.push({
           id: "triangle.equal-angles-imply-equal-sides",
