@@ -278,6 +278,14 @@ assert.ok(shizuoka2026Converted.facts.includes("intersects(line-DC,line-AC)"),
   "共通する点Cから直線DCとACの交わりを認識する");
 assert.ok(shizuoka2026Converted.facts.includes("intersects(line-DC,line-BD)"),
   "共通する点Dから直線DCとBDの交わりを認識する");
+assert.ok(shizuoka2026Converted.facts.some((fact) => fact.startsWith("correspondingAngles(")),
+  "2026年度の図で同位角を自動生成する");
+assert.ok(shizuoka2026Converted.facts.some((fact) => fact.startsWith("alternateAngles(")),
+  "2026年度の図で錯角を自動生成する");
+assert.ok(shizuoka2026Converted.facts.filter((fact) => fact.startsWith("correspondingAngles(")).length > 1,
+  "1組だけでなく、図中の複数の同位角候補を生成する");
+assert.ok(shizuoka2026Converted.facts.filter((fact) => fact.startsWith("alternateAngles(")).length > 1,
+  "1組だけでなく、図中の複数の錯角候補を生成する");
 
 
 
