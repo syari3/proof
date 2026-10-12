@@ -204,6 +204,34 @@ assert.equal(angleSplitProof.success, true, "明示された内角の半直線�
 assert.equal(angleSplitProof.steps.at(-1).ruleId, "angle.addition");
 
 
+// An angle-sector object lets the adapter generate the angle-addition premise
+// from an explicitly ordered sector, without hand-authoring ray-inside-angle.
+const autoAngleSectorProblem = {
+  format: "proof-problem", version: 1, id: "auto-angle-sector",
+  geometry: {
+    points: ["A", "B", "E", "G"].map((id) => ({ id })),
+    objects: [{ id: "sector-A", type: "angle-sector", vertex: "A", rays: ["B", "E", "G"] }],
+    constraints: [], constructions: [], dynamicConditions: []
+  },
+  goal: { type: "angle-equality", angles: [["B", "A", "G"], ["B", "A", "E"]] }
+};
+const autoAngleSectorConverted = Adapter.convert(autoAngleSectorProblem);
+assert.ok(autoAngleSectorConverted.facts.includes("rayInsideAngle(A,B,E,G)"),
+  "角領域の順序付きデータから内部半直線の関係を自動生成する");
+const autoAngleSectorProof = Rules.prove(autoAngleSectorConverted.facts,
+  "angle(BAG)=angle(BAE)+angle(EAG)");
+assert.equal(autoAngleSectorProof.success, true, "自動生成した内部半直線から角の加法を導く");
+assert.equal(autoAngleSectorProof.steps.at(-1).ruleId, "angle.addition");
+
+// Mere line incidence must not create an angle-sector relation.
+const noAngleSectorProbe = JSON.parse(JSON.stringify(autoAngleSectorProblem));
+noAngleSectorProbe.geometry.objects[0].type = "line";
+noAngleSectorProbe.geometry.objects[0].through = ["A", "B", "E", "G"];
+delete noAngleSectorProbe.geometry.objects[0].vertex;
+delete noAngleSectorProbe.geometry.objects[0].rays;
+assert.equal(Adapter.convert(noAngleSectorProbe).facts.some((fact) => fact.startsWith("rayInsideAngle(")), false,
+  "直線上の点の情報だけから角の内部を推測しない");
+
 // The new example specifically exercises angle addition, substitution, and cancellation.
 const angleAdditionProblem = require("../data/problem-examples/angle-addition-substitution-similarity.json");
 const angleAdditionResult = Adapter.run(angleAdditionProblem, Rules);
