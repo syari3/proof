@@ -424,8 +424,12 @@
   }
   function sameAngleExpression(first, second, known = []) {
     const a = parseAngle(first), b = parseAngle(second);
+    // Compare geometric angle notation (allowing same-ray point substitutions),
+    // not merely equal measures. Equality-graph equivalence can include angles
+    // with different rays and must not be used to rewrite a theorem's conclusion
+    // without carrying the intervening equality facts into its premises.
     return !!a && !!b && a.vertex === b.vertex &&
-      termsEquivalent(first, second, known);
+      canonicalTermWithSameRays(first, known) === canonicalTermWithSameRays(second, known);
   }
 
   function sameAngleEquality(first, second, known = []) {
@@ -518,7 +522,9 @@
       return "angle(" + other[0] + vertex + other[1] + ")";
     };
     const angleFits = (angle, triangle) => triangle.vertices.includes(angle.vertex) &&
-      (angle.points.length === 1 || termsEquivalent(angle.term, angleAt(triangle, angle.vertex), known));
+      (angle.points.length === 1 ||
+       canonicalTermWithSameRays(angle.term, known) ===
+         canonicalTermWithSameRays(angleAt(triangle, angle.vertex), known));
     for (let i = 0; i < triangles.length; i++) for (let j = i + 1; j < triangles.length; j++) {
       const first = triangles[i], second = triangles[j];
       for (const a of anglePairs) for (const b of anglePairs) {
