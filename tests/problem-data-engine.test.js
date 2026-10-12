@@ -316,3 +316,40 @@ const noOrderFacts = Adapter.convert(incidenceOnlyProbe).facts;
 assert.equal(noOrderFacts.some((fact) => fact.startsWith("correspondingAngles(") ||
   fact.startsWith("alternateAngles(")), false,
   "点の順序が未指定なら角の位置関係を推測しない");
+
+
+// Inscribed-angle facts are generated from circle incidence plus an explicit
+// same-segment relation; circle membership alone must not guess the chord side.
+const autoCircleAngles = {
+  format: "proof-problem", version: 1, id: "auto-inscribed-angles",
+  geometry: {
+    points: ["A", "B", "C", "D"].map((id) => ({ id })),
+    constraints: [
+      ...["A", "B", "C", "D"].map((point) => ({ type: "point-on-circle", point, circle: "O" })),
+      { type: "same-segment", chord: ["B", "C"], vertices: ["A", "D"] }
+    ],
+    objects: [], constructions: [], dynamicConditions: []
+  },
+  goal: { type: "angle-equality", angles: [["C", "A", "B"], ["C", "D", "B"]] }
+};
+const autoCircleConverted = Adapter.convert(autoCircleAngles);
+assert.ok(autoCircleConverted.facts.includes("inscribed(BAC,BC)"));
+assert.ok(autoCircleConverted.facts.includes("inscribed(BDC,BC)"));
+const autoCircleProof = Adapter.run(autoCircleAngles, Rules);
+assert.equal(autoCircleProof.success, true, "同じ側の同じ弦に対する円周角を自動生成して等しさを証明する");
+assert.ok(autoCircleProof.proof.steps.some((step) =>
+  step.ruleId === "circle.inscribed-angles-same-arc" || step.ruleId === "circle.angles-same-segment"));
+
+// Without explicit same-segment information, the adapter must not guess which
+// arc/segment an angle belongs to, even if every point lies on the circle.
+const ambiguousCircle = {
+  ...autoCircleAngles,
+  id: "ambiguous-circle-side",
+  geometry: {
+    ...autoCircleAngles.geometry,
+    constraints: autoCircleAngles.geometry.constraints.filter((item) => item.type !== "same-segment")
+  }
+};
+const ambiguousCircleConverted = Adapter.convert(ambiguousCircle);
+assert.equal(ambiguousCircleConverted.facts.some((fact) => fact.startsWith("inscribed(")), false,
+  "円周上の点だけでは弧・弦の同じ側を推測しない");
