@@ -228,6 +228,25 @@ const noTriangleForIsosceles = rules.prove(
 assert.equal(noTriangleForIsosceles.success, false, "三角形の明示がなければ底角定理を適用しない");
 console.log("✓ 二等辺三角形の底角（汎用ルール）");
 
+// Regression: equal apex angles may use a different point on the same ray.
+const equalApexIsoscelesSameRay = rules.prove(
+  [
+    "triangle(ABG)", "side(AB)=side(BG)",
+    "triangle(ACD)", "side(CA)=side(CD)",
+    "sameRay(B,D,G)",
+    "angle(ABD)=angle(ACD)"
+  ],
+  "angle(BAG)=angle(CAD)"
+);
+assert.equal(equalApexIsoscelesSameRay.success, true,
+  "同じ半直線上の点で表記が異なる頂角でも、二等辺三角形の底角を結び付ける");
+assert.ok(equalApexIsoscelesSameRay.steps.some(
+  (step) => step.ruleId === "triangle.isosceles-equal-apex-base-angles"
+));
+console.log("✓ 頂角の表記が同じ半直線上で異なる場合の二等辺三角形");
+
+
+
 const genericSimilarity = rules.prove(
   ["triangle(PQR)", "triangle(XYZ)", "angle(P)=angle(Y)", "angle(Q)=angle(Z)"],
   "similar(PQR,YZX)"
