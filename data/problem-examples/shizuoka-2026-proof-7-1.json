@@ -16,11 +16,11 @@
   "geometry": {
     "objects": [
       {"id": "circle-O", "type": "circle", "center": "O"},
-      {"id": "line-AB", "type": "line", "through": ["A", "F", "E", "B"]},
-      {"id": "line-AC", "type": "line", "through": ["A", "C"]},
-      {"id": "line-BD", "type": "line", "through": ["B", "D"]},
-      {"id": "line-DC", "type": "line", "through": ["D", "E", "C"]},
-      {"id": "line-PC", "type": "line", "through": ["P", "F", "C"]}
+      {"id": "line-AB", "type": "line", "through": ["A", "F", "E", "B"], "orderedThrough": ["A", "F", "E", "B"]},
+      {"id": "line-AC", "type": "line", "through": ["A", "C"], "orderedThrough": ["A", "C"]},
+      {"id": "line-BD", "type": "line", "through": ["B", "D"], "orderedThrough": ["B", "D"]},
+      {"id": "line-DC", "type": "line", "through": ["D", "E", "C"], "orderedThrough": ["D", "E", "C"]},
+      {"id": "line-PC", "type": "line", "through": ["P", "F", "C"], "orderedThrough": ["P", "F", "C"]}
     ],
     "points": [
       {"id": "O", "role": "circle-center"},

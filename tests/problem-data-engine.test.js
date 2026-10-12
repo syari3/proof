@@ -267,3 +267,52 @@ assert.equal(shizuoka2026Converted.unsupported.some((item) =>
 assert.equal(shizuoka2026Converted.unsupported.some((item) =>
   item.location === "goal" && item.type === "triangle-congruence"), false,
   "三角形の合同目標は未対応警告にしない");
+
+// Parallel endpoint pairs must resolve to the declared line IDs. Do not emit
+// malformed facts such as parallel(A,C,B,D) from JavaScript array coercion.
+assert.ok(shizuoka2026Converted.facts.includes("parallel(line-AC,line-BD)"),
+  "平行条件の端点ペアを直線オブジェクトIDへ変換する");
+assert.equal(shizuoka2026Converted.facts.includes("parallel(A,C,B,D)"), false,
+  "点の配列を直線名として誤変換しない");
+assert.ok(shizuoka2026Converted.facts.includes("intersects(line-DC,line-AC)"),
+  "共通する点Cから直線DCとACの交わりを認識する");
+assert.ok(shizuoka2026Converted.facts.includes("intersects(line-DC,line-BD)"),
+  "共通する点Dから直線DCとBDの交わりを認識する");
+assert.ok(shizuoka2026Converted.facts.some((fact) => fact.startsWith("alternateAngles(")),
+  "2026年度の図で錯角を自動生成する");
+assert.ok(shizuoka2026Converted.facts.filter((fact) => fact.startsWith("alternateAngles(")).length > 1,
+  "1組だけでなく、図中の複数の錯角候補を生成する");
+
+
+
+// Automatic parallel-angle generation is opt-in to orderedThrough. One
+// transversal creates multiple positional pairs; unordered incidence alone
+// must never cause the engine to guess a ray direction.
+const orderedParallelProbe = {
+  format: "proof-problem", version: 1, id: "auto-parallel-angle-pairs",
+  geometry: {
+    points: ["A","E","C","B","F","D","G","H"].map((id) => ({ id })),
+    objects: [
+      { id: "parallel-1", type: "line", through: ["A","E","C"], orderedThrough: ["A","E","C"] },
+      { id: "parallel-2", type: "line", through: ["B","F","D"], orderedThrough: ["B","F","D"] },
+      { id: "transversal", type: "line", through: ["G","E","F","H"], orderedThrough: ["G","E","F","H"] }
+    ],
+    constraints: [{ type: "parallel-lines", lines: [["A","C"],["B","D"]] }],
+    constructions: [], dynamicConditions: []
+  },
+  goal: { type: "angle-equality", angles: [["A","E","G"],["B","F","G"]] }
+};
+const autoParallel = Adapter.convert(orderedParallelProbe);
+assert.ok(autoParallel.facts.filter((fact) => fact.startsWith("correspondingAngles(")).length >= 2,
+  "複数の同位角候補を生成する");
+assert.ok(autoParallel.facts.some((fact) => fact.startsWith("alternateAngles(")),
+  "錯角候補も生成する");
+assert.ok(autoParallel.facts.includes("parallel(parallel-1,parallel-2)"));
+assert.ok(autoParallel.facts.includes("intersects(transversal,parallel-1)"));
+assert.ok(autoParallel.facts.includes("intersects(transversal,parallel-2)"));
+const incidenceOnlyProbe = JSON.parse(JSON.stringify(orderedParallelProbe));
+incidenceOnlyProbe.geometry.objects.forEach((line) => { delete line.orderedThrough; });
+const noOrderFacts = Adapter.convert(incidenceOnlyProbe).facts;
+assert.equal(noOrderFacts.some((fact) => fact.startsWith("correspondingAngles(") ||
+  fact.startsWith("alternateAngles(")), false,
+  "点の順序が未指定なら角の位置関係を推測しない");
