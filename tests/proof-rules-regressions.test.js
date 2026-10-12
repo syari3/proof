@@ -261,6 +261,27 @@ const missingSecondAngle = rules.prove(
 assert.equal(missingSecondAngle.success, false, "相似の角条件が1組だけでは相似を導かない");
 console.log("✓ 三角形の相似AA（汎用ルール）");
 
+const sameRayNotationFeedsSimilarity = rules.prove(
+  [
+    "triangle(ABG)", "triangle(ACD)",
+    "sameRay(B,D,G)",
+    "angle(ABD)=angle(ACD)",
+    "angle(AGB)=angle(ADC)"
+  ],
+  "similar(ABG,ACD)"
+);
+assert.equal(sameRayNotationFeedsSimilarity.success, true,
+  "相似条件でも、同じ半直線上の点で表記が異なる角を対応角として認識する");
+assert.equal(sameRayNotationFeedsSimilarity.steps.at(-1).ruleId, "triangle.similarity-aa");
+
+const sameRayGoalAngleEquality = rules.prove(
+  ["between(A,F,B)", "between(A,E,C)", "angle(FAE)=angle(XYZ)"],
+  "angle(BAC)=angle(XYZ)"
+);
+assert.equal(sameRayGoalAngleEquality.success, true,
+  "証明の目標側でも角の表記を同じ半直線に沿って言い換える");
+
+
 
 
 
