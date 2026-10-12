@@ -110,7 +110,7 @@ const exteriorAngleProof = Rules.prove(
 );
 assert.equal(exteriorAngleProof.success, true, "三角形の外角は隣り合わない2つの内角の和");
 assert.equal(exteriorAngleProof.steps.at(-1).ruleId, "triangle.exterior-angle");
-assert.deepEqual(exteriorAngleProof.steps.at(-1).premises, ["triangle(ABC)", "extends(B,C,D)"]);
+assert.deepEqual(exteriorAngleProof.steps.at(-1).premises, ["triangle(ABC)", "extends(BC,D)"]);
 
 // Collinearity by itself must not infer same/opposite rays.
 assert.deepEqual(GeometryRelations.derive([]), []);
