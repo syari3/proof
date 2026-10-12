@@ -1,0 +1,366 @@
+{
+  "format": "proof-problem",
+  "version": 1,
+  "id": "shizuoka-2023-proof-7-1",
+  "source": {
+    "region": "静岡県",
+    "exam": "公立高校入学者選抜学力検査",
+    "year": 2023,
+    "questionNumber": "7 (1)",
+    "materials": [
+      "10年間問題.pdf（13ページの問題）",
+      "10年間問題.pdf（14ページの解法メモ）"
+    ],
+    "transcriptionStatus": "transcribed-from-scanned-page",
+    "notes": "問題文はPDF 13ページ、解法メモは14ページを参照。図の点の位置と手書きメモの角の対応は原本を見て再確認する。"
+  },
+  "title": "円周角・二等辺三角形・相似（2023年度）",
+  "prompt": "図9において、4点A、B、C、Dは円Oの円周上の点であり、△ABCはBA＝BCの二等辺三角形である。ACとBDとの交点をEとし、点Eを通りADに平行な直線とCDとの交点をFとする。また、BD上にGC＝GDとなる点Gをとる。このとき、△BCG∽△ECFであることを証明しなさい。",
+  "geometry": {
+    "objects": [
+      {
+        "id": "circle-O",
+        "type": "circle",
+        "center": "O"
+      },
+      {
+        "id": "line-AB",
+        "type": "line",
+        "through": [
+          "B",
+          "A"
+        ],
+        "orderedThrough": [
+          "B",
+          "A"
+        ]
+      },
+      {
+        "id": "line-AC",
+        "type": "line",
+        "through": [
+          "A",
+          "E",
+          "C"
+        ],
+        "orderedThrough": [
+          "A",
+          "E",
+          "C"
+        ]
+      },
+      {
+        "id": "line-BD",
+        "type": "line",
+        "through": [
+          "B",
+          "G",
+          "E",
+          "D"
+        ],
+        "orderedThrough": [
+          "B",
+          "G",
+          "E",
+          "D"
+        ]
+      },
+      {
+        "id": "line-CD",
+        "type": "line",
+        "through": [
+          "D",
+          "F",
+          "C"
+        ],
+        "orderedThrough": [
+          "D",
+          "F",
+          "C"
+        ]
+      },
+      {
+        "id": "line-AD",
+        "type": "line",
+        "through": [
+          "A",
+          "D"
+        ],
+        "orderedThrough": [
+          "A",
+          "D"
+        ]
+      },
+      {
+        "id": "line-EF",
+        "type": "parallel-through-point",
+        "through": [
+          "E",
+          "F"
+        ],
+        "parallelTo": "line-AD"
+      },
+      {
+        "id": "line-BC",
+        "type": "line",
+        "through": [
+          "B",
+          "C"
+        ],
+        "orderedThrough": [
+          "B",
+          "C"
+        ]
+      },
+      {
+        "id": "line-GC",
+        "type": "line",
+        "through": [
+          "G",
+          "C"
+        ]
+      }
+    ],
+    "points": [
+      {
+        "id": "O",
+        "role": "circle-center"
+      },
+      {
+        "id": "A",
+        "role": "given-point"
+      },
+      {
+        "id": "B",
+        "role": "given-point"
+      },
+      {
+        "id": "C",
+        "role": "given-point"
+      },
+      {
+        "id": "D",
+        "role": "given-point"
+      },
+      {
+        "id": "E",
+        "role": "constructed-point"
+      },
+      {
+        "id": "F",
+        "role": "constructed-point"
+      },
+      {
+        "id": "G",
+        "role": "constructed-point"
+      }
+    ],
+    "constructions": [
+      {
+        "point": "E",
+        "type": "intersection",
+        "of": [
+          "line-AC",
+          "line-BD"
+        ]
+      },
+      {
+        "point": "F",
+        "type": "intersection",
+        "of": [
+          "line-EF",
+          "line-CD"
+        ]
+      }
+    ],
+    "constraints": [
+      {
+        "type": "point-on-circle",
+        "point": "A",
+        "circle": "circle-O"
+      },
+      {
+        "type": "point-on-circle",
+        "point": "B",
+        "circle": "circle-O"
+      },
+      {
+        "type": "point-on-circle",
+        "point": "C",
+        "circle": "circle-O"
+      },
+      {
+        "type": "point-on-circle",
+        "point": "D",
+        "circle": "circle-O"
+      },
+      {
+        "type": "equal-segments",
+        "segments": [
+          [
+            "B",
+            "A"
+          ],
+          [
+            "B",
+            "C"
+          ]
+        ]
+      },
+      {
+        "type": "equal-segments",
+        "segments": [
+          [
+            "G",
+            "C"
+          ],
+          [
+            "G",
+            "D"
+          ]
+        ]
+      },
+      {
+        "type": "parallel-lines",
+        "lines": [
+          [
+            "A",
+            "D"
+          ],
+          [
+            "E",
+            "F"
+          ]
+        ]
+      },
+      {
+        "type": "between",
+        "points": [
+          "A",
+          "E",
+          "C"
+        ]
+      },
+      {
+        "type": "between",
+        "points": [
+          "B",
+          "G",
+          "D"
+        ]
+      },
+      {
+        "type": "between",
+        "points": [
+          "B",
+          "G",
+          "E"
+        ]
+      },
+      {
+        "type": "between",
+        "points": [
+          "D",
+          "F",
+          "C"
+        ]
+      },
+      {
+        "type": "same-segment",
+        "chord": [
+          "C",
+          "D"
+        ],
+        "vertices": [
+          "B",
+          "A"
+        ]
+      },
+      {
+        "type": "same-segment",
+        "chord": [
+          "A",
+          "C"
+        ],
+        "vertices": [
+          "B",
+          "D"
+        ]
+      }
+    ],
+    "dynamicConditions": []
+  },
+  "goal": {
+    "type": "triangle-similarity",
+    "triangles": [
+      [
+        "B",
+        "C",
+        "G"
+      ],
+      [
+        "E",
+        "C",
+        "F"
+      ]
+    ]
+  },
+  "proofPlan": {
+    "status": "source-derived-candidate",
+    "targetMethod": "AA-similarity",
+    "recordedProperties": [
+      "同じ弦に対する円周角",
+      "平行線の錯角・同位角",
+      "二等辺三角形の底角",
+      "角の加法",
+      "三角形の相似条件（2組の角）"
+    ],
+    "sourceAnalysis": {
+      "fineGrainedSteps": 10,
+      "largeSteps": 3,
+      "targetCategory": "相似",
+      "targetCondition": "∠CBG＝∠CEF、∠BCG＝∠ECF"
+    },
+    "steps": [
+      {
+        "claim": "∠CBG＝∠CEF",
+        "reason": "同じ弦CDに対する円周角と、AD∥EFから得られる角の関係を使う。"
+      },
+      {
+        "claim": "∠BCA＝∠BAC",
+        "reason": "BA＝BCより、△ABCは二等辺三角形で底角が等しい。"
+      },
+      {
+        "claim": "∠GCD＝∠GDC",
+        "reason": "GC＝GDより、△GCDは二等辺三角形で底角が等しい。"
+      },
+      {
+        "claim": "∠BAC＝∠BDC",
+        "reason": "同じ弦BCに対する円周角が等しい。"
+      },
+      {
+        "claim": "∠BCG＝∠ECF",
+        "reason": "上の角の関係と、図の角の加法を使う。"
+      },
+      {
+        "claim": "△BCG∽△ECF",
+        "reason": "2組の角がそれぞれ等しいので、三角形は相似。"
+      }
+    ],
+    "warning": "PDF 14ページの手書き解法メモに沿った候補手順。角の加法と点の位置関係の厳密な自動導出は未対応の可能性がある。"
+  },
+  "validation": {
+    "status": "proof-engine-validation-pending",
+    "structuralChecks": "transcribed-from-scanned-page",
+    "mathematicalChecks": "source-derived-proof-outline; full geometry validation pending",
+    "openQuestions": [
+      "図9の点の順序と、FがCD上にあることを原図と照合する。",
+      "角の加法から∠BCG＝∠ECFを導く過程を、現在の推論ルールでどこまで再現できるか確認する。",
+      "円周角の頂点が弦の同じ側にあることを原図と照合する。"
+    ]
+  },
+  "proofFacts": [
+    "angle(CBG)=angle(CEF)",
+    "angle(BCG)=angle(ECF)"
+  ]
+}
