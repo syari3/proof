@@ -771,9 +771,14 @@
     for (let i = 0; i < triangles.length; i++) for (let j = i + 1; j < triangles.length; j++) {
       const a = info(triangles[i]), b = info(triangles[j]);
       if (!a || !b) continue;
+      // The apex angles may use different points on the same ray, e.g.
+      // angle(ABD) and angle(ABG) when D and G lie on the same ray from B.
+      // Use the prover's geometric equivalence rather than exact text labels.
       const apexEq = angleEqualities.find((x) =>
-        [x.equality.left, x.equality.right].includes(a.apexAngle) &&
-        [x.equality.left, x.equality.right].includes(b.apexAngle));
+        ((termsEquivalent(x.equality.left, a.apexAngle, known) &&
+          termsEquivalent(x.equality.right, b.apexAngle, known)) ||
+         (termsEquivalent(x.equality.right, a.apexAngle, known) &&
+          termsEquivalent(x.equality.left, b.apexAngle, known))));
       if (!apexEq) continue;
       for (const aa of bases(a)) for (const bb of bases(b)) results.push({
         id: 'triangle.isosceles-equal-apex-base-angles',
