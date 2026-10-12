@@ -190,3 +190,22 @@ const substitutionProbe = Rules.prove([
 ], "angle(BAC)=angle(BAD)+angle(DAF)");
 assert.equal(substitutionProbe.success, true, "角の加法の式に等しい角を代入できる");
 assert.equal(substitutionProbe.steps.at(-1).ruleId, "angle.addition-substitution");
+
+// The 2024 Shizuoka problem uses a moving-point angle condition and the
+// exterior-angle / same-chord / equal-angles-to-equal-sides route.
+const shizuoka2024 = require("../data/problem-examples/shizuoka-2024-proof-7-1.json");
+const shizuoka2024Result = Adapter.run(shizuoka2024, Rules, 100, { analyzeConditions: false });
+assert.equal(shizuoka2024Result.status, "proved",
+  "2024年度のPA=PCを、登録済みの角・円・二等辺三角形の規則で導く");
+assert.equal(shizuoka2024Result.success, true);
+assert.equal(shizuoka2024Result.converted.goal, "side(AP)=side(CP)");
+assert.ok(shizuoka2024Result.converted.facts.includes("angle(ABC)=angle(CEF)") ||
+  shizuoka2024Result.converted.facts.includes("angle(ABC)=angle(CFE)") ||
+  shizuoka2024Result.converted.facts.includes("angle(CFE)=angle(ABC)"),
+  "動点条件の角の等しさを条件として取り込む");
+assert.ok(shizuoka2024Result.proof.steps.some((step) => step.ruleId === "triangle.exterior-angle"),
+  "三角形の外角定理を利用する");
+assert.ok(shizuoka2024Result.proof.steps.some((step) => step.ruleId === "circle.angles-same-segment"),
+  "同じ弦に対する円周角を利用する");
+assert.ok(shizuoka2024Result.proof.steps.some((step) => step.ruleId === "triangle.equal-angles-imply-equal-sides"),
+  "等しい角に対する辺の等しさを利用する");
