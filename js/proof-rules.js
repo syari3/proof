@@ -343,6 +343,8 @@
       ...exteriorAngleCandidates(facts),
       ...angleAdditionCandidates(facts),
       ...segmentAdditionCandidates(facts),
+      ...additionSubstitutionCandidates(facts),
+      ...additionAlgebraCandidates(facts),
       ...equalAnglesImplyEqualSidesCandidates(facts),
       ...triangleSimilarityAACandidates(facts),
       ...triangleCongruenceSSSCandidates(facts),
