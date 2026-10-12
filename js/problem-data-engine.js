@@ -185,18 +185,22 @@
         };
         const leftAngles = at(first, v1), rightAngles = at(second, v2);
         const firstEnds = pair.endpoints[0], secondEnds = pair.endpoints[1];
-        const orientation1 = pointIndex(first, firstEnds[0]) < pointIndex(first, firstEnds[1]) ? 1 : -1;
-        const orientation2 = pointIndex(second, secondEnds[0]) < pointIndex(second, secondEnds[1]) ? 1 : -1;
-        const parallelOrientation = orientation1 === orientation2 ? 1 : -1;
+        const endpoint1 = firstEnds.find((p) => p !== v1);
+        const endpoint2 = secondEnds.find((p) => p !== v2);
+        const baseSide1 = endpoint1 ? raySide(first, v1, endpoint1) : 0;
+        const baseSide2 = endpoint2 ? raySide(second, v2, endpoint2) : 0;
         const towardOther1 = v1Index < v2Index ? 1 : -1;
         const towardOther2 = -towardOther1;
         for (const a of leftAngles) for (const b of rightAngles) {
-          if (a.tSide === b.tSide && a.pSide === b.pSide * parallelOrientation) {
+          // The endpoint pairs in parallel-lines provide the matching ray
+          // reference on each parallel; other points on the same ray are valid
+          // alternate names for the angle, so emit every matching pair.
+          if (baseSide1 && baseSide2 && a.tSide === b.tSide &&
+              a.pSide * baseSide1 === b.pSide * baseSide2) {
             add("correspondingAngles(" + a.angle + "," + b.angle + "," + transversal.id + "," + first.id + "," + second.id + ")");
           }
-          const aInterior = a.tSide === towardOther1 && a.pSide === (a.tSide > 0 ? -1 : 1);
-          const bInterior = b.tSide === towardOther2 && b.pSide === (b.tSide > 0 ? -1 : 1) * parallelOrientation;
-          if (aInterior && bInterior) {
+          if (baseSide1 && baseSide2 && a.tSide === towardOther1 &&
+              b.tSide === towardOther2 && a.pSide === baseSide1 && b.pSide === baseSide2) {
             add("alternateAngles(" + a.angle + "," + b.angle + "," + transversal.id + "," + first.id + "," + second.id + ")");
           }
         }
