@@ -1120,26 +1120,36 @@
     return cached.normalize(term);
   }
 
+  // Equality graph cache mirrors rayCanonicalizerCache: during proving, known
+  // only grows by appending facts, so its length tells us when to rebuild.
+  // Without this cache, every angle comparison rescanned every known equality;
+  // AA matching nests those comparisons and made adapter tests appear hung.
+  const equalityGraphCache = new WeakMap();
   function termsEquivalent(first, second, known) {
     first = canonicalTermWithSameRays(first, known);
     second = canonicalTermWithSameRays(second, known);
     if (first === second) return true;
-    const graph = new Map();
-    for (const fact of known) {
-      const equality = parseEquality(fact);
-      if (!equality) continue;
-      const left = canonicalTermWithSameRays(equality.left, known);
-      const right = canonicalTermWithSameRays(equality.right, known);
-      if (!graph.has(left)) graph.set(left, new Set());
-      if (!graph.has(right)) graph.set(right, new Set());
-      graph.get(left).add(right);
-      graph.get(right).add(left);
+    let cached = equalityGraphCache.get(known);
+    if (!cached || cached.length !== known.length) {
+      const graph = new Map();
+      for (const fact of known) {
+        const equality = parseEquality(fact);
+        if (!equality) continue;
+        const left = canonicalTermWithSameRays(equality.left, known);
+        const right = canonicalTermWithSameRays(equality.right, known);
+        if (!graph.has(left)) graph.set(left, new Set());
+        if (!graph.has(right)) graph.set(right, new Set());
+        graph.get(left).add(right);
+        graph.get(right).add(left);
+      }
+      cached = { length: known.length, graph };
+      equalityGraphCache.set(known, cached);
     }
     const visited = new Set([first]);
     const queue = [first];
-    while (queue.length) {
-      const current = queue.shift();
-      for (const next of graph.get(current) || []) {
+    for (let index = 0; index < queue.length; index++) {
+      const current = queue[index];
+      for (const next of cached.graph.get(current) || []) {
         if (next === second) return true;
         if (!visited.has(next)) { visited.add(next); queue.push(next); }
       }
