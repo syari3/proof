@@ -196,7 +196,8 @@ assert.equal(substitutionProbe.steps.at(-1).ruleId, "angle.addition-substitution
 const shizuoka2024 = require("../data/problem-examples/shizuoka-2024-proof-7-1.json");
 const shizuoka2024Result = Adapter.run(shizuoka2024, Rules, 100, { analyzeConditions: false });
 assert.equal(shizuoka2024Result.status, "proved",
-  "2024年度のPA=PCを、登録済みの角・円・二等辺三角形の規則で導く");
+  "2024年度のPA=PCを、登録済みの角・円・二等辺三角形の規則で導く。診断=" +
+  JSON.stringify({facts: shizuoka2024Result.converted.facts, unsupported: shizuoka2024Result.converted.unsupported, reason: shizuoka2024Result.proof && shizuoka2024Result.proof.reason, steps: shizuoka2024Result.proof && shizuoka2024Result.proof.steps.map((step) => ({ruleId: step.ruleId, conclusion: step.conclusion}))}));
 assert.equal(shizuoka2024Result.success, true);
 assert.equal(shizuoka2024Result.converted.goal, "side(AP)=side(CP)");
 assert.ok(shizuoka2024Result.converted.facts.includes("angle(ABC)=angle(CEF)") ||
