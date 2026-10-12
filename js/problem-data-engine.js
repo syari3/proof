@@ -118,6 +118,21 @@
       }
     }
 
+    // Generate inscribed-angle facts only when the same-segment side of a chord
+    // is explicit. Circle membership alone cannot identify the relevant arc safely.
+    const circlePointSet = new Set(facts.map((fact) => /^onCircle\(([A-Z])\)$/.exec(fact))
+      .filter(Boolean).map((match) => match[1]));
+    for (const fact of facts.slice()) {
+      const match = /^sameSegment\(([A-Z])([A-Z]),([A-Z]),([A-Z])\)$/.exec(fact);
+      if (!match) continue;
+      const [, x, y, firstVertex, secondVertex] = match;
+      if (new Set([x, y, firstVertex, secondVertex]).size !== 4) continue;
+      if (![x, y, firstVertex, secondVertex].every((point) => circlePointSet.has(point))) continue;
+      const arc = [x, y].sort().join("");
+      add("inscribed(" + x + firstVertex + y + "," + arc + ")");
+      add("inscribed(" + x + secondVertex + y + "," + arc + ")");
+    }
+
     // Three distinct points on one circle are non-collinear, so they name a triangle.
     // This lets side equalities apply to the corresponding isosceles triangle without
     // requiring the user to redundantly declare every triangle in the diagram.
