@@ -429,6 +429,19 @@ assert.equal(angleAdditionSubstitution.success, true, "既知の角の等しさ�
 assert.ok(angleAdditionSubstitution.steps.some((step) => step.ruleId === "angle.addition-substitution"));
 console.log("✓ 角の加法への等式の代入");
 
+const wholeAngleAdditionSubstitution = rules.prove(
+  ["rayInsideAngle(A,F,E,G)", "angle(BAG)=angle(FAG)"],
+  "angle(BAG)=angle(FAE)+angle(EAG)"
+);
+assert.equal(wholeAngleAdditionSubstitution.success, true,
+  "角の加法の左辺も、等しい角に置き換えられる");
+assert.ok(wholeAngleAdditionSubstitution.steps.some((step) =>
+  step.ruleId === "angle.addition-substitution" &&
+  step.conclusion === "angle(BAG)=angle(FAE)+angle(EAG)"
+));
+console.log("✓ 角の加法の左辺への代入");
+
+
 const chainedAngleAdditionSubstitution = rules.prove(
   ["rayInsideAngle(O,A,B,C)", "angle(AOB)=angle(XOY)", "angle(XOY)=angle(MON)"],
   "angle(AOC)=angle(MON)+angle(BOC)"
@@ -443,6 +456,19 @@ const segmentAdditionSubstitution = rules.prove(
 assert.equal(segmentAdditionSubstitution.success, true, "既知の線分の等しさを線分の加法に代入できる");
 assert.ok(segmentAdditionSubstitution.steps.some((step) => step.ruleId === "segment.addition-substitution"));
 console.log("✓ 線分の加法への等式の代入");
+
+const wholeSegmentAdditionSubstitution = rules.prove(
+  ["between(A,B,C)", "side(DE)=side(AC)"],
+  "side(DE)=side(AB)+side(BC)"
+);
+assert.equal(wholeSegmentAdditionSubstitution.success, true,
+  "線分の加法の左辺も、等しい線分に置き換えられる");
+assert.ok(wholeSegmentAdditionSubstitution.steps.some((step) =>
+  step.ruleId === "segment.addition-substitution" &&
+  step.conclusion === "side(DE)=side(AB)+side(BC)"
+));
+console.log("✓ 線分の加法の左辺への代入");
+
 
 const reversedSegmentAdditionSubstitution = rules.prove(
   ["between(A,B,C)", "side(DE)=side(AB)"],
