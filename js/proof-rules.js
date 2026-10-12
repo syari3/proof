@@ -983,7 +983,7 @@
   function additionSubstitutionCandidates(known) {
     const results = [];
     const seen = new Set();
-    const additionPattern = /^(angle\\([A-Z]{3}\\)|side\\([A-Z]{2}\\))=(angle\\([A-Z]{3}\\)|side\\([A-Z]{2}\\))\\+(angle\\([A-Z]{3}\\)|side\\([A-Z]{2}\\))$/;
+    const additionPattern = /^(angle\([A-Z]{3}\)|side\([A-Z]{2}\))=(angle\([A-Z]{3}\)|side\([A-Z]{2}\))\+(angle\([A-Z]{3}\)|side\([A-Z]{2}\))$/;
     const equalities = known.map((fact) => ({ fact, equality: parseEquality(fact) }))
       .filter((item) => item.equality);
     for (const fact of known) {
