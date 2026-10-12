@@ -1309,6 +1309,32 @@
           }
         }
 
+        // Exterior-angle candidates were previously available through derive(),
+        // but not through prove()'s forward-chaining loop. Apply the theorem here too.
+        const exteriorAngle = exteriorAngleCandidates(known).find((rule) => !known.includes(rule.conclusion));
+        if (exteriorAngle) {
+          const step = {
+            index: steps.length + 1,
+            ruleId: exteriorAngle.id,
+            ruleName: exteriorAngle.name,
+            premises: [...exteriorAngle.premises],
+            premiseSources: exteriorAngle.premises.map((premise) => ({
+              fact: premise,
+              ...(sourceByFact.get(premise) || { type: "unknown" })
+            })),
+            conclusion: exteriorAngle.conclusion,
+            explanation: exteriorAngle.explain,
+            category: exteriorAngle.category
+          };
+          known.push(step.conclusion);
+          sourceByFact.set(step.conclusion, { type: "step", index: step.index });
+          steps.push(step);
+          changed = true;
+          if (step.conclusion === goal) {
+            return { success: true, goal, facts: known, steps, reason: "proved" };
+          }
+        }
+
         const isoscelesCandidates = isoscelesBaseAngleCandidates(known);
         const isosceles = isoscelesCandidates.find((rule) => sameAngleEquality(rule.conclusion, goal, known)) || isoscelesCandidates.find((rule) => !known.includes(rule.conclusion));
         if (isosceles) {
