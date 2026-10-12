@@ -624,9 +624,8 @@ const straightLineAngleRenaming = rules.prove(
 );
 assert.equal(straightLineAngleRenaming.success, true,
   "2本の直線上で同じ向きの半直線にある点を使い、∠FAEを∠BACに言い換えられる");
-assert.ok(straightLineAngleRenaming.steps.some((step) =>
-  step.ruleId === "geometry.same-ray-angle"
-), "角の言い換えが証明ステップに記録される");
+assert.equal(straightLineAngleRenaming.steps.length, 0,
+  "一直線上の角の言い換えは内部処理し、証明ステップを消費しない");
 console.log("✓ 一直線上の点による角の言い換え");
 
 // The same renaming must also feed angle-addition substitution.
