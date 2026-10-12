@@ -129,7 +129,7 @@
     <section class="engine-lab" aria-labelledby="engine-lab-title">
       <p class="section-kicker">INFERENCE ENGINE · EXPERIMENT</p>
       <h2 id="engine-lab-title">推論エンジンを実行する</h2>
-      <p class="engine-intro">2024年度と2025年度の証明問題を選んで、登録済みの推論ルールでどこまで導けるか試します。目標から根拠をさかのぼって、証明に関係するステップを表示します。図はまだ表示しません。</p>
+      <p class="engine-intro">2024年度〜2026年度の証明問題を選んで、登録済みの推論ルールでどこまで導けるか試します。目標から根拠をさかのぼって、証明に関係するステップを表示します。図はまだ表示しません。</p>
       <div class="engine-prompt">
         <strong>問題：</strong>
         <p id="engine-problem-text">問題を読み込んでいます…</p>
@@ -138,7 +138,8 @@
       <div class="engine-toolbar">
         <label for="engine-problem-select">年度
           <select id="engine-problem-select">
-            <option value="2025" selected>2025年度（第7問(1)・相似）</option>
+            <option value="2026" selected>2026年度（第7問(1)・三角形の合同）</option>
+            <option value="2025">2025年度（第7問(1)・相似）</option>
             <option value="2024">2024年度（第7問(1)・PA＝PC）</option>
           </select>
         </label>
@@ -282,7 +283,9 @@
         const year = problemSelect.value;
         const path = year === "2024"
           ? "./data/problem-examples/shizuoka-2024-proof-7-1.json"
-          : "./data/problem-examples/shizuoka-2025-proof-7-1.json";
+          : year === "2026"
+            ? "./data/problem-examples/shizuoka-2026-proof-7-1.json"
+            : "./data/problem-examples/shizuoka-2025-proof-7-1.json";
         try {
           const response = await fetch(path);
           if (!response.ok) throw new Error("問題データを読み込めませんでした（HTTP " + response.status + "）。");
@@ -291,8 +294,9 @@
           if (problemSelect.value !== year) return;
           problem = loadedProblem;
           promptNode.textContent = problem.prompt || "問題文がありません。";
-          if (problem.goal && problem.goal.type === "triangle-similarity" && Array.isArray(problem.goal.triangles)) {
-            goalNode.textContent = "△" + problem.goal.triangles[0].join("") + " ∽ △" + problem.goal.triangles[1].join("");
+          if (problem.goal && ["triangle-similarity", "triangle-congruence"].includes(problem.goal.type) && Array.isArray(problem.goal.triangles)) {
+            const relation = problem.goal.type === "triangle-congruence" ? " ≡ " : " ∽ ";
+            goalNode.textContent = "△" + problem.goal.triangles[0].join("") + relation + "△" + problem.goal.triangles[1].join("");
           } else if (problem.goal && problem.goal.type === "angle-equality" && Array.isArray(problem.goal.angles)) {
             goalNode.textContent = problem.goal.angles.map((angle) => "∠" + angle.join("")).join(" = ");
           } else if (problem.goal && problem.goal.type === "segment-equality" && Array.isArray(problem.goal.segments)) {
