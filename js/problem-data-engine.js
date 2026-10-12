@@ -269,7 +269,7 @@
     };
   }
 
-  function run(problem, proofRules, maxSteps = 100) {
+  function run(problem, proofRules, maxSteps = 100, options = {}) {
     if (!proofRules || typeof proofRules.prove !== "function") {
       throw new TypeError("ProofRules.prove が必要です。");
     }
@@ -278,7 +278,9 @@
       return { success: false, status: "unsupported-goal", converted, proof: null, conditionAnalysis: null };
     }
     const proof = proofRules.prove(converted.facts, converted.goal, maxSteps);
-    const conditionAnalysis = proof.success
+    // The interactive page can prioritize showing the proof immediately and
+    // request this expensive single-item-removal analysis separately.
+    const conditionAnalysis = proof.success && options.analyzeConditions !== false
       ? analyzeConditionNecessity(problem, proofRules, maxSteps)
       : null;
     return {
