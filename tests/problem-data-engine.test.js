@@ -223,8 +223,8 @@ assert.equal(shizuoka2024Result.status === "proved", shizuoka2024Result.success)
 
 
 // Regression checks for the final step of the 2024 PA = PC proof.
-assert.ok(shizuoka2024Result.converted.facts.includes("triangle(APC)"),
-  "A・P・CはAE・AC・CPという3本の異なる直線から三角形APCとして認識される");
+assert.ok(shizuoka2024Result.converted.facts.includes("triangle(ACP)"),
+  "A・P・CはAE・AC・CPという3本の異なる直線から三角形ACPとして認識される（頂点名は正規化される）");
 assert.ok(shizuoka2024Result.converted.facts.includes("sameRay(A,P,E)"),
   "A・P・Eの順序から、Aを頂点とするAPとAEの同じ半直線を認識する");
 assert.ok(shizuoka2024Result.converted.facts.includes("sameRay(C,F,P)"),
