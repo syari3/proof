@@ -933,7 +933,7 @@
   // so an equal angle written with another point on the same ray is still usable.
   function equalAnglesImplyEqualSidesCandidates(known) {
     const triangles = known.map((fact) => {
-      const match = /^triangle\\(([A-Z])([A-Z])([A-Z])\\)$/.exec(fact);
+      const match = /^triangle\(([A-Z])([A-Z])([A-Z])\)$/.exec(fact);
       return match ? { fact, vertices: match.slice(1) } : null;
     }).filter(Boolean);
     const equalities = known.map((fact) => ({ fact, equality: parseEquality(fact) }))
