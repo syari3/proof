@@ -1,0 +1,73 @@
+{
+  "format": "proof-problem",
+  "version": 1,
+  "id": "shizuoka-2026-proof-7-1",
+  "source": {
+    "region": "静岡県",
+    "exam": "公立高校入学者選抜学力検査",
+    "year": 2026,
+    "questionNumber": "7 (1)",
+    "materials": ["10年間問題.pdf（19ページの問題）", "10年間問題.pdf（20ページの分析メモ）"],
+    "transcriptionStatus": "transcribed-from-scanned-page",
+    "notes": "問題文はPDF 19ページ、条件・証明方針の手書きメモは20ページを参照。公開前に原本の表記と図の点の位置を再確認する。"
+  },
+  "title": "円周角・平行線・合同（2026年度）",
+  "prompt": "図10において、3点A、B、Cは円Oの円周上の点であり、AB＝ACである。点Bを通り、CAに平行な直線と円Oとの交点をDとし、ABとDCとの交点をEとする。また、点Pは弧AD上を動く点であり、ABとPCとの交点をFとする。ただし、点Pは点A、Dと重ならないものとする。図11のように、点Pを∠PCA＝∠BCDとなるように動かしたとき、△AFC≡△DBCであることを証明しなさい。",
+  "geometry": {
+    "objects": [
+      {"id": "circle-O", "type": "circle", "center": "O"},
+      {"id": "line-AB", "type": "line", "through": ["A", "F", "E", "B"]},
+      {"id": "line-AC", "type": "line", "through": ["A", "C"]},
+      {"id": "line-BD", "type": "line", "through": ["B", "D"]},
+      {"id": "line-DC", "type": "line", "through": ["D", "E", "C"]},
+      {"id": "line-PC", "type": "line", "through": ["P", "F", "C"]}
+    ],
+    "points": [
+      {"id": "O", "role": "circle-center"},
+      {"id": "A", "role": "given-point"},
+      {"id": "B", "role": "given-point"},
+      {"id": "C", "role": "given-point"},
+      {"id": "D", "role": "constructed-point"},
+      {"id": "E", "role": "constructed-point"},
+      {"id": "F", "role": "constructed-point"},
+      {"id": "P", "role": "moving-point"}
+    ],
+    "constraints": [
+      {"type": "point-on-circle", "point": "A", "circle": "circle-O"},
+      {"type": "point-on-circle", "point": "B", "circle": "circle-O"},
+      {"type": "point-on-circle", "point": "C", "circle": "circle-O"},
+      {"type": "point-on-circle", "point": "D", "circle": "circle-O"},
+      {"type": "point-on-circle", "point": "P", "circle": "circle-O"},
+      {"type": "equal-segments", "segments": [["A", "B"], ["A", "C"]]},
+      {"type": "parallel-lines", "lines": [["A", "C"], ["B", "D"]]},
+      {"type": "collinear", "points": ["A", "F", "E", "B"]},
+      {"type": "collinear", "points": ["D", "E", "C"]},
+      {"type": "collinear", "points": ["P", "F", "C"]}
+    ],
+    "dynamicConditions": [
+      {"type": "angle-equality", "angles": [["P", "C", "A"], ["B", "C", "D"]], "role": "select-position-of-moving-point", "point": "P"}
+    ]
+  },
+  "goal": {"type": "triangle-congruence", "triangles": [["A", "F", "C"], ["D", "B", "C"]]},
+  "proofPlan": {
+    "status": "candidate-only",
+    "targetMethod": "triangle-congruence-angle-side-angle",
+    "recordedProperties": ["円周角", "平行線の錯角", "三角形の合同条件", "二等辺三角形の性質", "線分の加法"],
+    "sourceAnalysis": {
+      "targetCategory": "三角形の合同",
+      "targetCondition": "∠FCA＝∠BCD、∠CAF＝∠CDB、AC＝DC"
+    },
+    "warning": "PDF 20ページの手書き分析メモに基づく候補方針。角の対応・二等辺三角形の根拠は、エンジンの推論結果と原図を照合して検証する。"
+  },
+  "validation": {
+    "status": "proof-engine-validation-pending",
+    "structuralChecks": "transcribed-from-scanned-page",
+    "mathematicalChecks": "full geometry validation pending",
+    "openQuestions": [
+      "図10・図11の点の順序と、点Pが弧AD上を動くことを原本と照合する。",
+      "手書きメモにある△ECA、△EDBの二等辺性と AE＝CE、EB＝ED の導出を個別に検証する。",
+      "proof engine が三角形の合同条件と線分の加法を扱えるか確認し、必要なら推論規則を追加する。"
+    ]
+  },
+  "proofFacts": ["parallel(AC,BD)", "extends(A,F,B)", "extends(D,E,C)", "extends(P,F,C)"]
+}
