@@ -320,7 +320,7 @@ assert.equal(shizuoka2026Converted.unsupported.some((item) =>
   item.location === "goal" && item.type === "triangle-congruence"), false,
   "三角形の合同目標は未対応警告にしない");
 
-// The actual 2026 Shizuoka item should prove, not merely convert its goal.
+// End-to-end regression: the actual 2026 Shizuoka item should prove, not merely convert its goal.
 // This exercises the stated moving-point angle condition through ASA matching.
 const shizuoka2026Proof = Adapter.run(shizuoka2026, Rules, 200, { analyzeConditions: false });
 assert.equal(shizuoka2026Proof.success, true,
