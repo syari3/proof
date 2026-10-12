@@ -141,6 +141,7 @@
             <option value="2026" selected>2026年度（第7問(1)・三角形の合同）</option>
             <option value="2025">2025年度（第7問(1)・相似）</option>
             <option value="2024">2024年度（第7問(1)・PA＝PC）</option>
+            <option value="2023">2023年度（第7問(1)・三角形の相似）</option>
           </select>
         </label>
         <button id="engine-run" class="engine-run-button" type="button">推論エンジンを実行</button>
@@ -281,11 +282,13 @@
         resetRunOutput();
         setStatus("問題データを読み込んでいます。");
         const year = problemSelect.value;
-        const path = year === "2024"
-          ? "./data/problem-examples/shizuoka-2024-proof-7-1.json"
-          : year === "2026"
-            ? "./data/problem-examples/shizuoka-2026-proof-7-1.json"
-            : "./data/problem-examples/shizuoka-2025-proof-7-1.json";
+        const path = year === "2023"
+          ? "./data/problem-examples/shizuoka-2023-proof-7-1.json"
+          : year === "2024"
+            ? "./data/problem-examples/shizuoka-2024-proof-7-1.json"
+            : year === "2026"
+              ? "./data/problem-examples/shizuoka-2026-proof-7-1.json"
+              : "./data/problem-examples/shizuoka-2025-proof-7-1.json";
         try {
           const response = await fetch(path);
           if (!response.ok) throw new Error("問題データを読み込めませんでした（HTTP " + response.status + "）。");
