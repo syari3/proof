@@ -273,6 +273,25 @@ const sameRayNotationFeedsSimilarity = rules.prove(
 assert.equal(sameRayNotationFeedsSimilarity.success, true,
   "相似条件でも、同じ半直線上の点で表記が異なる角を対応角として認識する");
 assert.equal(sameRayNotationFeedsSimilarity.steps.at(-1).ruleId, "triangle.similarity-aa");
+ 
+// Equal angle measures do not make two angle expressions the same geometric
+// angle for matching a triangle's vertices. First derive the actual
+// corresponding-angle equality through transitivity, then use it for AA.
+const equalMeasureIsNotSameRay = rules.prove(
+  [
+    "triangle(ABC)", "triangle(DEF)",
+    "angle(ABD)=angle(ABC)",
+    "angle(ABD)=angle(DEF)",
+    "angle(ACB)=angle(DFE)"
+  ],
+  "similar(ABC,DEF)"
+);
+assert.equal(equalMeasureIsNotSameRay.success, true,
+  "等しい角の連鎖から、三角形の実際の対応角の等しさを導いて相似を証明する");
+assert.ok(equalMeasureIsNotSameRay.steps.some((step) =>
+  step.conclusion === "angle(ABC)=angle(DEF)"),
+  "相似判定の前に、三角形ABCの角と三角形DEFの角の等しさを明示的に導く");
+assert.equal(equalMeasureIsNotSameRay.steps.at(-1).ruleId, "triangle.similarity-aa");
 
 const sameRayGoalAngleEquality = rules.prove(
   ["between(A,F,B)", "between(A,E,C)", "angle(FAE)=angle(XYZ)"],
