@@ -8,7 +8,7 @@ const Rules = require("../js/proof-rules.js");
 void GeometryRelations;
 
 // Exercise the actual 2025 Shizuoka entrance-exam data through conversion and proof.
-const result = Adapter.run(problem, Rules);
+const result = Adapter.run(problem, Rules, 100, { analyzeConditions: false });
 const converted = Adapter.convert(problem);
 
 assert.equal(problem.source.region, "静岡県");
@@ -17,11 +17,13 @@ assert.equal(problem.goal.type, "triangle-similarity");
 assert.ok(converted.facts.includes("side(AB)=side(BG)"));
 assert.ok(converted.facts.includes("parallel(line-EF,line-BC)"));
 
-// This exam proof currently relies on the opposite-segment supplementary-angle
-// inference, which is intentionally disabled. Keep the example data available,
-// but do not claim the proof engine can prove it under the active rules.
-assert.equal(result.success, false, "無効化した円周角の補角ルールに依存するため未証明となる");
-assert.equal(result.status, "not-proved-with-current-rules");
+// A valid alternate route uses same-segment angles, parallel corresponding
+// angles, and isosceles-triangle equalities. The disabled opposite-segment rule
+// must not appear in the proof. Full geometric validation remains a separate task.
+assert.equal(result.success, true, "有効な別経路で相似を証明できる");
+assert.equal(result.status, "proved");
+assert.ok(result.proof.steps.some((step) => step.ruleId === "triangle.similarity-aa"));
+assert.equal(result.proof.steps.some((step) => step.ruleId === "circle.opposite-segment-supplementary-angles"), false);
 
 // Proof success is not the same as full geometric validation. Preserve the
 // unsupported moving-arc condition so callers can see the remaining review work.
@@ -38,5 +40,5 @@ assert.equal(
 );
 assert.ok(problem.validation.openQuestions.length > 0);
 
-console.log("✓ 静岡県2025年度の実データを変換し、無効化したルールへの依存を検出");
+console.log("✓ 静岡県2025年度の実データを変換し、有効な相似証明を確認");
 console.log("✓ 動点の弧・存在条件が未検証であることを保持");
