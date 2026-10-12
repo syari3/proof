@@ -37,8 +37,8 @@
         add("triangle(" + triangle.vertices.join("") + ")");
       }
     }
-    // Goal triangles are valid named triangles for applying the similarity rule.
-    if (problem.goal.type === "triangle-similarity" && Array.isArray(problem.goal.triangles)) {
+    // Goal triangles are valid named triangles for similarity and congruence rules.
+    if (["triangle-similarity", "triangle-congruence"].includes(problem.goal.type) && Array.isArray(problem.goal.triangles)) {
       for (const vertices of problem.goal.triangles) {
         if (Array.isArray(vertices) && vertices.length === 3) add("triangle(" + vertices.join("") + ")");
       }
@@ -49,6 +49,17 @@
           constraint.segments.length === 2 && constraint.segments.every((s) => Array.isArray(s) && s.length === 2)) {
         const [a, b] = constraint.segments;
         add("side(" + canonicalSegment(a[0], a[1]) + ")=side(" + canonicalSegment(b[0], b[1]) + ")");
+      } else if (constraint.type === "collinear" && Array.isArray(constraint.points) && constraint.points.length >= 3) {
+        // A collinearity condition is already represented safely when all listed
+        // points occur on one explicitly declared line object. Do not infer line
+        // order or ray direction from this condition.
+        const representedByLine = (problem.geometry.objects || []).some((object) =>
+          object.type === "line" && Array.isArray(object.through) &&
+          constraint.points.every((point) => object.through.includes(point))
+        );
+        if (!representedByLine) {
+          unsupported.push({ location: "geometry.constraints", type: constraint.type, reason: "点が同じ線オブジェクト上に明示されていないため、共線条件を安全に変換できません。" });
+        }
       } else if (constraint.type === "same-ray" && constraint.vertex && constraint.points && constraint.points.length === 2) {
         add("sameRay(" + constraint.vertex + "," + constraint.points[0] + "," + constraint.points[1] + ")");
       } else if (constraint.type === "ray-inside-angle" && constraint.vertex &&
@@ -196,8 +207,12 @@
     }
 
     let goal = null;
-    if (problem.goal.type === "triangle-similarity" && problem.goal.triangles.length === 2) {
+    if (problem.goal.type === "triangle-similarity" && Array.isArray(problem.goal.triangles) && problem.goal.triangles.length === 2 &&
+        problem.goal.triangles.every((vertices) => Array.isArray(vertices) && vertices.length === 3)) {
       goal = "similar(" + problem.goal.triangles[0].join("") + "," + problem.goal.triangles[1].join("") + ")";
+    } else if (problem.goal.type === "triangle-congruence" && Array.isArray(problem.goal.triangles) && problem.goal.triangles.length === 2 &&
+        problem.goal.triangles.every((vertices) => Array.isArray(vertices) && vertices.length === 3)) {
+      goal = "congruent(" + problem.goal.triangles[0].join("") + "," + problem.goal.triangles[1].join("") + ")";
     } else if (problem.goal.type === "angle-equality" && Array.isArray(problem.goal.angles) && problem.goal.angles.length === 2) {
       const [a, b] = problem.goal.angles;
       if (a.length === 3 && b.length === 3) {
