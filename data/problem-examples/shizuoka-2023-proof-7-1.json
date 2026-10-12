@@ -360,6 +360,8 @@
     ]
   },
   "proofFacts": [
+    "triangle(BCG)",
+    "triangle(ECF)",
     "angle(CBG)=angle(CEF)",
     "angle(BCG)=angle(ECF)"
   ]
