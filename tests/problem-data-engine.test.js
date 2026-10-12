@@ -209,5 +209,14 @@ assert.ok(shizuoka2024Result.converted.facts.includes("angle(CFE)=angle(ABC)") |
   shizuoka2024Result.converted.facts.includes("angle(ABC)=angle(CFE)"),
   "動点条件の角の等しさを条件として取り込む");
 assert.ok(shizuoka2024Result.converted.facts.includes("side(AB)=side(AD)"));
+assert.ok(shizuoka2024Result.converted.facts.includes("extends(DF,E)"),
+  "2024年問題の外角定理に必要な、DFをFの先へ延長する条件を正しい形式で渡す");
+assert.ok(shizuoka2024Result.converted.facts.includes("triangle(CDF)"),
+  "直線AC・BD・CPの交点関係から三角形CDFを認識する");
+assert.ok(Rules.derive(shizuoka2024Result.converted.facts).some((rule) =>
+  rule.ruleId === "triangle.exterior-angle" &&
+  rule.conclusion === "angle(CFE)=angle(DCF)+angle(CDF)"),
+  "2024年問題の実データから外角定理を導出できる");
+
 assert.ok(shizuoka2024Result.converted.facts.includes("sameSegment(CE,B,A)"));
 assert.equal(shizuoka2024Result.status === "proved", shizuoka2024Result.success);
