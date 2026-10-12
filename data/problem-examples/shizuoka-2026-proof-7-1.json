@@ -38,6 +38,7 @@
       {"type": "point-on-circle", "point": "C", "circle": "circle-O"},
       {"type": "point-on-circle", "point": "D", "circle": "circle-O"},
       {"type": "point-on-circle", "point": "P", "circle": "circle-O"},
+      {"type": "same-segment", "chord": ["B", "C"], "vertices": ["A", "D"]},
       {"type": "equal-segments", "segments": [["A", "B"], ["A", "C"]]},
       {"type": "parallel-lines", "lines": [["A", "C"], ["B", "D"]]},
       {"type": "collinear", "points": ["A", "F", "E", "B"]},
