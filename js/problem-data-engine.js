@@ -315,6 +315,19 @@
       }
     }
 
+    // An angle-sector object records the cyclic order of three rays at a vertex:
+    // [first boundary ray, interior ray, second boundary ray]. Generate the
+    // premise needed by angle addition from this structured geometry input.
+    // Incidence alone is not enough to infer which ray lies inside an angle.
+    for (const object of (problem.geometry.objects || [])) {
+      if (object.type !== "angle-sector" || !object.vertex ||
+          !Array.isArray(object.rays) || object.rays.length !== 3 ||
+          !object.rays.every((point) => typeof point === "string" && /^[A-Z]$/.test(point))) continue;
+      const [first, interior, last] = object.rays;
+      if (new Set([object.vertex, first, interior, last]).size !== 4) continue;
+      add("rayInsideAngle(" + object.vertex + "," + first + "," + interior + "," + last + ")");
+    }
+
     // Derive ray relations only from explicit point-order constraints.
     // An intersection alone does not establish which points are on opposite sides.
     const relationFacts = root.GeometryRelations && typeof root.GeometryRelations.derive === "function"
