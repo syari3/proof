@@ -1000,7 +1000,8 @@
           // Use the equality only where the exact term occurs. Repeated proof
           // rounds can apply chained equalities one step at a time.
           for (let index = 0; index < terms.length; index++) {
-            if (terms[index] !== from) continue;
+            // Equality may come from reversed angle notation or a chain of equalities.
+            if (!termsEquivalent(terms[index], from, known)) continue;
             const replaced = [...terms];
             replaced[index] = to;
             const kind = replaced[0].startsWith("angle(") ? "angle" : "side";
