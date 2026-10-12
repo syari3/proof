@@ -41,7 +41,7 @@
     @media (max-width: 560px) { .engine-step { grid-template-columns: 30px minmax(0, 1fr); gap: 8px; padding: 12px; } .engine-step-number { width: 28px; height: 28px; } }
   </style>
   <script src="./js/theorem-catalog.js?v=20261010-1" defer></script>
-  <script src="./js/proof-rules.js?v=20261010-10" defer></script>
+  <script src="./js/proof-rules.js?v=20261012-1" defer></script>
   <script src="./js/geometry-relations.js?v=20261010-1" defer></script>
   <script src="./js/problem-data-engine.js?v=20261011-2" defer></script>
   <script src="./js/problem-generator.js?v=20261010-7" defer></script>
@@ -251,7 +251,7 @@
       };
 
       try {
-        const response = await fetch("./data/problem-examples/angle-addition-substitution-similarity.json");
+        const response = await fetch("./data/problem-examples/shizuoka-2025-proof-7-1.json");
         if (!response.ok) throw new Error("問題データを読み込めませんでした（HTTP " + response.status + "）。");
         problem = await response.json();
         promptNode.textContent = problem.prompt || "問題文がありません。";
