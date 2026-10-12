@@ -141,8 +141,49 @@
 
     // Convert only explicitly stated parallel-angle and circle-angle conditions.
     for (const item of problem.geometry.constraints) {
-      if (item.type === "parallel-lines" && item.lines && item.lines.length === 2) {
-        add("parallel(" + item.lines[0] + "," + item.lines[1] + ")");
+      if (item.type === "parallel-lines" && Array.isArray(item.lines) && item.lines.length === 2 &&
+          item.lines.every((line) => Array.isArray(line) && line.length === 2)) {
+        // v1 data stores the endpoints of each parallel line, while the proof
+        // engine refers to declared line IDs. Resolve endpoints to line objects
+        // instead of coercing arrays into strings such as "A,C".
+        const resolveLineId = (endpoints) => {
+          const endpointSet = new Set(endpoints);
+          const candidates = (problem.geometry.objects || []).filter((object) =>
+            object.type === "line" && object.id && Array.isArray(object.through) &&
+            endpoints.every((point) => object.through.includes(point))
+          );
+          return candidates.length === 1 ? candidates[0].id : null;
+        };
+        const [firstLine, secondLine] = item.lines.map(resolveLineId);
+        if (firstLine && secondLine && firstLine !== secondLine) {
+          add("parallel(" + firstLine + "," + secondLine + ")");
+          // Intersections are safe to infer from explicit line incidence. This
+          // supplies the crossing-line premises needed by the parallel-angle
+          // rules; angle position itself is inferred only when separately encoded.
+          const lineObjects = (problem.geometry.objects || []).filter((object) =>
+            object.type === "line" && object.id && Array.isArray(object.through)
+          );
+          for (const transversal of lineObjects) {
+            if ([firstLine, secondLine].includes(transversal.id)) continue;
+            const crossesFirst = transversal.through.some((point) =>
+              (problem.geometry.objects || []).some((object) =>
+                object.id === firstLine && Array.isArray(object.through) && object.through.includes(point)
+              )
+            );
+            const crossesSecond = transversal.through.some((point) =>
+              (problem.geometry.objects || []).some((object) =>
+                object.id === secondLine && Array.isArray(object.through) && object.through.includes(point)
+              )
+            );
+            if (crossesFirst && crossesSecond) {
+              add("intersects(" + transversal.id + "," + firstLine + ")");
+              add("intersects(" + transversal.id + "," + secondLine + ")");
+            }
+          }
+        } else {
+          unsupported.push({ location: "geometry.constraints", type: item.type,
+            reason: "平行線の両端を、一意に対応する直線オブジェクトへ結び付けられません。" });
+        }
       }
       if ((item.type === "corresponding-angles" || item.type === "alternate-interior-angles") && item.angles && item.angles.length === 2 && item.transversal && item.lines && item.lines.length === 2) {
         const relation = item.type === "corresponding-angles" ? "correspondingAngles" : "alternateAngles";
