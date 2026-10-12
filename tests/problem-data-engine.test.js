@@ -108,13 +108,14 @@ assert.deepEqual(GeometryRelations.derive([]), []);
 
 const sampleFile = require("../data/problem-examples/shizuoka-2025-proof-7-1.json");
 const sampleResult = Adapter.run(sampleFile, Rules);
-console.log("DEBUG sample proof", sampleResult.proof && sampleResult.proof.reason, sampleResult.proof && sampleResult.proof.steps.map((step) => ({ ruleId: step.ruleId, conclusion: step.conclusion, premises: step.premises })));
- // This sample proof depends on the opposite-segment inscribed-angle sum rule,
-// which is intentionally disabled. Keep the limitation explicit instead of
-// letting the old expectation make CI fail or silently re-enable that rule.
-assert.equal(sampleResult.status, "not-proved-with-current-rules",
-  "無効化した反対側の円周角の補角ルールに依存する問題は未証明として扱う");
-assert.equal(sampleResult.success, false);
+// The example has another proof route using same-segment angles, parallel
+// corresponding angles, and the two isosceles-triangle angle equalities.
+// It must not depend on the intentionally disabled opposite-segment rule.
+assert.equal(sampleResult.status, "proved",
+  "有効な別経路がある場合は、無効化した補角ルールを使わずに証明できる");
+assert.equal(sampleResult.success, true);
+assert.ok(sampleResult.proof.steps.some((step) => step.ruleId === "triangle.similarity-aa"));
+assert.equal(sampleResult.proof.steps.some((step) => step.ruleId === "circle.opposite-segment-supplementary-angles"), false);
 
  // Explicit circle incidence, parallel-through-point construction, and the
  // selected moving-point equality must reach the inference facts.
