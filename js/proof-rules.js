@@ -1060,45 +1060,59 @@
     return term;
   }
 
-  // Normalize angle ray labels from explicit sameRay / between facts.
-  // This is an internal equivalence check: it adds neither a fact nor a proof step.
+  // Cache the ray graph per known-fact array and length. The prover appends
+  // facts but does not rewrite existing ones, so this avoids rebuilding the graph
+  // for every term comparison during a single inference pass.
+  const rayCanonicalizerCache = new WeakMap();
   function canonicalTermWithSameRays(term, known) {
     const angle = parseAngle(term);
     if (!angle) return canonicalTerm(term);
-    const graph = new Map();
-    function connect(vertex, first, second) {
-      const a = vertex + ":" + first, b = vertex + ":" + second;
-      if (!graph.has(a)) graph.set(a, new Set());
-      if (!graph.has(b)) graph.set(b, new Set());
-      graph.get(a).add(b);
-      graph.get(b).add(a);
-    }
-    for (const fact of known) {
-      let m = /^sameRay\(([A-Z]),([A-Z]),([A-Z])\)$/.exec(fact);
-      if (m) { connect(m[1], m[2], m[3]); continue; }
-      m = /^between\(([A-Z]),([A-Z]),([A-Z])\)$/.exec(fact);
-      if (m) {
-        const [, a, b, c] = m;
-        connect(a, b, c);
-        connect(c, b, a);
+    let cached = rayCanonicalizerCache.get(known);
+    if (!cached || cached.length !== known.length) {
+      const graph = new Map();
+      function connect(vertex, first, second) {
+        const a = vertex + ":" + first, b = vertex + ":" + second;
+        if (!graph.has(a)) graph.set(a, new Set());
+        if (!graph.has(b)) graph.set(b, new Set());
+        graph.get(a).add(b);
+        graph.get(b).add(a);
       }
-    }
-    function representative(vertex, point) {
-      const start = vertex + ":" + point;
-      const seen = new Set([start]), queue = [start], labels = [point];
-      while (queue.length) {
-        const current = queue.shift();
-        for (const next of graph.get(current) || []) {
-          if (seen.has(next)) continue;
-          seen.add(next);
-          queue.push(next);
-          labels.push(next.split(":")[1]);
+      for (const fact of known) {
+        let m = /^sameRay\(([A-Z]),([A-Z]),([A-Z])\)$/.exec(fact);
+        if (m) { connect(m[1], m[2], m[3]); continue; }
+        m = /^between\(([A-Z]),([A-Z]),([A-Z])\)$/.exec(fact);
+        if (m) {
+          const [, a, b, c] = m;
+          connect(a, b, c);
+          connect(c, b, a);
         }
       }
-      return labels.sort()[0];
+      function representative(vertex, point) {
+        const start = vertex + ":" + point;
+        const seen = new Set([start]), queue = [start], labels = [point];
+        while (queue.length) {
+          const current = queue.shift();
+          for (const next of graph.get(current) || []) {
+            if (seen.has(next)) continue;
+            seen.add(next);
+            queue.push(next);
+            labels.push(next.split(":")[1]);
+          }
+        }
+        return labels.sort()[0];
+      }
+      cached = {
+        length: known.length,
+        normalize: (value) => {
+          const parsed = parseAngle(value);
+          if (!parsed) return canonicalTerm(value);
+          const ends = [representative(parsed.vertex, parsed.first), representative(parsed.vertex, parsed.last)].sort();
+          return "angle(" + ends[0] + parsed.vertex + ends[1] + ")";
+        }
+      };
+      rayCanonicalizerCache.set(known, cached);
     }
-    const ends = [representative(angle.vertex, angle.first), representative(angle.vertex, angle.last)].sort();
-    return "angle(" + ends[0] + angle.vertex + ends[1] + ")";
+    return cached.normalize(term);
   }
 
   function termsEquivalent(first, second, known) {
