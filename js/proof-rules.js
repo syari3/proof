@@ -1310,7 +1310,7 @@
         const equalApex = equalApexCandidates.find((rule) => sameAngleEquality(rule.conclusion, goal, known) && !known.some((fact) => sameAngleEquality(fact, rule.conclusion, known))) ||
           equalApexCandidates.find((rule) => !known.some((fact) => sameAngleEquality(fact, rule.conclusion, known)));
         if (equalApex) {
-          const conclusion = sameAngleEquality(equalApex.conclusion, goal) ? goal : equalApex.conclusion;
+          const conclusion = sameAngleEquality(equalApex.conclusion, goal, known) ? goal : equalApex.conclusion;
           const step = {
             index: steps.length + 1,
             ruleId: equalApex.id,
@@ -1546,7 +1546,7 @@
         const parallelAngle = parallelCandidates.find((rule) => sameAngleEquality(rule.conclusion, goal, known) && !known.includes(rule.conclusion)) ||
           parallelCandidates.find((rule) => !known.includes(rule.conclusion));
         if (parallelAngle) {
-          const conclusion = sameAngleEquality(parallelAngle.conclusion, goal) ? goal : parallelAngle.conclusion;
+          const conclusion = sameAngleEquality(parallelAngle.conclusion, goal, known) ? goal : parallelAngle.conclusion;
           const step = { index: steps.length + 1, ruleId: parallelAngle.id, ruleName: parallelAngle.name,
             premises: [...parallelAngle.premises],
             premiseSources: parallelAngle.premises.map((p) => ({ fact: p, ...(sourceByFact.get(p) || { type: "unknown" }) })),
