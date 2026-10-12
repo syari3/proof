@@ -74,7 +74,8 @@ assert.ok(sameRayConverted.facts.includes("sameRay(A,B,C)"));
 assert.equal(sameRayConverted.unsupported.some((x) => x.type === "between"), false);
 const sameRayResult = Adapter.run(sameRayProblem, Rules);
 assert.equal(sameRayResult.success, true);
-assert.equal(sameRayResult.proof.steps.at(-1).conclusion, "angle(BAD)=angle(CAD)");
+assert.equal(sameRayResult.proof.steps.length, 0, "同じ半直線による角の言い換えは内部処理する");
+assert.equal(sameRayResult.proof.reason, "implicit-angle-equivalence");
 
 // Two pairs of opposite rays at one intersection generate vertical-angle facts.
 const verticalFacts = GeometryRelations.derive([
