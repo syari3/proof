@@ -177,6 +177,15 @@ assert.equal(autoSegmentAddition.steps.at(-1).ruleId, "segment.addition");
 
 console.log("problem-data-engine adapter checks passed");
 
+// In the 2023 Shizuoka diagram D and F lie on the same side of transversal AC.
+// Therefore angle DAE and angle AEF are same-side interior angles, not alternate
+// angles, and must not be asserted equal by the parallel-angle generator.
+const shizuoka2023 = require("../data/problem-examples/shizuoka-2023-proof-7-1.json");
+const shizuoka2023Facts = Adapter.convert(shizuoka2023).facts;
+assert.equal(shizuoka2023Facts.includes(
+  "alternateAngles(angle(DAE),angle(AEF),line-AC,line-AD,line-EF)"), false,
+  "同じ側にあるDとFを使った誤った錯角を生成しない");
+
 const convertedSameSegment = Adapter.convert(sampleFile);
 assert.ok(convertedSameSegment.facts.includes("sameSegment(AB,C,P)"), "同じ弦の同じ側の位置関係を変換する");
 assert.ok(convertedSameSegment.facts.includes("oppositeSegment(AC,B,D)"), "同じ弦の反対側の位置関係を変換する");
