@@ -283,11 +283,11 @@
       {
         "type": "same-segment",
         "chord": [
-          "A",
+          "B",
           "C"
         ],
         "vertices": [
-          "B",
+          "A",
           "D"
         ]
       }
