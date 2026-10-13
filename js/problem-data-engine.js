@@ -118,12 +118,44 @@
       }
     }
 
-    // Generate inscribed-angle facts only when the same-segment side of a chord
-    // is explicit. Circle membership alone cannot identify the relevant arc safely.
-    const circlePointSet = new Set(facts.map((fact) => /^onCircle\(([A-Z])\)$/.exec(fact))
+    // Infer same-segment relationships from the cyclic order of points on a circle.
+    // The data records point order, not the chord or theorem to use in the proof.
+    const circleById = new Map((problem.geometry.objects || [])
+      .filter((object) => object.type === "circle" && object.id &&
+        Array.isArray(object.orderedPoints) && object.orderedPoints.length >= 4 &&
+        new Set(object.orderedPoints).size === object.orderedPoints.length)
+      .map((object) => [object.id, object.orderedPoints]));
+    const onCircle = new Set(facts.map((fact) => /^onCircle\\(([A-Z])\\)$/.exec(fact))
       .filter(Boolean).map((match) => match[1]));
+    for (const ordered of circleById.values()) {
+      const points = ordered.filter((point) => onCircle.has(point));
+      if (points.length < 4) continue;
+      const arcSide = (x, y, point) => {
+        const ix = points.indexOf(x), iy = points.indexOf(y), ip = points.indexOf(point);
+        if ([ix, iy, ip].some((index) => index < 0)) return null;
+        let index = (ix + 1) % points.length;
+        while (index !== iy) {
+          if (index === ip) return 1;
+          index = (index + 1) % points.length;
+        }
+        return 0;
+      };
+      for (let i = 0; i < points.length; i++) for (let j = i + 1; j < points.length; j++) {
+        const x = points[i], y = points[j];
+        for (let k = 0; k < points.length; k++) for (let m = k + 1; m < points.length; m++) {
+          const firstVertex = points[k], secondVertex = points[m];
+          if (new Set([x, y, firstVertex, secondVertex]).size !== 4) continue;
+          if (arcSide(x, y, firstVertex) === arcSide(x, y, secondVertex)) {
+            add("sameSegment(" + [x, y].sort().join("") + "," + firstVertex + "," + secondVertex + ")");
+          }
+        }
+      }
+    }
+
+    // Apply the inscribed-angle theorem to relationships derived from circle order.
+    const circlePointSet = onCircle;
     for (const fact of facts.slice()) {
-      const match = /^sameSegment\(([A-Z])([A-Z]),([A-Z]),([A-Z])\)$/.exec(fact);
+      const match = /^sameSegment\\(([A-Z])([A-Z]),([A-Z]),([A-Z])\\)$/.exec(fact);
       if (!match) continue;
       const [, x, y, firstVertex, secondVertex] = match;
       if (new Set([x, y, firstVertex, secondVertex]).size !== 4) continue;
