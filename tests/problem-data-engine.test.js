@@ -379,7 +379,7 @@ const sideAwareParallelProbe = {
     points: ["A","B","C","D","E"].map((id) => ({ id })),
     objects: [
       { id: "parallel-1", type: "line", through: ["A","B"], orderedThrough: ["A","B"] },
-      { id: "parallel-2", type: "line", through: ["C","D","E"], orderedThrough: ["C","D","E"] },
+      { id: "parallel-2", type: "line", through: ["C","D","E"], orderedThrough: ["C","E","D"] },
       { id: "transversal", type: "line", through: ["A","C"], orderedThrough: ["A","C"] }
     ],
     constraints: [
