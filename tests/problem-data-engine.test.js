@@ -449,3 +449,30 @@ const ambiguousCircle = {
 const ambiguousCircleConverted = Adapter.convert(ambiguousCircle);
 assert.equal(ambiguousCircleConverted.facts.some((fact) => fact.startsWith("inscribed(")), false,
   "円周上の点だけでは弧・弦の同じ側を推測しない");
+
+
+// Additive cancellation must not use equality of the whole angles silently.
+// If the whole angles are equal only through a chain, that chain must appear
+// in the inference's premises; without it, cancellation is not available.
+const cancellationWithoutWholeEquality = Rules.derive([
+  "angle(BCA)=angle(BCG)+angle(GCA)",
+  "angle(GCD)=angle(GCA)+angle(ACD)"
+]);
+assert.equal(cancellationWithoutWholeEquality.some((step) =>
+  step.ruleId === "angle.addition-cancellation" &&
+  step.conclusion === "angle(BCG)=angle(ACD)"), false,
+  "全体の角が等しい根拠なしに角の加法の逆を適用しない");
+
+const cancellationWithTransitiveWholeEquality = Rules.derive([
+  "angle(BCA)=angle(BCG)+angle(GCA)",
+  "angle(GCD)=angle(GCA)+angle(ACD)",
+  "angle(BCA)=angle(XYZ)",
+  "angle(XYZ)=angle(GCD)"
+]);
+const justifiedCancellation = cancellationWithTransitiveWholeEquality.find((step) =>
+  step.ruleId === "angle.addition-cancellation" &&
+  step.conclusion === "angle(BCG)=angle(ACD)");
+assert.ok(justifiedCancellation, "全体の角の等しさが与えられれば消去できる");
+assert.ok(justifiedCancellation.premises.includes("angle(BCA)=angle(XYZ)"));
+assert.ok(justifiedCancellation.premises.includes("angle(XYZ)=angle(GCD)"),
+  "全体の角が等しいことを示す推移の根拠を前提に含める");
