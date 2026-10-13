@@ -476,3 +476,18 @@ assert.ok(justifiedCancellation, "全体の角の等しさが与えられれば�
 assert.ok(justifiedCancellation.premises.includes("angle(BCA)=angle(XYZ)"));
 assert.ok(justifiedCancellation.premises.includes("angle(XYZ)=angle(GCD)"),
   "全体の角が等しいことを示す推移の根拠を前提に含める");
+
+
+// Segment endpoint reversal is notation-only, just like a same-ray angle rewrite.
+// It should satisfy a goal internally without adding a visible proof step.
+const reversedSegmentNotation = Rules.prove(
+  ["side(DC)=side(DE)+side(EC)", "between(D,E,C)"],
+  "side(DE)=side(ED)"
+);
+assert.equal(reversedSegmentNotation.success, true);
+assert.equal(reversedSegmentNotation.steps.length, 0,
+  "DE=ED is handled as implicit segment equivalence, not a displayed inference");
+assert.equal(reversedSegmentNotation.reason, "implicit-segment-equivalence");
+assert.equal(Rules.derive(["side(DC)=side(DE)+side(EC)", "between(D,E,C)"]).some((step) =>
+  step.conclusion === "side(DE)=side(ED)"), false,
+  "線分の加法からDE=EDのような表記上だけの等式を推論として表示しない");
