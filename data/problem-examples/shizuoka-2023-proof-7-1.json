@@ -290,6 +290,48 @@
           "A",
           "D"
         ]
+      },
+      {
+        "type": "ray-inside-angle",
+        "vertex": "C",
+        "points": [
+          "B",
+          "G",
+          "A"
+        ]
+      },
+      {
+        "type": "ray-inside-angle",
+        "vertex": "C",
+        "points": [
+          "G",
+          "A",
+          "D"
+        ]
+      },
+      {
+        "type": "same-ray",
+        "vertex": "C",
+        "points": [
+          "E",
+          "A"
+        ]
+      },
+      {
+        "type": "same-ray",
+        "vertex": "C",
+        "points": [
+          "F",
+          "D"
+        ]
+      },
+      {
+        "type": "same-ray",
+        "vertex": "D",
+        "points": [
+          "G",
+          "B"
+        ]
       }
     ],
     "dynamicConditions": []
