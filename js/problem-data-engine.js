@@ -160,7 +160,8 @@
     for (const item of problem.geometry.constraints) {
       if (item.type !== "parallel-lines" || !Array.isArray(item.lines) || item.lines.length !== 2) continue;
       const resolve = (ends) => (problem.geometry.objects || []).filter((o) =>
-        o.type === "line" && o.id && Array.isArray(o.orderedThrough) &&
+        (o.type === "line" || o.type === "parallel-through-point") && o.id &&
+        Array.isArray(o.orderedThrough) &&
         Array.isArray(ends) && ends.length === 2 && ends.every((p) => o.orderedThrough.includes(p))
       );
       const candidates = item.lines.map(resolve);
