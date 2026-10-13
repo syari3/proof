@@ -21,7 +21,13 @@
       {
         "id": "circle-O",
         "type": "circle",
-        "center": "O"
+        "center": "O",
+        "orderedPoints": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ]
       },
       {
         "id": "line-AB",
@@ -267,28 +273,6 @@
           "D",
           "F",
           "C"
-        ]
-      },
-      {
-        "type": "same-segment",
-        "chord": [
-          "C",
-          "D"
-        ],
-        "vertices": [
-          "B",
-          "A"
-        ]
-      },
-      {
-        "type": "same-segment",
-        "chord": [
-          "B",
-          "C"
-        ],
-        "vertices": [
-          "A",
-          "D"
         ]
       },
       {
