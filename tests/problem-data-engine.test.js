@@ -392,9 +392,9 @@ const sideAwareParallelProbe = {
   goal: { type: "angle-equality", angles: [["B","A","C"],["E","C","A"]] }
 };
 const sideAwareFacts = Adapter.convert(sideAwareParallelProbe).facts;
-assert.ok(sideAwareFacts.includes("alternateAngles(angle(ABC),angle(ACE),transversal,parallel-1,parallel-2)"),
+assert.ok(sideAwareFacts.includes("alternateAngles(angle(BAC),angle(ACE),transversal,parallel-1,parallel-2)"),
   "反対側にあるEを使う正しい錯角を生成する");
-assert.equal(sideAwareFacts.includes("alternateAngles(angle(ABC),angle(ACD),transversal,parallel-1,parallel-2)"), false,
+assert.equal(sideAwareFacts.includes("alternateAngles(angle(BAC),angle(ACD),transversal,parallel-1,parallel-2)"), false,
   "同じ側にあるDを使った誤った錯角は生成しない");
 
 const incidenceOnlyProbe = JSON.parse(JSON.stringify(orderedParallelProbe));
