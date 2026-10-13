@@ -126,7 +126,7 @@
         Array.isArray(object.orderedPoints) && object.orderedPoints.length >= 4 &&
         new Set(object.orderedPoints).size === object.orderedPoints.length)
       .map((object) => [object.id, object.orderedPoints]));
-    const onCircle = new Set(facts.map((fact) => /^onCircle\\(([A-Z])\\)$/.exec(fact))
+    const onCircle = new Set(facts.map((fact) => /^onCircle\(([A-Z])\)$/.exec(fact))
       .filter(Boolean).map((match) => match[1]));
     for (const ordered of circleById.values()) {
       const points = ordered.filter((point) => onCircle.has(point));
@@ -156,7 +156,7 @@
     // Apply the inscribed-angle theorem to relationships derived from circle order.
     const circlePointSet = onCircle;
     for (const fact of facts.slice()) {
-      const match = /^sameSegment\\(([A-Z])([A-Z]),([A-Z]),([A-Z])\\)$/.exec(fact);
+      const match = /^sameSegment\(([A-Z])([A-Z]),([A-Z]),([A-Z])\)$/.exec(fact);
       if (!match) continue;
       const [, x, y, firstVertex, secondVertex] = match;
       if (new Set([x, y, firstVertex, secondVertex]).size !== 4) continue;
