@@ -1173,6 +1173,58 @@
     return false;
   }
 
+  // Return the actual equality facts needed to justify equivalence. The
+  // cancellation rule must expose these facts as premises rather than silently
+  // relying on termsEquivalent()'s transitive equality graph.
+  function equalityPathPremises(first, second, known) {
+    const start = canonicalTermWithSameRays(first, known);
+    const target = canonicalTermWithSameRays(second, known);
+    if (start === target) {
+      const a = parseAngle(first), b = parseAngle(second);
+      if (a && b) {
+        return known.filter((fact) => {
+          const m = /^(?:sameRay|between)\\(([A-Z]),([A-Z]),([A-Z])\\)$/.exec(fact);
+          if (!m) return false;
+          const [, vertex, p, q] = m;
+          return vertex === a.vertex && vertex === b.vertex &&
+            [a.first, a.last].some((x) => [p, q].includes(x)) &&
+            [b.first, b.last].some((x) => [p, q].includes(x));
+        });
+      }
+      return [];
+    }
+    const graph = new Map();
+    for (const fact of known) {
+      const equality = parseEquality(fact);
+      if (!equality) continue;
+      const left = canonicalTermWithSameRays(equality.left, known);
+      const right = canonicalTermWithSameRays(equality.right, known);
+      if (!graph.has(left)) graph.set(left, []);
+      if (!graph.has(right)) graph.set(right, []);
+      graph.get(left).push({ node: right, fact });
+      graph.get(right).push({ node: left, fact });
+    }
+    const queue = [start], previous = new Map([[start, null]]);
+    for (let i = 0; i < queue.length; i++) {
+      const current = queue[i];
+      if (current === target) break;
+      for (const edge of graph.get(current) || []) {
+        if (previous.has(edge.node)) continue;
+        previous.set(edge.node, { node: current, fact: edge.fact });
+        queue.push(edge.node);
+      }
+    }
+    if (!previous.has(target)) return [];
+    const path = [];
+    let current = target;
+    while (current !== start) {
+      const step = previous.get(current);
+      path.push(step.fact);
+      current = step.node;
+    }
+    return [...new Set(path)];
+  }
+
   // Additive equality rules: substitution/congruence and cancellation.
   // Only infer when the equation types agree and at least the required equalities are known.
   function additionAlgebraCandidates(known) {
@@ -1194,10 +1246,15 @@
             if (!termsEquivalent(a.parts[ai], b.parts[bi], known)) continue;
             const left = a.parts[1-ai], right = b.parts[1-bi];
             if (left === right) continue;
+            const wholePremises = equalityPathPremises(a.whole, b.whole, known);
+            const commonPremises = equalityPathPremises(a.parts[ai], b.parts[bi], known);
+            // Do not apply cancellation unless both the equal wholes and the
+            // common addends have traceable equality premises.
+            if (!wholePremises.length || !commonPremises.length) continue;
             add(a.kind === "angle" ? "angle.addition-cancellation" : "segment.addition-cancellation",
               a.kind === "angle" ? "角の加法の逆（消去）" : "線分の加法の逆（消去）",
-              [a.fact,b.fact,...known.filter(f => { const e=parseEquality(f); return e && ((e.left===a.whole&&e.right===b.whole)||(e.left===b.whole&&e.right===a.whole)||(e.left===a.parts[ai]&&e.right===b.parts[bi])||(e.left===b.parts[bi]&&e.right===a.parts[ai])); })],
-              left+"="+right,a.kind,"等しい和から、対応して等しい項を取り除くと残りの項も等しい。");
+              [a.fact, b.fact, ...wholePremises, ...commonPremises],
+              left+"="+right,a.kind,"等しい和と、等しい全体・共通する項を確認してから、共通項を取り除くと残りの項も等しい。");
           }
         }
         // Equal corresponding parts imply equal sums.
