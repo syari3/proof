@@ -370,6 +370,33 @@ assert.ok(autoParallel.facts.some((fact) => fact.startsWith("alternateAngles("))
 assert.ok(autoParallel.facts.includes("parallel(parallel-1,parallel-2)"));
 assert.ok(autoParallel.facts.includes("intersects(transversal,parallel-1)"));
 assert.ok(autoParallel.facts.includes("intersects(transversal,parallel-2)"));
+// Side-of-transversal data disambiguates which point on a parallel line names
+// the interior ray. B and D are on the same side of AC, while E is on the
+// opposite side: ∠BAC matches ∠ECA, not ∠DCA.
+const sideAwareParallelProbe = {
+  format: "proof-problem", version: 1, id: "side-aware-alternate-angles",
+  geometry: {
+    points: ["A","B","C","D","E"].map((id) => ({ id })),
+    objects: [
+      { id: "parallel-1", type: "line", through: ["A","B"], orderedThrough: ["A","B"] },
+      { id: "parallel-2", type: "line", through: ["C","D","E"], orderedThrough: ["C","D","E"] },
+      { id: "transversal", type: "line", through: ["A","C"], orderedThrough: ["A","C"] }
+    ],
+    constraints: [
+      { type: "parallel-lines", lines: [["A","B"],["C","D"]] },
+      { type: "same-side-of-line", line: ["A","C"], points: ["B","D"] },
+      { type: "opposite-side-of-line", line: ["A","C"], points: ["B","E"] }
+    ],
+    constructions: [], dynamicConditions: []
+  },
+  goal: { type: "angle-equality", angles: [["B","A","C"],["E","C","A"]] }
+};
+const sideAwareFacts = Adapter.convert(sideAwareParallelProbe).facts;
+assert.ok(sideAwareFacts.includes("alternateAngles(angle(ABC),angle(ACE),transversal,parallel-1,parallel-2)"),
+  "反対側にあるEを使う正しい錯角を生成する");
+assert.equal(sideAwareFacts.includes("alternateAngles(angle(ABC),angle(ACD),transversal,parallel-1,parallel-2)"), false,
+  "同じ側にあるDを使った誤った錯角は生成しない");
+
 const incidenceOnlyProbe = JSON.parse(JSON.stringify(orderedParallelProbe));
 incidenceOnlyProbe.geometry.objects.forEach((line) => { delete line.orderedThrough; });
 const noOrderFacts = Adapter.convert(incidenceOnlyProbe).facts;
