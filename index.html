@@ -43,7 +43,7 @@
   <script src="./js/theorem-catalog.js?v=20261010-1" defer></script>
   <script src="./js/proof-rules.js?v=20261012-11" defer></script>
   <script src="./js/geometry-relations.js?v=20261010-1" defer></script>
-  <script src="./js/problem-data-engine.js?v=20261012-10" defer></script>
+  <script src="./js/problem-data-engine.js?v=20261013-1" defer></script>
   <script src="./js/problem-generator.js?v=20261010-7" defer></script>
   <script src="./js/app.js?v=20261010-7" defer></script>
 </head>
@@ -53,7 +53,7 @@
       <span class="brand-mark" aria-hidden="true">∠</span>
       <span>証明問題メーカー</span>
     </a>
-    <span class="prototype-label" title="更新確認用ビルド番号">試作版 0.4 · 更新ID 2026-10-12.12</span>
+    <span class="prototype-label" title="更新確認用ビルド番号">試作版 0.4 · 更新ID 2026-10-13.1</span>
   </header>
 
   <main class="page-shell">
@@ -283,7 +283,7 @@
         setStatus("問題データを読み込んでいます。");
         const year = problemSelect.value;
         const path = year === "2023"
-          ? "./data/problem-examples/shizuoka-2023-proof-7-1.json"
+          ? "./data/problem-examples/shizuoka-2023-proof-7-1.json?v=20261013-1"
           : year === "2024"
             ? "./data/problem-examples/shizuoka-2024-proof-7-1.json"
             : year === "2026"
