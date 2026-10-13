@@ -1250,7 +1250,8 @@
             const commonPremises = equalityPathPremises(a.parts[ai], b.parts[bi], known);
             // Do not apply cancellation unless both the equal wholes and the
             // common addends have traceable equality premises.
-            if (!wholePremises.length || !commonPremises.length) continue;
+            if ((a.whole !== b.whole && !wholePremises.length) ||
+                (a.parts[ai] !== b.parts[bi] && !commonPremises.length)) continue;
             add(a.kind === "angle" ? "angle.addition-cancellation" : "segment.addition-cancellation",
               a.kind === "angle" ? "角の加法の逆（消去）" : "線分の加法の逆（消去）",
               [a.fact, b.fact, ...wholePremises, ...commonPremises],
