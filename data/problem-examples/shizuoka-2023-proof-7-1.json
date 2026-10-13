@@ -98,7 +98,11 @@
           "E",
           "F"
         ],
-        "parallelTo": "line-AD"
+        "parallelTo": "line-AD",
+        "orderedThrough": [
+          "E",
+          "F"
+        ]
       },
       {
         "id": "line-BC",
