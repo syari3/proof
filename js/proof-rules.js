@@ -408,6 +408,7 @@
           if (!left || !right || left === right) continue;
           const conclusion = left + "=" + right;
           const reverse = right + "=" + left;
+          if (isSameSegmentNotationEquality(conclusion)) continue;
           if (goal === reverse && !known.includes(reverse)) {
             return { premises: [first.fact, second.fact], conclusion: reverse };
           }
