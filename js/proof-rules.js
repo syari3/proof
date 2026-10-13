@@ -453,6 +453,14 @@
       (sameSideExpression(a.left, b.right) && sameSideExpression(a.right, b.left));
   }
 
+  // Reversing the endpoints of a segment changes only its notation, not its
+  // length. Treat this as an internal normalization, never as a proof step.
+  function isSameSegmentNotationEquality(fact) {
+    const equality = parseEquality(fact);
+    return !!equality && equality.left.startsWith("side(") &&
+      sameSideExpression(equality.left, equality.right);
+  }
+
   // In a triangle, equal sides imply equal opposite base angles.
   // Explicit triangle/equality facts are required; segment notation is unordered.
   function isoscelesBaseAngleCandidates(known) {
@@ -1232,7 +1240,8 @@
     const results = [];
     const seen = new Set();
     function add(id, name, premises, conclusion, kind, explain) {
-      if (known.includes(conclusion) || seen.has(conclusion)) return;
+      if (known.includes(conclusion) || seen.has(conclusion) ||
+          isSameSegmentNotationEquality(conclusion)) return;
       seen.add(conclusion);
       results.push({ id, name, premises: [...new Set(premises)], conclusion, category: kind, explain });
     }
@@ -1299,6 +1308,9 @@
     if (goalEquality && goalEquality.left.startsWith("angle(") &&
         termsEquivalent(goalEquality.left, goalEquality.right, known)) {
       return { success: true, goal, facts: known, steps, reason: "implicit-angle-equivalence" };
+    }
+    if (goalEquality && isSameSegmentNotationEquality(goal)) {
+      return { success: true, goal, facts: known, steps, reason: "implicit-segment-equivalence" };
     }
 
     let changed = true;
