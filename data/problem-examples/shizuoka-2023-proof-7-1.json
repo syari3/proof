@@ -244,6 +244,11 @@
         ]
       },
       {
+        "type": "same-side-of-line",
+        "line": ["A", "C"],
+        "points": ["D", "F"]
+      },
+      {
         "type": "between",
         "points": [
           "A",
