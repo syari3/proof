@@ -241,19 +241,17 @@
           if (!["same-side-of-line", "opposite-side-of-line"].includes(position.type) ||
               !Array.isArray(position.line) || position.line.length !== 2 ||
               !Array.isArray(position.points) || position.points.length !== 2) continue;
-          const lineKey = position.line.slice().sort().join("");
+          const carrier = (problem.geometry.objects || []).find((object) =>
+            object.type === "line" && object.id && Array.isArray(object.through) &&
+            position.line.every((point) => object.through.includes(point)));
+          if (!carrier) continue;
           const [p, q] = position.points;
           const relation = position.type === "same-side-of-line" ? 1 : -1;
-          sideOfLine.set(lineKey + ":" + p + ":" + q, relation);
-          sideOfLine.set(lineKey + ":" + q + ":" + p, relation);
+          sideOfLine.set(carrier.id + ":" + p + ":" + q, relation);
+          sideOfLine.set(carrier.id + ":" + q + ":" + p, relation);
         }
-        const sideRelation = (line, p, q) => sideOfLine.get(line.through &&
-          line.through.includes(p) && line.through.includes(q) ? "" : "") ??
-          sideOfLine.get(line.orderedThrough ? line.orderedThrough.slice().sort().join("") + ":" + p + ":" + q : "");
-        const explicitSideRelation = (transversal, p, q) => {
-          const key = transversal.orderedThrough.slice().sort().join("");
-          return sideOfLine.get(key + ":" + p + ":" + q);
-        };
+        const explicitSideRelation = (transversal, p, q) =>
+          sideOfLine.get(transversal.id + ":" + p + ":" + q);
         const leftAngles = at(first, v1), rightAngles = at(second, v2);
         const firstEnds = pair.endpoints[0], secondEnds = pair.endpoints[1];
         const endpoint1 = firstEnds.find((p) => p !== v1);
