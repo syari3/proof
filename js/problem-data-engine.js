@@ -227,9 +227,32 @@
           const pRays = parallelLine.orderedThrough.filter((p) => p !== vertex);
           return tRays.flatMap((t) => pRays.map((q) => ({
             angle: canonicalAngle(t, vertex, q),
+            tPoint: t,
+            parallelPoint: q,
             tSide: raySide(transversal, vertex, t),
             pSide: raySide(parallelLine, vertex, q)
           }))).filter((x) => x.tSide && x.pSide);
+        };
+        // Optional positional data resolves which named point lies on which
+        // side of a transversal. This is needed when the intended ray uses a
+        // point on the opposite ray from the endpoint named by parallel-lines.
+        const sideOfLine = new Map();
+        for (const position of problem.geometry.constraints) {
+          if (!["same-side-of-line", "opposite-side-of-line"].includes(position.type) ||
+              !Array.isArray(position.line) || position.line.length !== 2 ||
+              !Array.isArray(position.points) || position.points.length !== 2) continue;
+          const lineKey = position.line.slice().sort().join("");
+          const [p, q] = position.points;
+          const relation = position.type === "same-side-of-line" ? 1 : -1;
+          sideOfLine.set(lineKey + ":" + p + ":" + q, relation);
+          sideOfLine.set(lineKey + ":" + q + ":" + p, relation);
+        }
+        const sideRelation = (line, p, q) => sideOfLine.get(line.through &&
+          line.through.includes(p) && line.through.includes(q) ? "" : "") ??
+          sideOfLine.get(line.orderedThrough ? line.orderedThrough.slice().sort().join("") + ":" + p + ":" + q : "");
+        const explicitSideRelation = (transversal, p, q) => {
+          const key = transversal.orderedThrough.slice().sort().join("");
+          return sideOfLine.get(key + ":" + p + ":" + q);
         };
         const leftAngles = at(first, v1), rightAngles = at(second, v2);
         const firstEnds = pair.endpoints[0], secondEnds = pair.endpoints[1];
@@ -247,8 +270,11 @@
               a.pSide * baseSide1 === b.pSide * baseSide2) {
             add("correspondingAngles(" + a.angle + "," + b.angle + "," + transversal.id + "," + first.id + "," + second.id + ")");
           }
-          if (baseSide1 && baseSide2 && a.tSide === towardOther1 &&
-              b.tSide === towardOther2 && a.pSide === baseSide1 && b.pSide === baseSide2) {
+          const explicitSides = explicitSideRelation(transversal, a.parallelPoint, b.parallelPoint);
+          if (a.tSide === towardOther1 && b.tSide === towardOther2 &&
+              (explicitSides === -1 ||
+               (explicitSides == null && baseSide1 && baseSide2 &&
+                a.pSide === baseSide1 && b.pSide === baseSide2))) {
             add("alternateAngles(" + a.angle + "," + b.angle + "," + transversal.id + "," + first.id + "," + second.id + ")");
           }
         }
